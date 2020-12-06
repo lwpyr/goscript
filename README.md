@@ -1,12 +1,14 @@
 # Goscript: a runtime script for Golang
-Goscript is completely written in Golang. Goscript's purpose is to build a completely data-compatible script language and could dynamicly extend your runtime code in a Golang server.
+Goscript is completely written in Golang. Goscript's purpose is to build a completely data-compatible-with-golang script language and could dynamicly extend your runtime code in a Golang server.
 
 ## NOTICE: Goscript is in a very early stage, there are still many thing to be done and many bugs to be fixed.
 
 ### Design principle
-1. Goscript is a simple and type-strict with implicit type-conversion script language with similar grammar for Golang.
+1. Goscript is a simple and type-strict with implicit type-conversion script language with Golang-similar grammar for Golang.
 
 2. Goscript should be easily extended for specific usage.
+
+3. Goscript should be fast, data conversion when context switching should be easy.
 
 ### What can Goscript do
 1. **As a rule parse engine.**
@@ -185,6 +187,6 @@ print(fib(35));`
 
 
 
-## Someone want to contribute?
+## Someone wants to contribute?
 
-Awesome! Goscript is a open source project and contribution is welcomed!
+Awesome! Goscript is an open source project and contribution is welcomed!
