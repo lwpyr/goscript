@@ -83,7 +83,8 @@ statement
     ;
 
 functiondef
-    : FUNCTION NAME '(' param (',' param)*  ')' NAME?  block;
+    : FUNCTION NAME '(' param (',' param)*  ')' NAME?  block
+    | FUNCTION NAME '(' ')' NAME?  block;
 
 param
     : NAME NAME;
