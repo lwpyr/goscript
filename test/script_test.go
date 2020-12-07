@@ -64,6 +64,30 @@ print(sum);
 	p.RunOnMemory(mem)
 }
 
+func TestD(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+func who(p Person) {
+	if(p.name == 'Tom') {
+		print('Tommy');
+	} else if(p.name == 'Dave') {
+		print('David');
+	} else {
+		print('I don\'t know');
+	}
+}
+Tom = {name('Tom')};
+who(Tom);
+Tom = {name('Dave')};
+who(Tom);
+Tom = {name('Lisa')};
+who(Tom);
+`
+	p := compilePro(expr)
+	p.RunOnMemory(mem)
+}
+
 func BenchmarkC(b *testing.B) {
 	setupParse()
 	var expr string

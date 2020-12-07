@@ -185,7 +185,6 @@ func (i *InitializationMessageNode) Compile(c *Compiler) {
 			valInstructions[j](m, stk)
 			lambda_chains.MessageSetField(ret, keys[j], stk.Top())
 			stk.Pop()
-			stk.Pc++
 		}
 		stk.Push(ret)
 	})
