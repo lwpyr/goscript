@@ -72,9 +72,11 @@ all the experiment is done under MacBook Pro 16 2019, Intel Core i9, 16GB
    AntonmedeExpr    	 2481778	       486 ns/op
    ```
 
-   Goscript has overwhelming advantage over antonmede/expr in performance side. But use Goscript is complexer than antonmede/expr, all the variables and types should be pre-defined. antonmede/exp knows directly process the data with no prior knowledge over the data, and this may be the key reason of why Goscript is faster.
+   Goscript has overwhelming advantage over antonmede/expr in performance side. But use Goscript is complexer than antonmede/expr, all the variables and types should be pre-defined. antonmede/exp directly process the data with no prior knowledge over the data, and this may be the key reason of why Goscript is faster.
 
 1. Script mode compared with other Golang script
+   
+   [yuin/gopher-lua](https://github.com/yuin/gopher-lua)
 
    a. we use fib(35) to compare with GopherLua and Python3.8 (loop 10 times and take the average)
 
@@ -142,7 +144,7 @@ all the experiment is done under MacBook Pro 16 2019, Intel Core i9, 16GB
    GopherLua 123201 ns/op
    ```
 
-   I haven't a close look into GopherLua, even though I already use **compile** mode of GopherLua, and I don't know why GopherLua perform badly in this simple case.
+   I don't have a close look into GopherLua, even though I already use **compile** mode of GopherLua, and I don't know why GopherLua perform badly in this simple case.
 
 ### Example code
 
