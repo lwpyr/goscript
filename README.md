@@ -164,8 +164,8 @@ see more in the **test** folder
 func TestFib35Example(t *testing.T) {
 	setupParse()
 	var expr string
-    c := go_script.NewCompiler()
-    mem := &common.Memory{
+	c := go_script.NewCompiler()
+	mem := &common.Memory{
 		Data: make([]interface{}, 100),
 	}
 	expr = `
@@ -177,7 +177,7 @@ func fib(v int64) int64 {
 }
 
 print(fib(35));`
-    p, err := c.CompileScript(expr)
+	p, err := c.CompileScript(expr)
 	if err != nil {
 		panic(err)
 	}
