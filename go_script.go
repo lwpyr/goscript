@@ -1,4 +1,4 @@
-package go_script
+package goscript
 
 import (
 	"fmt"
