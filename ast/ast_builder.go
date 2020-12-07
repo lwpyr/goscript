@@ -29,7 +29,7 @@ func NewASTBuilder() *ASTBuilder {
 }
 
 func (s *ASTBuilder) VisitErrorNode(node antlr.ErrorNode) {
-	panic(node.GetText())
+	panic(common.NewCompileErr(node.GetText()))
 }
 
 func (s *ASTBuilder) VisitPush(node ASTNode) {
