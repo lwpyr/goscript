@@ -1,9 +1,11 @@
 package ast
 
 import (
+	"errors"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/lwpyr/goscript/common"
 	"github.com/lwpyr/goscript/parser"
+	"runtime/debug"
 )
 
 type Compiler struct {
@@ -143,7 +145,11 @@ func (c *Compiler) CompileFunctionDef(expr string) error {
 func (c *Compiler) BuildAST(expr string) (root ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = r.(common.ScriptError)
+			if e, ok := r.(common.ScriptError); ok {
+				err = errors.New(e.Error() + "\n" + string(debug.Stack()))
+			} else {
+				err = errors.New(r.(error).Error() + "\n" + string(debug.Stack()))
+			}
 		}
 	}()
 	l := NewASTBuilder()

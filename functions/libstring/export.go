@@ -88,10 +88,9 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMet
 			F: func(m *common.Memory, stk *common.Stack) {
 				i1 := stk.TopIndex(1).(int64)
 				i2 := stk.Top().(int64)
-				r1 := i1 / i2
-				r2 := i1 % i2
-				stk.Pop()
-				stk.ReturnVal([]interface{}{r1, r2})
+				stk.Push(i1 / i2)
+				stk.Push(i1 % i2)
+				stk.ReturnN(2)
 			},
 			ConstExpr: true,
 		},

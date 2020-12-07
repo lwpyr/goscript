@@ -14,33 +14,37 @@ type Constant struct {
 }
 
 type Scope struct {
-	Outer      *Scope
-	VarIndex   *int
-	LocalIndex int
-	Variables  map[string]*Variable
-	Parameters map[string]*Variable
-	Constants  map[string]*Constant
+	Outer       *Scope
+	VarIndex    *int
+	LocalIndex  int
+	ReturnIndex int
+	Variables   map[string]*Variable
+	Parameters  map[string]*Variable
+	Constants   map[string]*Constant
 }
 
 func NewScope(outer *Scope) *Scope {
 	var varIndex *int
 	var localIndex int
+	var returnIndex int
 	if outer != nil {
 		varIndex = outer.VarIndex
 		localIndex = outer.LocalIndex
+		returnIndex = outer.ReturnIndex
 	} else {
 		index := 0
 		varIndex = &index
 		localIndex = 0
+		returnIndex = -1
 	}
-
 	return &Scope{
-		Outer:      outer,
-		VarIndex:   varIndex,
-		LocalIndex: localIndex,
-		Variables:  map[string]*Variable{},
-		Constants:  map[string]*Constant{},
-		Parameters: map[string]*Variable{},
+		Outer:       outer,
+		VarIndex:    varIndex,
+		LocalIndex:  localIndex,
+		ReturnIndex: returnIndex,
+		Variables:   map[string]*Variable{},
+		Constants:   map[string]*Constant{},
+		Parameters:  map[string]*Variable{},
 	}
 }
 
@@ -83,4 +87,11 @@ func (s *Scope) AddParameterVariable(v *Variable) {
 	v.Offset = s.LocalIndex
 	v.IsParameter = true
 	s.LocalIndex++
+}
+
+func (s *Scope) AddReturnVariable(v *Variable) {
+	s.Parameters[v.Symbol] = v
+	v.Offset = s.ReturnIndex
+	v.IsParameter = true
+	s.ReturnIndex--
 }

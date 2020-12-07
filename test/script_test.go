@@ -53,8 +53,7 @@ func TestC(t *testing.T) {
 	setupParse()
 	var expr string
 	expr = `
-var sum int64;
-sum = 0;
+var sum int64 = 0;
 for (local i int64 = 1; i <= 100; i++) {
 	sum = sum + i;
 }
@@ -107,7 +106,7 @@ for (local i int64 = 1; i <= 100; i++) {
 
 func setupParse() {
 	// mock data
-	c = go_script.NewCompiler()
+	c = goscript.NewCompiler()
 
 	dtb := common.NewDataTypeBuilder("Person")
 	dtb.SetKind(common.Message)
@@ -134,28 +133,28 @@ func setupParse() {
 	c.Include("base64")
 	c.Include("datetime")
 
-	scope := go_script.NewScope(nil)
+	scope := goscript.NewScope(nil)
 
-	scope.AddVariable(go_script.NewVariable("Tom", c.FindType("Person")))
-	scope.AddVariable(go_script.NewVariable("Jerry", c.FindType("Person")))
-	scope.AddVariable(go_script.NewVariable("Friends", c.FindSliceType("Person")))
-	scope.AddVariable(go_script.NewVariable("Class", c.FindMapType("int64", "Person")))
-	scope.AddVariable(go_script.NewVariable("newPerson", c.FindType("Person")))
-	scope.AddVariable(go_script.NewVariable("DavidId", c.FindType("int64")))
-	scope.AddVariable(go_script.NewVariable("Teacher", c.FindType("Person")))
-	scope.AddVariable(go_script.NewVariable("RandNumber", c.FindType("float64")))
-	scope.AddVariable(go_script.NewVariable("num1", c.FindType("int64")))
-	scope.AddVariable(go_script.NewVariable("num2", c.FindType("int64")))
-	scope.AddVariable(go_script.NewVariable("num3", c.FindType("int64")))
-	scope.AddVariable(go_script.NewVariable("num4", c.FindType("int64")))
-	scope.AddVariable(go_script.NewVariable("testString", c.FindType("string")))
-	scope.AddVariable(go_script.NewVariable("NewClass", c.FindMapType("int64", "Person")))
-	scope.AddVariable(go_script.NewVariable("jsonObj", c.FindType("JSONObject")))
-	scope.AddVariable(go_script.NewVariable("testString2", c.FindType("string")))
-	scope.AddVariable(go_script.NewVariable("header", c.FindMapType("string", "string")))
-	scope.AddVariable(go_script.NewVariable("fruitEnum", c.FindType("fruits")))
-	scope.AddVariable(go_script.NewVariable("stringMap", c.FindMapType("string", "Person")))
-	scope.AddVariable(go_script.NewVariable("float32Map", c.FindMapType("float32", "Person")))
+	scope.AddVariable(goscript.NewVariable("Tom", c.FindType("Person")))
+	scope.AddVariable(goscript.NewVariable("Jerry", c.FindType("Person")))
+	scope.AddVariable(goscript.NewVariable("Friends", c.FindSliceType("Person")))
+	scope.AddVariable(goscript.NewVariable("Class", c.FindMapType("int64", "Person")))
+	scope.AddVariable(goscript.NewVariable("newPerson", c.FindType("Person")))
+	scope.AddVariable(goscript.NewVariable("DavidId", c.FindType("int64")))
+	scope.AddVariable(goscript.NewVariable("Teacher", c.FindType("Person")))
+	scope.AddVariable(goscript.NewVariable("RandNumber", c.FindType("float64")))
+	scope.AddVariable(goscript.NewVariable("num1", c.FindType("int64")))
+	scope.AddVariable(goscript.NewVariable("num2", c.FindType("int64")))
+	scope.AddVariable(goscript.NewVariable("num3", c.FindType("int64")))
+	scope.AddVariable(goscript.NewVariable("num4", c.FindType("int64")))
+	scope.AddVariable(goscript.NewVariable("testString", c.FindType("string")))
+	scope.AddVariable(goscript.NewVariable("NewClass", c.FindMapType("int64", "Person")))
+	scope.AddVariable(goscript.NewVariable("jsonObj", c.FindType("JSONObject")))
+	scope.AddVariable(goscript.NewVariable("testString2", c.FindType("string")))
+	scope.AddVariable(goscript.NewVariable("header", c.FindMapType("string", "string")))
+	scope.AddVariable(goscript.NewVariable("fruitEnum", c.FindType("fruits")))
+	scope.AddVariable(goscript.NewVariable("stringMap", c.FindMapType("string", "Person")))
+	scope.AddVariable(goscript.NewVariable("float32Map", c.FindMapType("float32", "Person")))
 
 	c.Scope = scope
 }

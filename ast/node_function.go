@@ -11,6 +11,25 @@ type FunctionDefNode struct {
 	Meta  *common.FunctionMeta
 }
 
+type ParamNode struct {
+	Node
+	Symbol   string
+	TypeName string
+}
+
+func (p *ParamNode) Compile(_ *Compiler) {
+	panic("should never reach here, this must be internal error")
+}
+
+type TypeNameNode struct {
+	Node
+	TypeName string
+}
+
+func (t *TypeNameNode) Compile(c *Compiler) {
+	panic("should never reach here, this must be internal error")
+}
+
 func (f *FunctionDefNode) Compile(c *Compiler) {
 	f.Block.Compile(c)
 	blockInst := f.Block.GetInstructions()
@@ -57,10 +76,16 @@ func (f *FunctionNode) Compile(c *Compiler) {
 		}
 		paramConvertFunc = append(paramConvertFunc, lambda_chains.GetConvertFunc(f.Params[i].GetDataType(), f.Meta.In[idx]))
 	}
+	lenOut := len(f.Meta.Out)
+	if lenOut == 0 {
+		lenOut = 1
+	}
 	if f.Meta.TailArray {
 		lenIn := len(f.Meta.In)
 		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			stk.Push(nil)
+			for i := 0; i < lenOut; i++ {
+				stk.Push(nil)
+			}
 			for i := 0; i < lenIn-1; i++ {
 				paramInstructions[i](m, stk)
 				stk.Set(0, paramConvertFunc[i](stk.Top()))
@@ -76,7 +101,9 @@ func (f *FunctionNode) Compile(c *Compiler) {
 		})
 	} else {
 		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			stk.Push(nil)
+			for i := 0; i < lenOut; i++ {
+				stk.Push(nil)
+			}
 			for i := 0; i < num; i++ {
 				paramInstructions[i](m, stk)
 				stk.Set(0, paramConvertFunc[i](stk.Top()))

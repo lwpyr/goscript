@@ -57,11 +57,36 @@ func (s *BasegoscriptListener) EnterRun(ctx *RunContext) {}
 // ExitRun is called when production Run is exited.
 func (s *BasegoscriptListener) ExitRun(ctx *RunContext) {}
 
-// EnterFunctiondef is called when production functiondef is entered.
-func (s *BasegoscriptListener) EnterFunctiondef(ctx *FunctiondefContext) {}
+// EnterFunctionDef is called when production FunctionDef is entered.
+func (s *BasegoscriptListener) EnterFunctionDef(ctx *FunctionDefContext) {}
 
-// ExitFunctiondef is called when production functiondef is exited.
-func (s *BasegoscriptListener) ExitFunctiondef(ctx *FunctiondefContext) {}
+// ExitFunctionDef is called when production FunctionDef is exited.
+func (s *BasegoscriptListener) ExitFunctionDef(ctx *FunctionDefContext) {}
+
+// EnterFunctionDefWithReturnName is called when production FunctionDefWithReturnName is entered.
+func (s *BasegoscriptListener) EnterFunctionDefWithReturnName(ctx *FunctionDefWithReturnNameContext) {
+}
+
+// ExitFunctionDefWithReturnName is called when production FunctionDefWithReturnName is exited.
+func (s *BasegoscriptListener) ExitFunctionDefWithReturnName(ctx *FunctionDefWithReturnNameContext) {}
+
+// EnterInparam is called when production inparam is entered.
+func (s *BasegoscriptListener) EnterInparam(ctx *InparamContext) {}
+
+// ExitInparam is called when production inparam is exited.
+func (s *BasegoscriptListener) ExitInparam(ctx *InparamContext) {}
+
+// EnterOutparam is called when production outparam is entered.
+func (s *BasegoscriptListener) EnterOutparam(ctx *OutparamContext) {}
+
+// ExitOutparam is called when production outparam is exited.
+func (s *BasegoscriptListener) ExitOutparam(ctx *OutparamContext) {}
+
+// EnterReturntypename is called when production returntypename is entered.
+func (s *BasegoscriptListener) EnterReturntypename(ctx *ReturntypenameContext) {}
+
+// ExitReturntypename is called when production returntypename is exited.
+func (s *BasegoscriptListener) ExitReturntypename(ctx *ReturntypenameContext) {}
 
 // EnterParam is called when production param is entered.
 func (s *BasegoscriptListener) EnterParam(ctx *ParamContext) {}
@@ -87,11 +112,17 @@ func (s *BasegoscriptListener) EnterSimpleTypeName(ctx *SimpleTypeNameContext) {
 // ExitSimpleTypeName is called when production SimpleTypeName is exited.
 func (s *BasegoscriptListener) ExitSimpleTypeName(ctx *SimpleTypeNameContext) {}
 
-// EnterGenericTypeName is called when production GenericTypeName is entered.
-func (s *BasegoscriptListener) EnterGenericTypeName(ctx *GenericTypeNameContext) {}
+// EnterMapTypeName is called when production MapTypeName is entered.
+func (s *BasegoscriptListener) EnterMapTypeName(ctx *MapTypeNameContext) {}
 
-// ExitGenericTypeName is called when production GenericTypeName is exited.
-func (s *BasegoscriptListener) ExitGenericTypeName(ctx *GenericTypeNameContext) {}
+// ExitMapTypeName is called when production MapTypeName is exited.
+func (s *BasegoscriptListener) ExitMapTypeName(ctx *MapTypeNameContext) {}
+
+// EnterSliceTypeName is called when production SliceTypeName is entered.
+func (s *BasegoscriptListener) EnterSliceTypeName(ctx *SliceTypeNameContext) {}
+
+// ExitSliceTypeName is called when production SliceTypeName is exited.
+func (s *BasegoscriptListener) ExitSliceTypeName(ctx *SliceTypeNameContext) {}
 
 // EnterEnumdef is called when production enumdef is entered.
 func (s *BasegoscriptListener) EnterEnumdef(ctx *EnumdefContext) {}

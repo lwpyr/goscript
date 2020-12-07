@@ -4,6 +4,7 @@ import (
 	"github.com/lwpyr/goscript/common"
 	"github.com/lwpyr/goscript/parser"
 	"strconv"
+	"strings"
 )
 
 // EnterProgram is called when production program is entered.
@@ -30,7 +31,6 @@ func (s *ASTBuilder) ExitProgram(ctx *parser.ProgramContext) {
 			node.TypeDefNode = append(node.TypeDefNode, temp)
 		case *EnumNode:
 			node.EnumNode = append(node.EnumNode, temp)
-		case *GlobalNode:
 		default:
 			node.RunnableNode = append([]ASTNode{temp}, node.RunnableNode...)
 		}
@@ -61,11 +61,6 @@ func (s *ASTBuilder) ExitSimpleTypeName(ctx *parser.SimpleTypeNameContext) {
 	// todo
 }
 
-// ExitGenericTypeName is called when production GenericTypeName is exited.
-func (s *ASTBuilder) ExitGenericTypeName(ctx *parser.GenericTypeNameContext) {
-	// todo
-}
-
 // EnterTypeDefAlias is called when production TypeDefAlias is entered.
 func (s *ASTBuilder) EnterTypeDefAlias(ctx *parser.TypeDefAliasContext) {
 	// todo
@@ -77,7 +72,7 @@ func (s *ASTBuilder) EnterTypeDefComplex(ctx *parser.TypeDefComplexContext) {
 }
 
 // EnterFunctiondef is called when production functiondef is entered.
-func (s *ASTBuilder) EnterFunctiondef(ctx *parser.FunctiondefContext) {
+func (s *ASTBuilder) EnterFunctionDef(ctx *parser.FunctionDefContext) {
 	s.InFunction = true
 	s.Compiler.Scope = common.NewScope(s.Compiler.Scope)
 	cur := &FunctionDefNode{
@@ -86,40 +81,82 @@ func (s *ASTBuilder) EnterFunctiondef(ctx *parser.FunctiondefContext) {
 			Variadic: true,
 		},
 		Meta: &common.FunctionMeta{
-			Name:      ctx.NAME(0).GetText(),
+			Name:      ctx.NAME().GetText(),
 			ConstExpr: false,
 		},
-	}
-	if len(ctx.AllNAME()) > 1 {
-		t := s.Compiler.TypeRegistry.FindType(ctx.NAME(1).GetText())
-		if t == nil {
-			panic(common.NewCompileErr("unknown return type of function " + cur.Meta.Name))
-		}
-		cur.Meta.Out = append(cur.Meta.Out, t)
 	}
 	s.Compiler.FunctionLib[cur.Meta.Name] = cur.Meta
 	s.VisitPush(cur)
 }
 
 // ExitFunctiondef is called when production functiondef is exited.
-func (s *ASTBuilder) ExitFunctiondef(ctx *parser.FunctiondefContext) {
+func (s *ASTBuilder) ExitFunctionDef(ctx *parser.FunctionDefContext) {
 	s.InFunction = false
 	fNode := s.VisitPop().(*FunctionDefNode)
 	fNode.Block = s.NodePop()
 	s.NodePush(fNode)
 }
 
-// EnterParam is called when production param is entered.
-func (s *ASTBuilder) EnterParam(ctx *parser.ParamContext) {
+// ExitReturntypename is called when production returntypename is exited.
+func (s *ASTBuilder) ExitReturntypename(ctx *parser.ReturntypenameContext) {
 	fNode := s.VisitTop().(*FunctionDefNode)
-	name := ctx.NAME(0).GetText()
-	t := s.Compiler.TypeRegistry.FindType(ctx.NAME(1).GetText())
+	typeName := strings.Replace(ctx.Typename().GetText(), " ", "", -1)
+	t := s.Compiler.TypeRegistry.FindType(typeName)
 	if t == nil {
-		panic(common.NewCompileErr("unknown param type " + ctx.NAME(1).GetText() + " of function " + fNode.Meta.Name))
+		panic(common.NewCompileErr("unknown param type " + typeName))
+	}
+	fNode.Meta.Out = append(fNode.Meta.Out, t)
+}
+
+// ExitInparam is called when production inparam is exited.
+func (s *ASTBuilder) ExitInparam(ctx *parser.InparamContext) {
+	fNode := s.VisitTop().(*FunctionDefNode)
+	paramNode := s.NodePop().(*ParamNode)
+	t := s.Compiler.TypeRegistry.FindType(paramNode.TypeName)
+	if t == nil {
+		panic(common.NewCompileErr("unknown param type " + paramNode.TypeName + " of parameter " + paramNode.Symbol))
 	}
 	s.Compiler.Scope.AddParameterVariable(&common.Variable{
-		Symbol: name,
+		Symbol: paramNode.Symbol,
 		Type:   t,
 	})
 	fNode.Meta.In = append(fNode.Meta.In, t)
+}
+
+// ExitOutparam is called when production outparam is exited.
+func (s *ASTBuilder) ExitOutparam(ctx *parser.OutparamContext) {
+	fNode := s.VisitTop().(*FunctionDefNode)
+	paramNode := s.NodePop().(*ParamNode)
+	t := s.Compiler.TypeRegistry.FindType(paramNode.TypeName)
+	if t == nil {
+		panic(common.NewCompileErr("unknown param type " + paramNode.TypeName + " of parameter " + paramNode.Symbol))
+	}
+	s.Compiler.Scope.AddReturnVariable(&common.Variable{
+		Symbol: paramNode.Symbol,
+		Type:   t,
+	})
+	fNode.Meta.Out = append(fNode.Meta.Out, t)
+}
+
+// EnterParam is called when production param is entered.
+func (s *ASTBuilder) ExitParam(ctx *parser.ParamContext) {
+	name := ctx.NAME().GetText()
+	typeName := strings.Replace(ctx.Typename().GetText(), " ", "", -1)
+	s.NodePush(&ParamNode{
+		Symbol:   name,
+		TypeName: typeName,
+	})
+}
+
+// ExitMapTypeName is called when production MapTypeName is exited.
+func (s *ASTBuilder) ExitMapTypeName(ctx *parser.MapTypeNameContext) {
+	keyType := ctx.NAME().GetText()
+	valType := strings.Replace(ctx.Typename().GetText(), " ", "", -1)
+	s.Compiler.TypeRegistry.FindMapType(keyType, valType)
+}
+
+// ExitSliceTypeName is called when production SliceTypeName is exited.
+func (s *ASTBuilder) ExitSliceTypeName(ctx *parser.SliceTypeNameContext) {
+	itemType := strings.Replace(ctx.Typename().GetText(), " ", "", -1)
+	s.Compiler.TypeRegistry.FindSliceType(itemType)
 }

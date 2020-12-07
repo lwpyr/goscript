@@ -21,7 +21,7 @@ type BlockNode struct {
 
 type ReturnNode struct {
 	Node
-	Expr ASTNode
+	Expr []ASTNode
 }
 
 type ProgramRoot struct {
@@ -139,8 +139,14 @@ func (p *ProgramRoot) Compile(c *Compiler) {
 }
 
 func (r *ReturnNode) Compile(c *Compiler) {
-	r.Expr.Compile(c)
-	exprInst := c.InstructionPop()
+	lenRet := len(r.Expr)
+	for _, expr := range r.Expr {
+		expr.Compile(c)
+	}
+	var exprInstructions []common.Instruction
+	for i := 0; i < lenRet; i++ {
+		exprInstructions = append(exprInstructions, c.InstructionPop())
+	}
 	if r.Expr == nil {
 		r.Instructions = []common.Instruction{
 			func(m *common.Memory, stk *common.Stack) {
@@ -150,8 +156,10 @@ func (r *ReturnNode) Compile(c *Compiler) {
 	} else {
 		r.Instructions = []common.Instruction{
 			func(m *common.Memory, stk *common.Stack) {
-				exprInst(m, stk)
-				stk.Return()
+				for _, exprInstruction := range exprInstructions {
+					exprInstruction(m, stk)
+				}
+				stk.ReturnN(lenRet)
 			},
 		}
 	}

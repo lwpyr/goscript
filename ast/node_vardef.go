@@ -4,12 +4,24 @@ import "github.com/lwpyr/goscript/common"
 
 type GlobalNode struct {
 	Node
-	Assign   *BinaryNode
+	Assign   ASTNode
 	Variable *common.Variable
 }
 
 func (t *GlobalNode) Compile(c *Compiler) {
-	panic("todo pre-allocate")
+	if t.Assign != nil {
+		t.Assign.Compile(c)
+		assignInst := c.InstructionPop()
+		variable := t.Variable
+		t.Instructions = []common.Instruction{
+			func(m *common.Memory, stk *common.Stack) {
+				assignInst(m, stk)
+				*m.MustGet(variable) = stk.Top()
+				stk.Pop()
+				stk.Pc++
+			},
+		}
+	}
 }
 
 type LocalNode struct {

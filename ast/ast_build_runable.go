@@ -20,13 +20,21 @@ func (s *ASTBuilder) EnterVardef(ctx *parser.VardefContext) {
 		Type:        t,
 	}
 	s.Compiler.Scope.AddVariable(v)
-	s.NodePush(&GlobalNode{
+	s.VisitPush(&GlobalNode{
 		Node: Node{
 			Parent: s.VisitTop(),
 		},
 		Assign:   nil,
 		Variable: v,
 	})
+}
+
+func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
+	node := s.VisitPop().(*GlobalNode)
+	if ctx.Expr() != nil {
+		node.Assign = s.NodePop()
+	}
+	s.NodePush(node)
 }
 
 // EnterLocalVariable is called when production LocalVariable is entered.
@@ -94,10 +102,12 @@ func (s *ASTBuilder) EnterLocalAssign(ctx *parser.LocalAssignContext) {
 	s.VisitPush(cur)
 }
 
-// ExitLocalVariableAssign is called when production LocalVariableAssign is exited.
+// ExitLocalAssign is called when production LocalVariableAssign is exited.
 func (s *ASTBuilder) ExitLocalAssign(ctx *parser.LocalAssignContext) {
 	node := s.VisitPop().(*LocalNode)
-	node.Assign.Rhs = s.NodePop()
+	if ctx.Expr() != nil {
+		node.Assign.Rhs = s.NodePop()
+	}
 	s.NodePush(node)
 }
 

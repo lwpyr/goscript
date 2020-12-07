@@ -687,15 +687,14 @@ func (f *FunctionAssignNode) Compile(c *Compiler) {
 	}
 	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 		functionInstruction(m, stk)
-		outs := (stk.Top()).([]interface{})
-		for i := 0; i < num; i++ {
-			if outs[i] != nil {
+		for i := num - 1; i >= 0; i-- {
+			if stk.Top() != nil {
 				lhsInstructions[i](m, stk)
-				*stk.Top().(*interface{}) = outs[i]
-				stk.Pop()
+				*stk.Top().(*interface{}) = convertFuncs[i](stk.TopIndex(1))
+				stk.PopN(2)
 			}
 		}
-		stk.Set(0, nil)
+		stk.Push(nil)
 	})
 }
 

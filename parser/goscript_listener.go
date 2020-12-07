@@ -26,8 +26,20 @@ type goscriptListener interface {
 	// EnterRun is called when entering the Run production.
 	EnterRun(c *RunContext)
 
-	// EnterFunctiondef is called when entering the functiondef production.
-	EnterFunctiondef(c *FunctiondefContext)
+	// EnterFunctionDef is called when entering the FunctionDef production.
+	EnterFunctionDef(c *FunctionDefContext)
+
+	// EnterFunctionDefWithReturnName is called when entering the FunctionDefWithReturnName production.
+	EnterFunctionDefWithReturnName(c *FunctionDefWithReturnNameContext)
+
+	// EnterInparam is called when entering the inparam production.
+	EnterInparam(c *InparamContext)
+
+	// EnterOutparam is called when entering the outparam production.
+	EnterOutparam(c *OutparamContext)
+
+	// EnterReturntypename is called when entering the returntypename production.
+	EnterReturntypename(c *ReturntypenameContext)
 
 	// EnterParam is called when entering the param production.
 	EnterParam(c *ParamContext)
@@ -41,8 +53,11 @@ type goscriptListener interface {
 	// EnterSimpleTypeName is called when entering the SimpleTypeName production.
 	EnterSimpleTypeName(c *SimpleTypeNameContext)
 
-	// EnterGenericTypeName is called when entering the GenericTypeName production.
-	EnterGenericTypeName(c *GenericTypeNameContext)
+	// EnterMapTypeName is called when entering the MapTypeName production.
+	EnterMapTypeName(c *MapTypeNameContext)
+
+	// EnterSliceTypeName is called when entering the SliceTypeName production.
+	EnterSliceTypeName(c *SliceTypeNameContext)
 
 	// EnterEnumdef is called when entering the enumdef production.
 	EnterEnumdef(c *EnumdefContext)
@@ -218,8 +233,20 @@ type goscriptListener interface {
 	// ExitRun is called when exiting the Run production.
 	ExitRun(c *RunContext)
 
-	// ExitFunctiondef is called when exiting the functiondef production.
-	ExitFunctiondef(c *FunctiondefContext)
+	// ExitFunctionDef is called when exiting the FunctionDef production.
+	ExitFunctionDef(c *FunctionDefContext)
+
+	// ExitFunctionDefWithReturnName is called when exiting the FunctionDefWithReturnName production.
+	ExitFunctionDefWithReturnName(c *FunctionDefWithReturnNameContext)
+
+	// ExitInparam is called when exiting the inparam production.
+	ExitInparam(c *InparamContext)
+
+	// ExitOutparam is called when exiting the outparam production.
+	ExitOutparam(c *OutparamContext)
+
+	// ExitReturntypename is called when exiting the returntypename production.
+	ExitReturntypename(c *ReturntypenameContext)
 
 	// ExitParam is called when exiting the param production.
 	ExitParam(c *ParamContext)
@@ -233,8 +260,11 @@ type goscriptListener interface {
 	// ExitSimpleTypeName is called when exiting the SimpleTypeName production.
 	ExitSimpleTypeName(c *SimpleTypeNameContext)
 
-	// ExitGenericTypeName is called when exiting the GenericTypeName production.
-	ExitGenericTypeName(c *GenericTypeNameContext)
+	// ExitMapTypeName is called when exiting the MapTypeName production.
+	ExitMapTypeName(c *MapTypeNameContext)
+
+	// ExitSliceTypeName is called when exiting the SliceTypeName production.
+	ExitSliceTypeName(c *SliceTypeNameContext)
 
 	// ExitEnumdef is called when exiting the enumdef production.
 	ExitEnumdef(c *EnumdefContext)

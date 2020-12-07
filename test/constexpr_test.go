@@ -50,7 +50,7 @@ func TestConstantExpressionWithEnum(t *testing.T) {
 var constC *ast.Compiler
 
 func init() {
-	tr := go_script.NewTypeRegistry()
+	tr := goscript.NewTypeRegistry()
 	tr.AddEnum("fruit", map[string]int32{
 		"apple":      int32(0),
 		"banana":     int32(1),

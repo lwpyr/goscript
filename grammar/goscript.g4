@@ -83,11 +83,27 @@ statement
     ;
 
 functiondef
-    : FUNCTION NAME '(' param (',' param)*  ')' NAME?  block
-    | FUNCTION NAME '(' ')' NAME?  block;
+    : FUNCTION NAME '(' inparam (',' inparam)*  ')' returntypename?  block # FunctionDef
+    | FUNCTION NAME '(' ')' returntypename?  block # FunctionDef
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' block # FunctionDef
+    | FUNCTION NAME '(' ')' '('returntypename (',' returntypename) *')'  block # FunctionDef
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' outparam?  block # FunctionDefWithReturnName
+    | FUNCTION NAME '(' ')' typename?  block # FunctionDefWithReturnName
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' block # FunctionDefWithReturnName
+    | FUNCTION NAME '(' ')' '('outparam (',' outparam) *')'  block # FunctionDefWithReturnName
+    ;
+
+inparam
+    : param;
+
+outparam
+    : param;
+
+returntypename
+    : typename;
 
 param
-    : NAME NAME;
+    : NAME typename;
 
 typedef
     : TYPEDEF NAME typename # TypeDefAlias
@@ -96,7 +112,11 @@ typedef
 
 typename
     : NAME # SimpleTypeName
-    | NAME '<'typename (',' typename)*'>' # GenericTypeName;
+    | 'map' '<' NAME ',' typename '>' # MapTypeName
+    | 'slice' '<' typename '>' # SliceTypeName
+    ;
+    // todo: genericTypeName
+    //| NAME '<'typename (',' typename)*'>' # GenericTypeName;
 
 enumdef
     : TYPEDEF 'enum' NAME '{' (NAME INT ',')* '}';
@@ -115,7 +135,7 @@ control
     | BREAK ';' # Break
     | CONTINUE ';' # Continue
     | RETURN ';'# ReturnVoid
-    | RETURN expr ';' # ReturnVal
+    | RETURN expr (',' expr)*';' # ReturnVal
     ;
 
 collection
@@ -194,9 +214,9 @@ constant
 
 functions
     : NAME '(' expr (',' expr)* ')'
+    | NAME '(' ')'
     | variable DOT NAME '(' ')'
     | variable DOT NAME '(' expr (',' expr)* ')'
-    | NAME '(' ')'
     ;
 
 constructor
@@ -204,7 +224,8 @@ constructor
     | NEW NAME '('expr (',' expr)*')';
 
 vardef
-    : VAR NAME NAME ';';
+    : VAR NAME NAME ';'
+    | VAR NAME NAME '=' expr ';';
 
 localdef
     : LOCAL NAME NAME # Local

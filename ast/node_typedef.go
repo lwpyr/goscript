@@ -11,16 +11,6 @@ func (t *EnumNode) Compile(c *Compiler) {
 	panic("cannot compile")
 }
 
-type TypeNameNode struct {
-	Node
-	TypeName      string
-	Specification []string
-}
-
-func (t *TypeNameNode) Compile(c *Compiler) {
-	panic("cannot compile")
-}
-
 type TypeAlias struct {
 	Node
 	TypeName string

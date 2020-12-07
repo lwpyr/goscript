@@ -38,6 +38,13 @@ func (s *Stack) Return() {
 	s.Pc = -1
 }
 
+func (s *Stack) ReturnN(n int) {
+	for i := 0; i < n; i++ {
+		s.Data[s.Bp-i-1] = s.Data[s.Sp-i]
+	}
+	s.Pc = -1
+}
+
 func (s *Stack) ReturnVal(val interface{}) {
 	s.Data[s.Bp-1] = val
 	s.Pc = -1

@@ -42,9 +42,6 @@ func (s *ASTBuilder) ExitBlock(ctx *parser.BlockContext) {
 	node.Executions = make([]ASTNode, num)
 	for i := num - 1; i >= 0; i-- {
 		temp := s.NodePop()
-		if _, ok := temp.(*GlobalNode); ok {
-			continue
-		}
 		node.Executions[i] = temp
 	}
 	s.NodePush(node)
@@ -106,7 +103,9 @@ func (s *ASTBuilder) EnterReturnVal(ctx *parser.ReturnValContext) {
 // ExitControlReturnVal is called when production ControlReturnVal is exited.
 func (s *ASTBuilder) ExitReturnVal(ctx *parser.ReturnValContext) {
 	node := s.VisitPop().(*ReturnNode)
-	node.Expr = s.NodePop()
+	for i := 0; i < len(ctx.AllExpr()); i++ {
+		node.Expr = append(node.Expr, s.NodePop())
+	}
 	s.NodePush(node)
 }
 
