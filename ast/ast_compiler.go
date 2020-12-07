@@ -114,6 +114,32 @@ func (c *Compiler) CompileSetter(expr string) (common.Instruction, error) {
 	return c.CompileNode(node), nil
 }
 
+func (c *Compiler) BuildFunctionDefAST(expr string) (root ASTNode, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(common.ScriptError)
+		}
+	}()
+	l := NewASTBuilder()
+	l.Compiler = c
+	is := antlr.NewInputStream(expr)
+	lexer := parser.NewgoscriptLexer(is)
+	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
+
+	d := parser.NewgoscriptParser(stream)
+	antlr.ParseTreeWalkerDefault.Walk(l, d.Functiondef())
+	return l.NodeTop(), nil
+}
+
+func (c *Compiler) CompileFunctionDef(expr string) error {
+	node, err := c.BuildFunctionDefAST(expr)
+	if err != nil {
+		return err
+	}
+	node.Compile(c)
+	return nil
+}
+
 func (c *Compiler) BuildAST(expr string) (root ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
