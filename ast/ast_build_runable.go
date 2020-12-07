@@ -632,7 +632,7 @@ func (s *ASTBuilder) ExitBinary(ctx *parser.BinaryContext) {
 			} else if ResType = common.CanAddSubMulPow(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
 				panic(common.NewMathErr("type cannot '+','-','*','**' " + ctx.GetText()))
 			}
-		case "%", "//":
+		case "%":
 			if ResType = common.CanMod(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
 				panic(common.NewMathErr("type cannot '%','//'" + ctx.GetText()))
 			}
@@ -655,7 +655,15 @@ func (s *ASTBuilder) ExitBinary(ctx *parser.BinaryContext) {
 			if !rhs.GetDataType().CanConvertTo(lhs.GetDataType()) {
 				panic(common.NewTypeErr("cannot assign type " + rhs.GetDataType().Type + " to type " + lhs.GetDataType().Type + " " + ctx.GetText()))
 			}
-			ResType = lhs.GetDataType()
+			ResType = rhs.GetDataType()
+		case "+=", "-=", "*=", "/=":
+			if rhs.GetDataType().Kind.Kind == common.Nil {
+				panic(common.NewTypeErr(" cannot explicit assign nil" + ctx.GetText()))
+			}
+			if !rhs.GetDataType().CanConvertTo(lhs.GetDataType()) {
+				panic(common.NewTypeErr("cannot assign type " + rhs.GetDataType().Type + " to type " + lhs.GetDataType().Type + " " + ctx.GetText()))
+			}
+			ResType = rhs.GetDataType()
 		default:
 			panic("wtf?")
 		}

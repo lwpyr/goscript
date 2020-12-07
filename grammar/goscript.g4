@@ -33,7 +33,6 @@ NULL
 POW: '**';
 MUL: '*';
 DIV: '/';
-INTDIV: '//';
 MOD: '%';
 ADD: '+';
 SUB: '-';
@@ -53,6 +52,10 @@ OR: '||';
 NOT: '!';
 
 ASSIGN: '=';
+ADDEQUAL: '+=';
+SUBEQUAL: '-=';
+MULEQUAL: '*=';
+DIVEQUAL: '/=';
 
 INT
    : [0-9]+;
@@ -161,7 +164,7 @@ expr
     | expr op=(EQ | INEQ | GT | GE | LT | LE | REGEX) expr # Binary
     | expr op=AND expr # Binary
     | expr op=OR expr # Binary
-    | <assoc=right> lhs op=ASSIGN expr # Binary
+    | <assoc=right> lhs op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Binary
     | <assoc=right> lhs op=ASSIGN initializationListBegin # AssignInitializationlist
     | constant # Pass
     | variable # Pass

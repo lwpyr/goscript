@@ -235,10 +235,25 @@ func CanDiv(d *DataType, b *DataType) *DataType {
 	case Int32, Int64, UInt32, UInt64, Float32, Float64:
 		switch d.Kind.Kind {
 		case Int32, Int64, UInt32, UInt64, Float32, Float64:
-			if b.Kind.Kind <= Float32 && d.Kind.Kind <= Float32 {
+			t := b.Kind.Kind
+			if d.Kind.Kind > t {
+				t = d.Kind.Kind
+			}
+			switch t {
+			case UInt32:
+				return BasicTypeMap["uint32"]
+			case UInt64:
+				return BasicTypeMap["uint64"]
+			case Int32:
+				return BasicTypeMap["int32"]
+			case Int64:
+				return BasicTypeMap["int64"]
+			case Float32:
 				return BasicTypeMap["float32"]
-			} else {
+			case Float64:
 				return BasicTypeMap["float64"]
+			default:
+				return nil
 			}
 		default:
 			return nil

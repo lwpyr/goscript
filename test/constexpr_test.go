@@ -23,7 +23,7 @@ func TestConstantExpression(t *testing.T) {
 	expr = "(5+3)*23"
 	assert.Equal(t, (int64(5)+int64(3))*int64(23), compileConstExpr(expr))
 	expr = "(5+3)/23"
-	assert.Equal(t, float32(int64(5)+int64(3))/float32(23), compileConstExpr(expr))
+	assert.Equal(t, int64(0), compileConstExpr(expr))
 	expr = "3**2"
 	assert.Equal(t, int64(9), compileConstExpr(expr))
 	expr = "3**3**3"

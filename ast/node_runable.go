@@ -583,7 +583,8 @@ func (m *MapMultiIndexNode) Compile(c *Compiler) {
 }
 
 func (n *BinaryNode) Compile(c *Compiler) {
-	if n.Op == "=" {
+	switch n.Op {
+	case "=", "+=", "-=", "*=", "/=":
 		n.Lhs.SetLhs()
 	}
 	n.Lhs.Compile(c)
@@ -621,14 +622,23 @@ func (n *BinaryNode) Compile(c *Compiler) {
 		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 			rhsInstruction(m, stk)
 			if stk.Top() != nil {
-				stk.Set(0, rhsConvertFunc(stk.Top()))
 				lhsInstruction(m, stk)
-				*stk.Top().(*interface{}) = stk.TopIndex(1)
+				*stk.Top().(*interface{}) = rhsConvertFunc(stk.TopIndex(1))
+				stk.Pop()
+			}
+		})
+	case "+=", "-=", "*=", "/=":
+		opFunc := lambda_chains.GetCalAssignOpFunc(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			rhsInstruction(m, stk)
+			if stk.Top() != nil {
+				lhsInstruction(m, stk)
+				opFunc(m, stk)
 				stk.Pop()
 			}
 		})
 	case "~=":
-		// todo
+		// todo: regexp
 	default:
 		panic("unknown binary op " + n.Op)
 	}

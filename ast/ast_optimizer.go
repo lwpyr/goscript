@@ -288,47 +288,9 @@ func MergeBinary(op string, lhs IConstantNode, rhs IConstantNode) IConstantNode 
 			panic("not support * : " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
 		}
 	case "/":
-		t := common.BasicTypeMap["float32"]
-		if lhs.GetDataType().Kind.Kind > t.Kind.Kind {
-			t = lhs.GetDataType()
-		}
-		if rhs.GetDataType().Kind.Kind > t.Kind.Kind {
-			t = rhs.GetDataType()
-		}
-		if t.Kind.Kind > common.Float64 {
-			panic("not support type for division: " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
-		}
-		lhsConvertFunc := lambda_chains.GetConvertFunc(lhs.GetDataType(), t)
-		rhsConvertFunc := lambda_chains.GetConvertFunc(rhs.GetDataType(), t)
-		switch t.Kind.Kind {
-		case common.Float32:
-			return &ValueNode{
-				Node: Node{
-					NodeType: "ValueNode",
-					DataType: common.BasicTypeMap["float32"],
-					Variadic: false,
-				},
-				Val: lhsConvertFunc(lhs.GetConstantValue()).(float32) / rhsConvertFunc(rhs.GetConstantValue()).(float32),
-			}
-		case common.Float64:
-			return &ValueNode{
-				Node: Node{
-					NodeType: "ValueNode",
-					DataType: common.BasicTypeMap["float64"],
-					Variadic: false,
-				},
-				Val: lhsConvertFunc(lhs.GetConstantValue()).(float64) / rhsConvertFunc(rhs.GetConstantValue()).(float64),
-			}
-		default:
-			panic("not support / : " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
-		}
-	case "//":
 		t := lhs.GetDataType()
 		if rhs.GetDataType().Kind.Kind > t.Kind.Kind {
 			t = rhs.GetDataType()
-		}
-		if t.Kind.Kind > common.Int64 {
-			panic("not support type for integer division: " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
 		}
 		lhsConvertFunc := lambda_chains.GetConvertFunc(lhs.GetDataType(), t)
 		rhsConvertFunc := lambda_chains.GetConvertFunc(rhs.GetDataType(), t)
@@ -346,7 +308,7 @@ func MergeBinary(op string, lhs IConstantNode, rhs IConstantNode) IConstantNode 
 			return &ValueNode{
 				Node: Node{
 					NodeType: "ValueNode",
-					DataType: common.BasicTypeMap["uint64"],
+					DataType: common.BasicTypeMap["uin64"],
 					Variadic: false,
 				},
 				Val: lhsConvertFunc(lhs.GetConstantValue()).(uint64) / rhsConvertFunc(rhs.GetConstantValue()).(uint64),
@@ -369,8 +331,26 @@ func MergeBinary(op string, lhs IConstantNode, rhs IConstantNode) IConstantNode 
 				},
 				Val: lhsConvertFunc(lhs.GetConstantValue()).(int64) / rhsConvertFunc(rhs.GetConstantValue()).(int64),
 			}
+		case common.Float32:
+			return &ValueNode{
+				Node: Node{
+					NodeType: "ValueNode",
+					DataType: common.BasicTypeMap["float32"],
+					Variadic: false,
+				},
+				Val: lhsConvertFunc(lhs.GetConstantValue()).(float32) / rhsConvertFunc(rhs.GetConstantValue()).(float32),
+			}
+		case common.Float64:
+			return &ValueNode{
+				Node: Node{
+					NodeType: "ValueNode",
+					DataType: common.BasicTypeMap["float64"],
+					Variadic: false,
+				},
+				Val: lhsConvertFunc(lhs.GetConstantValue()).(float64) / rhsConvertFunc(rhs.GetConstantValue()).(float64),
+			}
 		default:
-			panic("not support // : " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
+			panic("not support / : " + lhs.GetDataType().Type + " " + rhs.GetDataType().Type)
 		}
 	case "%":
 		t := lhs.GetDataType()

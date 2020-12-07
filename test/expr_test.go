@@ -134,8 +134,9 @@ func TestAssign(t *testing.T) {
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
 	expr = "Friends[1].age = 27.0"
-	p = compile(expr)
-	assert.Equal(t, int32(27), p.RunOnMemory(mem))
+	compile(expr).RunOnMemory(mem)
+	expr = "Friends[1].age"
+	assert.Equal(t, int32(27), compile(expr).RunOnMemory(mem))
 
 	expr = "Friends[1].age == 27"
 	p = compile(expr)
@@ -169,6 +170,11 @@ func TestAssign(t *testing.T) {
 	expr = "Tom.age == 8"
 	assert.Equal(t, true, compile(expr).RunOnMemory(mem))
 	expr = "Jerry.age == 8"
+	assert.Equal(t, true, compile(expr).RunOnMemory(mem))
+
+	expr = "Tom.name += 'my'"
+	compile(expr).RunOnMemory(mem)
+	expr = "Tom.name == 'Tommy'"
 	assert.Equal(t, true, compile(expr).RunOnMemory(mem))
 }
 
@@ -393,14 +399,12 @@ func TestFunction(t *testing.T) {
 func TestFunction2(t *testing.T) {
 	setup()
 	var expr string
-	var p *program.SingleLineProgram
-
 	// base64
 	expr = "testString = EncodeBase64(bytes('abcd1234-~1'))"
 	compile(expr).RunOnMemory(mem)
-	expr = "testString2 = DecodeBase64(testString)"
-	p = compile(expr)
-	assert.Equal(t, "abcd1234-~1", p.RunOnMemory(mem))
+	expr = "testString2 = testString.DecodeBase64()"
+	compile(expr).RunOnMemory(mem)
+	assert.Equal(t, "abcd1234-~1", compile("testString2").RunOnMemory(mem))
 }
 
 func TestSlice(t *testing.T) {
