@@ -2,10 +2,10 @@ package test
 
 import (
 	"fmt"
-	"github.com/lw396285v/goscript"
-	"github.com/lw396285v/goscript/ast"
-	"github.com/lw396285v/goscript/common"
-	"github.com/lw396285v/goscript/program"
+	"github.com/lwpyr/goscript"
+	"github.com/lwpyr/goscript/ast"
+	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/program"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

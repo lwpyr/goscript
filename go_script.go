@@ -2,14 +2,14 @@ package go_script
 
 import (
 	"fmt"
-	"github.com/lw396285v/goscript/ast"
-	"github.com/lw396285v/goscript/common"
-	"github.com/lw396285v/goscript/functions/libbase64"
-	"github.com/lw396285v/goscript/functions/libcommon"
-	"github.com/lw396285v/goscript/functions/libdatetime"
-	"github.com/lw396285v/goscript/functions/libjson"
-	"github.com/lw396285v/goscript/functions/libstring"
-	"github.com/lw396285v/goscript/program"
+	"github.com/lwpyr/goscript/ast"
+	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/functions/libbase64"
+	"github.com/lwpyr/goscript/functions/libcommon"
+	"github.com/lwpyr/goscript/functions/libdatetime"
+	"github.com/lwpyr/goscript/functions/libjson"
+	"github.com/lwpyr/goscript/functions/libstring"
+	"github.com/lwpyr/goscript/program"
 )
 
 func CompileSingleLineProgram(expr string, c *ast.Compiler, s *common.Scope) (p *program.SingleLineProgram, err error) {

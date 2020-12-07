@@ -2,7 +2,7 @@ package libjson
 
 import (
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lw396285v/goscript/common"
+	"github.com/lwpyr/goscript/common"
 	"strconv"
 	"unicode"
 )

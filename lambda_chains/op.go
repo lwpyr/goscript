@@ -1,7 +1,7 @@
 package lambda_chains
 
 import (
-	"github.com/lw396285v/goscript/common"
+	"github.com/lwpyr/goscript/common"
 	"math"
 	"unsafe"
 )

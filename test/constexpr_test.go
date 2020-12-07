@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/lw396285v/goscript"
-	"github.com/lw396285v/goscript/ast"
+	"github.com/lwpyr/goscript"
+	"github.com/lwpyr/goscript/ast"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

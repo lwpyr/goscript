@@ -2,7 +2,7 @@ package libbase64
 
 import (
 	"encoding/base64"
-	"github.com/lw396285v/goscript/common"
+	"github.com/lwpyr/goscript/common"
 )
 
 func EncodeBase64(m *common.Memory, stk *common.Stack) {

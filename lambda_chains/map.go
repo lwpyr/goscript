@@ -1,8 +1,8 @@
 package lambda_chains
 
 import (
-	"github.com/lw396285v/goscript/common"
-	"github.com/lw396285v/goscript/hack"
+	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/hack"
 	"unsafe"
 )
 

@@ -1,4 +1,4 @@
-module github.com/lw396285v/goscript
+module github.com/lwpyr/goscript
 
 go 1.14
 

@@ -2,7 +2,7 @@ package program
 
 import (
 	"fmt"
-	"github.com/lw396285v/goscript/common"
+	"github.com/lwpyr/goscript/common"
 	"runtime/debug"
 )
 

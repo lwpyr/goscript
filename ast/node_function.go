@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"github.com/lw396285v/goscript/common"
-	"github.com/lw396285v/goscript/lambda_chains"
+	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/lambda_chains"
 )
 
 type FunctionDefNode struct {

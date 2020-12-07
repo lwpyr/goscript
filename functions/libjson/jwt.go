@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lw396285v/goscript/common"
+	"github.com/lwpyr/goscript/common"
 	"io/ioutil"
 	"net/http"
 )

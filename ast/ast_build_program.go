@@ -1,8 +1,8 @@
 package ast
 
 import (
-	"github.com/lw396285v/goscript/common"
-	"github.com/lw396285v/goscript/parser"
+	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/parser"
 	"strconv"
 )
 

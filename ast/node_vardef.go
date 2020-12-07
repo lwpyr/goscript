@@ -1,6 +1,6 @@
 package ast
 
-import "github.com/lw396285v/goscript/common"
+import "github.com/lwpyr/goscript/common"
 
 type GlobalNode struct {
 	Node
