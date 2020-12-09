@@ -103,7 +103,7 @@ statement
 
 functiondef
     : FUNCTION NAME '(' inparam (',' inparam)*  ')' returntypename?  closure # FunctionDef
-    | FUNCTION NAME '(' ')' returntypename?  block # FunctionDef
+    | FUNCTION NAME '(' ')' returntypename?  closure # FunctionDef
     | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
     | FUNCTION NAME '(' ')' '('returntypename (',' returntypename) *')'  closure # FunctionDef
     | FUNCTION NAME '(' inparam (',' inparam)*  ')' outparam?  closure # FunctionDef

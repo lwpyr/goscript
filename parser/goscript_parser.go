@@ -137,7 +137,7 @@ var parserATN = []uint16{
 	2, 2, 2, 98, 99, 5, 10, 6, 2, 99, 214, 3, 2, 2, 2, 100, 101, 7, 46, 2,
 	2, 101, 102, 7, 76, 2, 2, 102, 103, 7, 4, 2, 2, 103, 105, 7, 6, 2, 2, 104,
 	106, 5, 18, 10, 2, 105, 104, 3, 2, 2, 2, 105, 106, 3, 2, 2, 2, 106, 107,
-	3, 2, 2, 2, 107, 214, 5, 36, 19, 2, 108, 109, 7, 46, 2, 2, 109, 110, 7,
+	3, 2, 2, 2, 107, 214, 5, 10, 6, 2, 108, 109, 7, 46, 2, 2, 109, 110, 7,
 	76, 2, 2, 110, 111, 7, 4, 2, 2, 111, 116, 5, 12, 7, 2, 112, 113, 7, 5,
 	2, 2, 113, 115, 5, 12, 7, 2, 114, 112, 3, 2, 2, 2, 115, 118, 3, 2, 2, 2,
 	116, 114, 3, 2, 2, 2, 116, 117, 3, 2, 2, 2, 117, 119, 3, 2, 2, 2, 118,
@@ -1144,16 +1144,6 @@ func (s *FunctionDefContext) Returntypename(i int) IReturntypenameContext {
 	return t.(IReturntypenameContext)
 }
 
-func (s *FunctionDefContext) Block() IBlockContext {
-	var t = s.GetTypedRuleContext(reflect.TypeOf((*IBlockContext)(nil)).Elem(), 0)
-
-	if t == nil {
-		return nil
-	}
-
-	return t.(IBlockContext)
-}
-
 func (s *FunctionDefContext) AllOutparam() []IOutparamContext {
 	var ts = s.GetTypedRuleContexts(reflect.TypeOf((*IOutparamContext)(nil)).Elem())
 	var tst = make([]IOutparamContext, len(ts))
@@ -1312,7 +1302,7 @@ func (p *goscriptParser) Functiondef() (localctx IFunctiondefContext) {
 		}
 		{
 			p.SetState(105)
-			p.Block()
+			p.Closure()
 		}
 
 	case 3:
