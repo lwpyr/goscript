@@ -3,6 +3,20 @@ Goscript is completely written in Golang. Goscript's purpose is to build a compl
 
 ## NOTICE: Goscript is in a very early stage, there are still many thing to be done and many bugs to be fixed.
 
+### TODO LIST
+
+- [x] Type System: Basic value type and basic reference type(Message, Map, Slice)
+- [x] Json marshal and unmarshal of typed data
+- [x] Basic Ops
+- [x] Function Call
+- [x] Control statement: if, switch, for loop
+- [x] Function Definition
+- [x] Lambda function and function type
+- [ ] Golang Channel type
+- [ ] Golang Struct type
+- [ ] Support using context.Context to control timeout
+- [ ] Unit test
+
 ### Design principle
 1. Goscript is a simple and type-strict with implicit type-conversion script language with Golang-similar grammar for Golang.
 
