@@ -12,7 +12,6 @@ type Compiler struct {
 	stack        []common.Instruction
 	TypeRegistry *common.TypeRegistry
 	Scope        *common.Scope
-	FunctionLib  map[string]*common.FunctionMeta
 }
 
 func (c *Compiler) AddEnum(name string, e map[string]int32) {
@@ -37,6 +36,10 @@ func (c *Compiler) FindMapType(key, value string) *common.DataType {
 
 func (c *Compiler) AddType(name string, dType *common.DataType) {
 	c.TypeRegistry.AddType(name, dType)
+}
+
+func (c *Compiler) FindFuncType(meta *common.FunctionMeta) *common.DataType {
+	return c.TypeRegistry.FindFuncType(meta)
 }
 
 func (c *Compiler) FindType(name string) *common.DataType {
@@ -69,11 +72,12 @@ func (c *Compiler) Include(libName string) {
 	if lib == nil {
 		panic("Lib name not recognized, skipped")
 	}
-	if c.FunctionLib == nil {
-		c.FunctionLib = map[string]*common.FunctionMeta{}
-	}
 	for name, f := range lib.Init(c.TypeRegistry) {
-		c.FunctionLib[name] = f
+		c.Scope.AddConstant(name, &common.Constant{
+			Symbol: name,
+			Type:   f.Type,
+			Data:   f,
+		})
 	}
 }
 
@@ -90,7 +94,7 @@ func (c *Compiler) BuildSingleLineAST(expr string) (root ASTNode, err error) {
 	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
 
 	d := parser.NewgoscriptParser(stream)
-	antlr.ParseTreeWalkerDefault.Walk(l, d.Line())
+	antlr.ParseTreeWalkerDefault.Walk(l, d.KeepStack())
 	return l.NodeTop(), nil
 }
 

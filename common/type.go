@@ -14,6 +14,8 @@ type DataType struct {
 	ItemType    *DataType // for sequence item type
 	KeyType     *DataType // map key
 	ValueType   *DataType // map val
+	Method      map[string]*FunctionMeta
+	LambdaMeta  *FunctionMeta // for closure
 	Unmarshal   func(iterator *jsoniter.Iterator) interface{}
 	Constructor Constructor
 }
@@ -30,7 +32,8 @@ func NewDataTypeBuilder(name string) *DataTypeBuilder {
 	}
 	dtb := &DataTypeBuilder{
 		T: &DataType{
-			Type: name,
+			Type:   name,
+			Method: map[string]*FunctionMeta{},
 		},
 	}
 	return dtb
@@ -106,6 +109,11 @@ func (d *DataType) CanConvertTo(b *DataType) bool {
 		return d.Kind.Kind == Bytes || d.Kind.Kind == String
 	case Nil, UInt8: // now we don't open the uint8 type
 		return false
+	case Closure:
+		if d.Kind.Kind == Closure {
+			b.LambdaMeta = d.LambdaMeta
+		}
+		return true
 	default:
 		return true
 	}
@@ -270,6 +278,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadInt32()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[UInt8],
 	},
 	"int32": {
@@ -278,6 +287,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadInt32()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Int32],
 	},
 	"int64": {
@@ -286,6 +296,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadInt64()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Int64],
 	},
 	"uint32": {
@@ -294,6 +305,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadUint32()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[UInt32],
 	},
 	"uint64": {
@@ -302,6 +314,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadUint32()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[UInt64],
 	},
 	"float32": {
@@ -310,6 +323,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadFloat32()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Float32],
 	},
 	"float64": {
@@ -318,6 +332,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadFloat64()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Float64],
 	},
 	"string": {
@@ -326,6 +341,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadString()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[String],
 	},
 	"bytes": {
@@ -334,6 +350,7 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return []byte(iter.ReadString())
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Bytes],
 	},
 	"bool": {
@@ -342,24 +359,28 @@ var BasicTypeMap = map[string]*DataType{
 		Unmarshal: func(iter *jsoniter.Iterator) interface{} {
 			return iter.ReadBool()
 		},
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Bool],
 	},
 	"nil": {
 		Type: "nil",
 		Kind: KindMap[Nil],
 	},
+	"lambda": {
+		Type:   "lambda",
+		Method: map[string]*FunctionMeta{},
+		Kind:   KindMap[Closure],
+	},
 	"reflect": { // only for reflect type
-		Type: "reflect",
-		Kind: KindMap[ReflectType],
+		Type:   "reflect",
+		Method: map[string]*FunctionMeta{},
+		Kind:   KindMap[ReflectType],
 	},
 	"object": { // like Object
 		Type:        "object",
 		Kind:        KindMap[Object],
+		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Object],
-	},
-	"tuple": { // for system use, function return more than one value
-		Type: "tuple",
-		Kind: KindMap[Object],
 	},
 }
 

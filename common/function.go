@@ -1,18 +1,41 @@
 package common
 
 type FunctionMeta struct {
-	Name      string
 	In        []*DataType
 	Out       []*DataType
-	F         Instruction
 	TailArray bool
 	ConstExpr bool // for future optimization
 }
 
-type Func func(v ...*interface{}) []*interface{}
+func (f *FunctionMeta) GenerateTypeName() string {
+	ret := "func("
+	for i, in := range f.In {
+		if i != 0 {
+			ret += ","
+		}
+		ret += in.Type
+	}
+	if f.TailArray {
+		ret += "..."
+	}
+	ret += ")("
+	for i, out := range f.Out {
+		if i != 0 {
+			ret += ","
+		}
+		ret += out.Type
+	}
+	ret += ")"
+	return ret
+}
+
+type Function struct {
+	Type *DataType
+	F    Instruction
+}
 
 type FunctionLib interface {
-	Init(tr *TypeRegistry) map[string]*FunctionMeta
+	Init(tr *TypeRegistry) map[string]*Function
 }
 
 var RegisteredLibs = map[string]FunctionLib{}

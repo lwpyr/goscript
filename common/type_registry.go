@@ -80,6 +80,25 @@ func (t *TypeRegistry) GetREnums(name string) map[int32]string {
 	}
 	return nil
 }
+func (t *TypeRegistry) FindFuncType(meta *FunctionMeta) *DataType {
+	typeName := meta.GenerateTypeName()
+	if _, ok := t.Types[typeName]; !ok {
+		dtype := &DataType{
+			Type:       typeName,
+			Kind:       KindMap[Closure],
+			LambdaMeta: meta,
+		}
+		//dtype.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
+		//	var ret []interface{}
+		//	for iter.ReadArray() {
+		//		ret = append(ret, itemType.Unmarshal(iter))
+		//	}
+		//	return ret
+		//}
+		t.Types[typeName] = dtype
+	}
+	return t.Types[typeName]
+}
 
 func (t *TypeRegistry) FindSliceType(name string) *DataType {
 	if t.FindType(name) == nil {

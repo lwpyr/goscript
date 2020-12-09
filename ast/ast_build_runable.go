@@ -8,109 +8,6 @@ import (
 	"strings"
 )
 
-// EnterVardef is called when production vardef is entered.
-func (s *ASTBuilder) EnterVardef(ctx *parser.VardefContext) {
-	t := s.Compiler.TypeRegistry.FindType(ctx.NAME(1).GetText())
-	if t == nil {
-		panic(common.NewTypeNotFoundErr(ctx.NAME(1).GetText()))
-	}
-	v := &common.Variable{
-		Symbol:      ctx.NAME(0).GetText(),
-		IsParameter: false,
-		Type:        t,
-	}
-	s.Compiler.Scope.AddVariable(v)
-	s.VisitPush(&GlobalNode{
-		Node: Node{
-			Parent: s.VisitTop(),
-		},
-		Assign:   nil,
-		Variable: v,
-	})
-}
-
-func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
-	node := s.VisitPop().(*GlobalNode)
-	if ctx.Expr() != nil {
-		node.Assign = s.NodePop()
-	}
-	s.NodePush(node)
-}
-
-// EnterLocalVariable is called when production LocalVariable is entered.
-func (s *ASTBuilder) EnterLocal(ctx *parser.LocalContext) {
-	if s.Compiler.Scope.Outer == nil {
-		panic(common.NewSymbolErr("you cannot define local variable in the root scope " + ctx.GetText()))
-	}
-	t := s.Compiler.TypeRegistry.FindType(ctx.NAME(1).GetText())
-	if t == nil {
-		panic(common.NewTypeNotFoundErr(ctx.NAME(1).GetText()))
-	}
-	v := &common.Variable{
-		Symbol:      ctx.NAME(0).GetText(),
-		IsParameter: false,
-		Type:        t,
-	}
-	s.Compiler.Scope.AddParameterVariable(v)
-	s.NodePush(&LocalNode{
-		Node: Node{
-			Parent:   s.VisitTop(),
-			DataType: t,
-			Variadic: true,
-		},
-		Variable: v,
-	})
-}
-
-// EnterLocalVariableAssign is called when production LocalVariableAssign is entered.
-func (s *ASTBuilder) EnterLocalAssign(ctx *parser.LocalAssignContext) {
-	if s.Compiler.Scope.Outer == nil {
-		panic(common.NewSymbolErr("you cannot define local variable in the root scope " + ctx.GetText()))
-	}
-	t := s.Compiler.TypeRegistry.FindType(ctx.NAME(1).GetText())
-	if t == nil {
-		panic(common.NewTypeNotFoundErr(ctx.NAME(1).GetText()))
-	}
-	v := &common.Variable{
-		Symbol:      ctx.NAME(0).GetText(),
-		IsParameter: true,
-		Type:        t,
-	}
-	s.Compiler.Scope.AddParameterVariable(v)
-	cur := &LocalNode{
-		Node: Node{
-			Parent:   s.VisitTop(),
-			Variadic: true,
-			DataType: v.Type,
-		},
-		Variable: v,
-	}
-	cur.Assign = &BinaryNode{
-		Node: Node{
-			Parent:   cur,
-			Variadic: true,
-		},
-		Op: "=",
-		Lhs: &VarNode{
-			Node: Node{
-				Variadic: true,
-				DataType: v.Type,
-			},
-			Variable: v,
-		},
-	}
-	s.VisitPush(cur)
-}
-
-// ExitLocalAssign is called when production LocalVariableAssign is exited.
-func (s *ASTBuilder) ExitLocalAssign(ctx *parser.LocalAssignContext) {
-	node := s.VisitPop().(*LocalNode)
-	if ctx.Expr() != nil {
-		node.Assign.Rhs = s.NodePop()
-	}
-	s.NodePush(node)
-}
-
 // EnterStartFunctionAssign is called when production StartFunctionAssign is entered.
 func (s *ASTBuilder) EnterFunctionAssign(_ *parser.FunctionAssignContext) {
 	cur := &FunctionAssignNode{
@@ -128,12 +25,12 @@ func (s *ASTBuilder) ExitFunctionAssign(ctx *parser.FunctionAssignContext) {
 	node.Function = s.NodePop().(IFunctionNode)
 	node.Lhs = []ASTNode{}
 	num := len(ctx.AllLhs())
-	if num > len(node.Function.(*FunctionNode).Meta.Out) {
+	if num > len(node.Function.(*FunctionCallNode).Meta.Out) {
 		panic(common.NewMismatchErr("number of placeholders is larger than the function output " + ctx.GetText()))
 	}
 	for i := 0; i < num; i++ {
 		temp := s.NodePop()
-		if temp.GetDataType().Type != node.Function.(*FunctionNode).Meta.Out[num-1-i].Type {
+		if temp.GetDataType().Type != node.Function.(*FunctionCallNode).Meta.Out[num-1-i].Type {
 			panic(common.NewMismatchErr("cannot assign different type to an variable " + ctx.GetText()))
 		}
 		node.Lhs = append(node.Lhs, temp)
@@ -259,10 +156,11 @@ func (s *ASTBuilder) ExitSelect(ctx *parser.SelectContext) {
 func (s *ASTBuilder) EnterFilter(_ *parser.FilterContext) {
 	scope := common.NewScope(s.Compiler.Scope)
 	scope.AddParameterVariable(&common.Variable{
-		Offset:      0,
-		Symbol:      "@",
-		IsParameter: true,
-		Type:        s.NodeTop().GetDataType().ItemType,
+		Offset:       0,
+		Symbol:       "@",
+		VariableType: common.Local,
+		Scope:        s.Compiler.Scope,
+		DataType:     s.NodeTop().GetDataType().ItemType,
 	})
 	s.Compiler.Scope = scope
 }
@@ -337,14 +235,14 @@ func (s *ASTBuilder) EnterVariableName(ctx *parser.VariableNameContext) {
 			Node: Node{
 				Parent:   s.VisitTop(),
 				Variadic: true,
-				DataType: s.Compiler.Scope.GetVariable("@").Type,
+				DataType: s.Compiler.Scope.GetVariable("@").DataType,
 			},
 			Variable: s.Compiler.Scope.GetVariable("@"),
 		}
 		s.VisitPush(cur)
 	} else {
-		enum := s.Compiler.TypeRegistry.GetEnums(ctx.NAME().GetText())
-		// todo: constant check
+		varName := ctx.NAME().GetText()
+		enum := s.Compiler.TypeRegistry.GetEnums(varName)
 		if enum != nil {
 			cur := &ValueNode{
 				Node: Node{
@@ -356,28 +254,28 @@ func (s *ASTBuilder) EnterVariableName(ctx *parser.VariableNameContext) {
 			}
 			s.VisitPush(cur)
 		} else if ctx.NAME() != nil {
-			if constVal := s.Compiler.Scope.GetConstant(ctx.NAME().GetText()); constVal != nil {
+			if constVal := s.Compiler.Scope.GetConstant(varName); constVal != nil {
 				cur := &ValueNode{
 					Node: Node{
 						Parent:   s.VisitTop(),
-						Variadic: true,
+						Variadic: false,
 						DataType: constVal.Type,
 					},
 					Val: constVal.Data,
 				}
 				s.VisitPush(cur)
-			} else if varVal := s.Compiler.Scope.GetVariable(ctx.NAME().GetText()); varVal != nil {
+			} else if varVal := s.Compiler.Scope.GetVariable(varName); varVal != nil {
 				cur := &VarNode{
 					Node: Node{
 						Parent:   s.VisitTop(),
 						Variadic: true,
-						DataType: varVal.Type,
+						DataType: varVal.DataType,
 					},
-					Variable: s.Compiler.Scope.GetVariable(ctx.NAME().GetText()),
+					Variable: varVal,
 				}
 				s.VisitPush(cur)
 			} else {
-				panic(common.NewSymbolErr("unknown symbol " + ctx.NAME().GetText()))
+				panic(common.NewSymbolErr("unknown symbol " + varName))
 			}
 		}
 	}
@@ -770,7 +668,7 @@ func (s *ASTBuilder) ExitConstantFloat(_ *parser.ConstantFloatContext) {
 
 // EnterConstantBool is called when production ConstantBool is entered.
 func (s *ASTBuilder) EnterConstantBool(ctx *parser.ConstantBoolContext) {
-	b, _ := strconv.ParseBool(ctx.BOOL().GetText())
+	b, _ := strconv.ParseBool(ctx.BOOLLITERAL().GetText())
 	cur := &ValueNode{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -809,7 +707,7 @@ func (s *ASTBuilder) ExitConstantNil(_ *parser.ConstantNilContext) {
 
 // EnterConstantString is called when production ConstantString is entered.
 func (s *ASTBuilder) EnterConstantString(ctx *parser.ConstantStringContext) {
-	str := ctx.STRING().GetText()[1 : len(ctx.STRING().GetText())-1]
+	str := ctx.STRINGLITERAL().GetText()[1 : len(ctx.STRINGLITERAL().GetText())-1]
 	str = strings.Replace(str, "\\'", "'", -1)
 	cur := &ValueNode{
 		Node: Node{
@@ -826,69 +724,6 @@ func (s *ASTBuilder) EnterConstantString(ctx *parser.ConstantStringContext) {
 // ExitConstantString is called when production ConstantString is exited.
 func (s *ASTBuilder) ExitConstantString(_ *parser.ConstantStringContext) {
 	s.NodePush(s.VisitPop())
-}
-
-// EnterFunctions is called when production functions is entered.
-func (s *ASTBuilder) EnterFunctions(ctx *parser.FunctionsContext) {
-	cur := &FunctionNode{
-		Node: Node{
-			Parent:   s.VisitTop(),
-			Variadic: true,
-			DataType: common.BasicTypeMap["tuple"],
-			NodeType: "FunctionNode",
-		},
-	}
-	s.VisitPush(cur)
-}
-
-// ExitFunctions is called when production functions is exited.
-func (s *ASTBuilder) ExitFunctions(ctx *parser.FunctionsContext) {
-	functionName := ctx.NAME().GetText()
-	cur := s.VisitPop().(*FunctionNode)
-	if newNode := s.BuiltinCheck(functionName, cur, ctx); newNode != nil {
-		s.NodePush(newNode)
-	} else {
-		// lib
-		meta := s.Compiler.FunctionLib[ctx.NAME().GetText()]
-		if meta == nil {
-			panic(common.NewSymbolErr("undefined function " + functionName))
-		}
-		cur.Meta = meta
-		if len(meta.Out) == 1 {
-			cur.DataType = meta.Out[0]
-		}
-		provided := len(ctx.AllExpr())
-		var object ASTNode
-		if ctx.Variable() != nil {
-			object = s.NodePop()
-			provided++
-		}
-		if provided > len(meta.In) && meta.TailArray == false || provided < len(meta.In) {
-			panic(common.NewMismatchErr("more parameter given than needed " + functionName))
-		}
-		if object != nil {
-			if object.GetDataType().Type != meta.In[0].Type {
-				panic(common.NewTypeErr(object.GetDataType().Type + " type does not has the method " + functionName))
-			}
-			cur.Params = append(cur.Params, object)
-		}
-		for i := 0; i < len(ctx.AllExpr()); i++ {
-			temp := s.NodePop()
-			cur.Params = append(cur.Params, temp)
-			var requireType *common.DataType
-			if provided-1-i < len(meta.In) {
-				requireType = meta.In[provided-1-i]
-			} else {
-				requireType = meta.In[len(meta.In)-1]
-			}
-			if i < len(meta.In) {
-				if requireType.Kind.Kind != common.Object && !temp.GetDataType().CanConvertTo(requireType) {
-					panic(common.NewTypeErr("function parameter type cannot be implicitly casted " + functionName))
-				}
-			}
-		}
-		s.NodePush(cur)
-	}
 }
 
 // EnterInitSlice is called when production InitSlice is entered.
@@ -1031,89 +866,12 @@ func (s *ASTBuilder) ExitInitializationListBegin(_ *parser.InitializationListBeg
 	s.NodePush(cur)
 }
 
-func (s *ASTBuilder) BuiltinCheck(builtinName string, cur *FunctionNode, ctx *parser.FunctionsContext) ASTNode {
-	var params []ASTNode
-	providedParamNum := len(ctx.AllExpr())
-	if ctx.Variable() != nil {
-		providedParamNum++
-	}
-	switch builtinName {
-	case "pushBack", "pushFront", "delete", "enumString", "len", "typeof", "uint32", "uint64", "int32", "int64", "float32", "float64", "string", "bytes", "bool", "uint8":
-		var dType *common.DataType
-		switch builtinName {
-		case "uint32", "uint64", "int32", "int64", "float32", "float64", "string", "bytes", "bool", "uint8":
-			if providedParamNum != 1 {
-				panic(common.NewMismatchErr("wrong arity for type conversion " + ctx.GetText()))
-			}
-			data := s.NodePop()
-			params = []ASTNode{data}
-			dType = common.BasicTypeMap[builtinName]
-		case "pushBack", "pushFront", "delete":
-			if providedParamNum != 2 {
-				panic(common.NewMismatchErr("wrong arity for " + builtinName))
-			}
-			val := s.NodePop()
-			data := s.NodePop()
-			params = []ASTNode{val, data}
-			dType = nil
-		case "len":
-			if providedParamNum != 1 {
-				panic(common.NewMismatchErr("wrong arity for len " + ctx.GetText()))
-			}
-			params = []ASTNode{s.NodePop()}
-			dType = common.BasicTypeMap["int64"]
-		case "typeof":
-			if len(ctx.AllExpr()) != 1 {
-				panic(common.NewMismatchErr("wrong arity for typeof " + ctx.GetText()))
-			}
-			dType = s.NodePop().GetDataType()
-			return &ValueNode{
-				Node: Node{
-					Parent:   cur.Parent,
-					NodeType: "ValueNode",
-					DataType: common.BasicTypeMap["reflect"],
-					Variadic: false,
-				},
-				Val: dType,
-			}
-		case "enumString":
-			if providedParamNum != 1 {
-				panic(common.NewMismatchErr("wrong arity for enum " + ctx.GetText()))
-			}
-			params = []ASTNode{s.NodePop()}
-			val := params[0]
-			if val.GetDataType().Kind.Kind != common.Int32 || val.GetDataType().Type == "int32" {
-				panic(common.NewTypeErr("enum can only be applied on an enum value " + ctx.GetText()))
-			}
-			dType = common.BasicTypeMap["string"]
-		}
-		return &BuiltinFunctionNode{
-			Node: Node{
-				Parent:   cur.Parent,
-				NodeType: "BuiltinFunctionNode",
-				DataType: dType,
-				Lhs:      false,
-				Variadic: true,
-			},
-			Params:      params,
-			BuiltinName: builtinName,
-		}
-	default:
-		return nil
-	}
-}
-
 // EnterConstruct is called when production Construct is entered.
 func (s *ASTBuilder) EnterConstructor(ctx *parser.ConstructorContext) {
-	dt := s.Compiler.FindType(ctx.NAME().GetText())
-	if dt == nil {
-		panic(common.NewTypeNotFoundErr(ctx.GetText()))
-	}
 	cur := &ConstructorNode{
 		Node: Node{
 			Parent:   s.VisitTop(),
 			Variadic: false,
-			DataType: dt,
 			NodeType: "ValueNode",
 		},
 	}
@@ -1127,5 +885,6 @@ func (s *ASTBuilder) ExitConstructor(ctx *parser.ConstructorContext) {
 	for i := 0; i < num; i++ {
 		cur.Params = append(cur.Params, s.NodePop())
 	}
+	cur.DataType = s.NodePop().GetDataType()
 	s.NodePush(cur)
 }

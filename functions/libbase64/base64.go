@@ -6,7 +6,7 @@ import (
 )
 
 func EncodeBase64(m *common.Memory, stk *common.Stack) {
-	stk.ReturnVal(base64.StdEncoding.EncodeToString(stk.Top().([]byte)))
+	stk.ReturnValue(base64.StdEncoding.EncodeToString(stk.Top().([]byte)))
 }
 
 func DecodeBase64(m *common.Memory, stk *common.Stack) {
@@ -16,5 +16,5 @@ func DecodeBase64(m *common.Memory, stk *common.Stack) {
 	if err != nil {
 		panic(err)
 	}
-	stk.ReturnVal(decoded)
+	stk.ReturnValue(decoded)
 }

@@ -13,15 +13,15 @@ type ASTBuilder struct {
 	VisitStack    []ASTNode
 	InitTypeStack []*common.DataType
 
-	InFunction bool
-	LoopDepth  int
+	Closure   []*common.FunctionMeta
+	LoopDepth int
 
 	Compiler *Compiler
 }
 
 // EnterEveryRule is called when any rule is entered.
 //func (s *ASTBuilder) EnterEveryRule(ctx antlr.ParserRuleContext) {
-//	fmt.Println(ctx.GetText())
+//	fmt.Println(ctx.GetText(), ctx.GetRuleIndex())
 //}
 
 func NewASTBuilder() *ASTBuilder {

@@ -45,8 +45,17 @@ func (s *Stack) ReturnN(n int) {
 	s.Pc = -1
 }
 
-func (s *Stack) ReturnVal(val interface{}) {
+func (s *Stack) ReturnValue(val interface{}) {
 	s.Data[s.Bp-1] = val
+	s.Pc = -1
+}
+
+func (s *Stack) ReturnValues(values ...interface{}) {
+	num := len(values)
+	for _, val := range values {
+		s.Data[s.Bp-num] = val
+		num--
+	}
 	s.Pc = -1
 }
 
@@ -60,9 +69,6 @@ func (s *Stack) Get(v *Variable) interface{} {
 }
 
 func (s *Stack) MustGet(v *Variable) *interface{} {
-	if s.Data[s.Bp+v.Offset] == nil {
-		s.Data[s.Bp+v.Offset] = v.Type.Constructor()
-	}
 	return &s.Data[s.Bp+v.Offset]
 }
 

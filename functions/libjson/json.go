@@ -12,7 +12,7 @@ func JsonMarshal(m *common.Memory, stk *common.Stack) {
 	if err != nil {
 		panic(err)
 	}
-	stk.ReturnVal(bytes)
+	stk.ReturnValue(bytes)
 }
 
 func JsonUnmarshal(m *common.Memory, stk *common.Stack) {
@@ -22,7 +22,7 @@ func JsonUnmarshal(m *common.Memory, stk *common.Stack) {
 
 	iter := jsoniter.ConfigFastest.BorrowIterator(bytes)
 	defer jsoniter.ConfigFastest.ReturnIterator(iter)
-	stk.ReturnVal(T.Unmarshal(iter))
+	stk.ReturnValue(T.Unmarshal(iter))
 }
 
 func JsonObject(m *common.Memory, stk *common.Stack) {
@@ -32,7 +32,7 @@ func JsonObject(m *common.Memory, stk *common.Stack) {
 	if err != nil {
 		panic(err)
 	}
-	stk.ReturnVal(val)
+	stk.ReturnValue(val)
 }
 
 func JsonPath(m *common.Memory, stk *common.Stack) {
@@ -47,7 +47,7 @@ func JsonPath(m *common.Memory, stk *common.Stack) {
 			jsonObject = jsonObject.([]interface{})[token.(int64)]
 		}
 	}
-	stk.ReturnVal(jsonObject)
+	stk.ReturnValue(jsonObject)
 }
 
 type simpleParser struct {

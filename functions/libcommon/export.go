@@ -12,78 +12,77 @@ var Lib *commonLib
 
 type commonLib struct{}
 
-func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMeta {
-	return map[string]*common.FunctionMeta{
+func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	return map[string]*common.Function{
 		"itoa": {
-			Name: "itoa",
-			In: []*common.DataType{
-				common.BasicTypeMap["int64"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			F:         ItoA,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["int64"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+			}),
+			F: ItoA,
 		},
 		"atoi": {
-			Name: "atoi",
-			In: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["int64"],
-			},
-			F:         AtoI,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["int64"],
+				},
+			}),
+			F: AtoI,
 		},
 		"ftoa": {
-			Name: "ftoa",
-			In: []*common.DataType{
-				common.BasicTypeMap["float64"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			F:         FtoA,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["float64"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+			}),
+			F: FtoA,
 		},
 		"atof": {
-			Name: "atof",
-			In: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["float64"],
-			},
-			F:         AtoF,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["float64"],
+				},
+			}),
+			F: AtoF,
 		},
 		"random": {
-			Name: "random",
-			In:   []*common.DataType{},
-			Out: []*common.DataType{
-				common.BasicTypeMap["float64"],
-			},
-			F:         Random,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{},
+				Out: []*common.DataType{
+					common.BasicTypeMap["float64"],
+				},
+			}),
+			F: Random,
 		},
 		"print": {
-			Name: "print",
-			In: []*common.DataType{
-				common.BasicTypeMap["object"],
-			},
-			F:         Print,
-			ConstExpr: false,
-			TailArray: true,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["object"],
+				},
+				TailArray: true,
+			}),
+			F: Print,
 		},
 		"sleep": {
-			Name: "sleep",
-			In: []*common.DataType{
-				common.BasicTypeMap["int64"],
-			},
-			F:         Sleep,
-			ConstExpr: false,
-			TailArray: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["int64"],
+				},
+			}),
+			F: Sleep,
 		},
 	}
 }

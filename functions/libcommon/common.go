@@ -11,7 +11,7 @@ import (
 func PlaceHolder(m *common.Memory, stk *common.Stack) {}
 
 func ItoA(_ *common.Memory, stk *common.Stack) {
-	stk.ReturnVal(strconv.FormatInt((stk.Top()).(int64), 10))
+	stk.ReturnValue(strconv.FormatInt((stk.Top()).(int64), 10))
 }
 
 func AtoI(_ *common.Memory, stk *common.Stack) {
@@ -19,11 +19,11 @@ func AtoI(_ *common.Memory, stk *common.Stack) {
 	if err != nil {
 		panic(err)
 	}
-	stk.ReturnVal(ret)
+	stk.ReturnValue(ret)
 }
 
 func FtoA(_ *common.Memory, stk *common.Stack) {
-	stk.ReturnVal(fmt.Sprintf("%f", (stk.Top()).(float64)))
+	stk.ReturnValue(fmt.Sprintf("%f", (stk.Top()).(float64)))
 }
 
 func AtoF(_ *common.Memory, stk *common.Stack) {
@@ -31,11 +31,11 @@ func AtoF(_ *common.Memory, stk *common.Stack) {
 	if err != nil {
 		panic(err)
 	}
-	stk.ReturnVal(ret)
+	stk.ReturnValue(ret)
 }
 
 func Random(_ *common.Memory, stk *common.Stack) {
-	stk.ReturnVal(rand.Float64())
+	stk.ReturnValue(rand.Float64())
 }
 
 func Print(_ *common.Memory, stk *common.Stack) {

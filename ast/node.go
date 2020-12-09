@@ -7,6 +7,7 @@ type ASTNode interface {
 	GetParent() ASTNode
 	GetNodeType() string
 	GetDataType() *common.DataType
+	SetDataType(*common.DataType)
 	IsVariadic() bool
 	Compile(c *Compiler)
 	GetInstructions() []common.Instruction
@@ -44,6 +45,10 @@ func (n *Node) GetNodeType() string {
 
 func (n *Node) GetDataType() *common.DataType {
 	return n.DataType
+}
+
+func (n *Node) SetDataType(dt *common.DataType) {
+	n.DataType = dt
 }
 
 func (n *Node) SetLhs() {

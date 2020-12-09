@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/hack"
 	"github.com/lwpyr/goscript/lambda_chains"
 )
 
@@ -204,23 +205,36 @@ func (v *VarNode) Compile(c *Compiler) {
 	if v.Variable != nil {
 		variable := v.Variable
 		if v.Lhs {
-			if variable.IsParameter {
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(stk.MustGet(variable))
-				})
-			} else {
+			switch variable.VariableType {
+			case common.Global:
 				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 					stk.Push(m.MustGet(variable))
 				})
+			case common.Local:
+				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+					stk.Push(nil)
+					stk.Set(0, stk.MustGet(variable))
+				})
+			case common.Captured:
+				captures := variable.Scope.GetVariable("#")
+				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+					stk.Push(hack.SliceIndex(*stk.MustGet(captures), int64(variable.Offset)))
+				})
 			}
 		} else {
-			if variable.IsParameter {
+			switch variable.VariableType {
+			case common.Global:
+				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+					stk.Push(m.Get(variable))
+				})
+			case common.Local:
 				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 					stk.Push(stk.Get(variable))
 				})
-			} else {
+			case common.Captured:
+				captures := variable.Scope.GetVariable("#")
 				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(m.Get(variable))
+					stk.Push(*hack.SliceIndex(*stk.MustGet(captures), int64(variable.Offset)))
 				})
 			}
 		}

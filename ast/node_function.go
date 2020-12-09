@@ -5,19 +5,34 @@ import (
 	"github.com/lwpyr/goscript/lambda_chains"
 )
 
-type FunctionDefNode struct {
+type LambdaDefNode struct {
 	Node
 	Block ASTNode
-	Meta  *common.FunctionMeta
+	Scope *common.Scope
+}
+
+type FunctionDefNode struct {
+	Node
+	FuncName string
+	Block    ASTNode
+	Function *common.Function
 }
 
 type ParamNode struct {
 	Node
-	Symbol   string
-	TypeName string
+	Symbol string
 }
 
 func (p *ParamNode) Compile(_ *Compiler) {
+	panic("should never reach here, this must be internal error")
+}
+
+type TypeNode struct {
+	Node
+	dType *common.DataType
+}
+
+func (t *TypeNode) Compile(c *Compiler) {
 	panic("should never reach here, this must be internal error")
 }
 
@@ -36,7 +51,7 @@ func (f *FunctionDefNode) Compile(c *Compiler) {
 	blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
 		stk.Pc = -1
 	})
-	f.Meta.F = func(m *common.Memory, stk *common.Stack) {
+	f.Function.F = func(m *common.Memory, stk *common.Stack) {
 		for stk.Pc != -1 {
 			blockInst[stk.Pc](m, stk)
 		}
@@ -48,17 +63,71 @@ type IFunctionNode interface {
 	GetReturnType() []*common.DataType
 }
 
-type FunctionNode struct {
+type FunctionCallNode struct {
 	Node
-	Params []ASTNode
-	Meta   *common.FunctionMeta
+	Function ASTNode
+	Params   []ASTNode
+	Meta     *common.FunctionMeta
+	Lambda   *common.Variable
 }
 
-func (f *FunctionNode) GetReturnType() []*common.DataType {
+func (f *FunctionCallNode) GetReturnType() []*common.DataType {
 	return f.Meta.Out
 }
 
-func (f *FunctionNode) Compile(c *Compiler) {
+func (f *LambdaDefNode) Compile(c *Compiler) {
+	f.Block.Compile(c)
+	capturedVariables := f.Scope.Capture
+	if len(capturedVariables) > 0 {
+		captureInstruction := func(m *common.Memory, stk *common.Stack) {
+			captured := make([]interface{}, 0, len(capturedVariables))
+			for _, v := range capturedVariables {
+				captured = append(captured, stk.Get(v))
+			}
+			stk.Push(captured)
+		}
+		blockInst := f.Block.GetInstructions()
+		blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
+			stk.Pc = -1
+		})
+		rawFunc := func(m *common.Memory, stk *common.Stack) {
+			for stk.Pc != -1 {
+				blockInst[stk.Pc](m, stk)
+			}
+		}
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			captureInstruction(m, stk)
+			captured := stk.Top().([]interface{})
+			stk.Pop()
+			lambda := &common.Function{
+				Type: f.DataType,
+				F: func(m *common.Memory, stk *common.Stack) {
+					stk.Push(captured)
+					rawFunc(m, stk)
+				},
+			}
+			stk.Push(lambda)
+		})
+	} else {
+		blockInst := f.Block.GetInstructions()
+		blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
+			stk.Pc = -1
+		})
+		lambda := &common.Function{
+			Type: f.DataType,
+			F: func(m *common.Memory, stk *common.Stack) {
+				for stk.Pc != -1 {
+					blockInst[stk.Pc](m, stk)
+				}
+			},
+		}
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			stk.Push(lambda)
+		})
+	}
+}
+
+func (f *FunctionCallNode) Compile(c *Compiler) {
 	num := len(f.Params)
 	paramInstructions := make([]common.Instruction, 0, num)
 	for _, param := range f.Params {
@@ -67,7 +136,6 @@ func (f *FunctionNode) Compile(c *Compiler) {
 	for i := 0; i < num; i++ {
 		paramInstructions = append(paramInstructions, c.InstructionPop())
 	}
-	meta := f.Meta
 	paramConvertFunc := make([]lambda_chains.TypeConvertFunc, 0, num)
 	for i := num - 1; i >= 0; i-- {
 		idx := num - i - 1
@@ -80,36 +148,79 @@ func (f *FunctionNode) Compile(c *Compiler) {
 	if lenOut == 0 {
 		lenOut = 1
 	}
-	if f.Meta.TailArray {
-		lenIn := len(f.Meta.In)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			for i := 0; i < lenOut; i++ {
-				stk.Push(nil)
-			}
-			for i := 0; i < lenIn-1; i++ {
-				paramInstructions[i](m, stk)
-				stk.Set(0, paramConvertFunc[i](stk.Top()))
-			}
-			tailArray := make([]interface{}, num-lenIn+1)
-			for i := lenIn - 1; i < num; i++ {
-				paramInstructions[i](m, stk)
-				tailArray[i-lenIn+1] = paramConvertFunc[i](stk.Top())
+	if f.Function.IsVariadic() {
+		f.Function.Compile(c)
+		functionInstruction := c.InstructionPop()
+		if f.Meta.TailArray {
+			lenIn := len(f.Meta.In)
+			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+				for i := 0; i < lenOut; i++ {
+					stk.Push(nil)
+				}
+				for i := 0; i < lenIn-1; i++ {
+					paramInstructions[i](m, stk)
+					stk.Set(0, paramConvertFunc[i](stk.Top()))
+				}
+				tailArray := make([]interface{}, num-lenIn+1)
+				for i := lenIn - 1; i < num; i++ {
+					paramInstructions[i](m, stk)
+					tailArray[i-lenIn+1] = paramConvertFunc[i](stk.Top())
+					stk.Pop()
+				}
+				stk.Push(tailArray)
+				functionInstruction(m, stk)
+				function := stk.Top().(*common.Function)
 				stk.Pop()
-			}
-			stk.Push(tailArray)
-			stk.Call(meta.F, m, stk, lenIn)
-		})
+				stk.Call(function.F, m, stk, lenIn)
+			})
+		} else {
+			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+				for i := 0; i < lenOut; i++ {
+					stk.Push(nil)
+				}
+				for i := 0; i < num; i++ {
+					paramInstructions[i](m, stk)
+					stk.Set(0, paramConvertFunc[i](stk.Top()))
+				}
+				functionInstruction(m, stk)
+				function := stk.Top().(*common.Function)
+				stk.Pop()
+				stk.Call(function.F, m, stk, num)
+			})
+		}
 	} else {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			for i := 0; i < lenOut; i++ {
-				stk.Push(nil)
-			}
-			for i := 0; i < num; i++ {
-				paramInstructions[i](m, stk)
-				stk.Set(0, paramConvertFunc[i](stk.Top()))
-			}
-			stk.Call(meta.F, m, stk, num)
-		})
+		function := f.Function.(IConstantNode).GetConstantValue().(*common.Function)
+		if function.Type.LambdaMeta.TailArray {
+			lenIn := len(f.Meta.In)
+			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+				for i := 0; i < lenOut; i++ {
+					stk.Push(nil)
+				}
+				for i := 0; i < lenIn-1; i++ {
+					paramInstructions[i](m, stk)
+					stk.Set(0, paramConvertFunc[i](stk.Top()))
+				}
+				tailArray := make([]interface{}, num-lenIn+1)
+				for i := lenIn - 1; i < num; i++ {
+					paramInstructions[i](m, stk)
+					tailArray[i-lenIn+1] = paramConvertFunc[i](stk.Top())
+					stk.Pop()
+				}
+				stk.Push(tailArray)
+				stk.Call(function.F, m, stk, lenIn)
+			})
+		} else {
+			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+				for i := 0; i < lenOut; i++ {
+					stk.Push(nil)
+				}
+				for i := 0; i < num; i++ {
+					paramInstructions[i](m, stk)
+					stk.Set(0, paramConvertFunc[i](stk.Top()))
+				}
+				stk.Call(function.F, m, stk, num)
+			})
+		}
 	}
 }
 

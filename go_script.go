@@ -48,17 +48,8 @@ func NewTypeRegistry() *common.TypeRegistry {
 
 func NewVariable(name string, t *common.DataType) *common.Variable {
 	return &common.Variable{
-		Symbol: name,
-		Type:   t,
-	}
-}
-
-func NewParameter(name string, t *common.DataType, offset int) *common.Variable {
-	return &common.Variable{
-		Offset:      offset,
-		Symbol:      name,
-		Type:        t,
-		IsParameter: true,
+		Symbol:   name,
+		DataType: t,
 	}
 }
 

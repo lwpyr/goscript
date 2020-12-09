@@ -8,7 +8,7 @@ type EnumNode struct {
 }
 
 func (t *EnumNode) Compile(c *Compiler) {
-	panic("cannot compile")
+	c.TypeRegistry.AddEnum(t.EnumName, t.Enum)
 }
 
 type TypeAlias struct {

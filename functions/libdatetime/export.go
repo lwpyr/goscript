@@ -12,34 +12,34 @@ var Lib *DateTimeLib
 
 type DateTimeLib struct{}
 
-func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMeta {
-	return map[string]*common.FunctionMeta{
+func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	return map[string]*common.Function{
 		"DateTimeAdd": {
-			Name: "DateTimeAdd",
-			In: []*common.DataType{
-				common.BasicTypeMap["int64"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			F:         DateTimeAdd,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["int64"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+			}),
+			F: DateTimeAdd,
 		},
 		"Now": {
-			Name: "Now",
-			Out: []*common.DataType{
-				common.BasicTypeMap["int64"],
-			},
-			F:         Now,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				Out: []*common.DataType{
+					common.BasicTypeMap["int64"],
+				},
+			}),
+			F: Now,
 		},
 		"NowStr": {
-			Name: "NowStr",
-			Out: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			F:         NowStr,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				Out: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+			}),
+			F: NowStr,
 		},
 	}
 }

@@ -12,29 +12,29 @@ var Lib *Base64Lib
 
 type Base64Lib struct{}
 
-func (b *Base64Lib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMeta {
-	return map[string]*common.FunctionMeta{
+func (b *Base64Lib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	return map[string]*common.Function{
 		"EncodeBase64": {
-			Name: "EncodeBase64",
-			In: []*common.DataType{
-				common.BasicTypeMap["bytes"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			F:         EncodeBase64,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["bytes"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+			}),
+			F: EncodeBase64,
 		},
 		"DecodeBase64": {
-			Name: "DecodeBase64",
-			In: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["bytes"],
-			},
-			F:         DecodeBase64,
-			ConstExpr: false,
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["bytes"],
+				},
+			}),
+			F: DecodeBase64,
 		},
 	}
 }

@@ -1,5 +1,23 @@
 grammar goscript;
 
+// built-in
+PUSHBACK: 'pushBack';
+PUSHFRONT: 'pushFront';
+DELETE: 'delete';
+ENUMSTRING: 'enumString';
+LEN: 'len';
+TYPEOF: 'typeof';
+UINT32: 'uint32';
+UINT64: 'uint64';
+INT32: 'int32';
+INT64: 'int64';
+FLOAT32: 'float32';
+FLOAT64: 'float64';
+STRING: 'string';
+BYTES: 'bytes';
+BOOL: 'bool';
+UINT8: 'uint8';
+
 NEW: 'new';
 
 FOR: 'for';
@@ -21,7 +39,7 @@ FUNCTION: 'func';
 
 TYPEDEF: 'type';
 
-BOOL
+BOOLLITERAL
    : 'true'
    | 'false'
    ;
@@ -63,7 +81,7 @@ INT
 FLOAT
    : ([0-9]+)'.'[0-9]+;
 
-STRING
+STRINGLITERAL
    : '\'' ( ~('\''|'\\') | ('\\' .) )* '\'';
 
 NAME: [a-zA-Z_]+[a-zA-Z0-9_]*;
@@ -71,33 +89,50 @@ NAME: [a-zA-Z_]+[a-zA-Z0-9_]*;
 DOT: '.';
 WHITESPACE: [ \r\n\t]+ -> skip;
 
+// 1
 program
     : statement+;
-
+// 2
 statement
     : functiondef # FuncDef
     | typedef ';' # TypeDef
-    | vardef # GlobalDef
     | enumdef # EnumDef
     | execution # Run
     ;
 
 functiondef
-    : FUNCTION NAME '(' inparam (',' inparam)*  ')' returntypename?  block # FunctionDef
+    : FUNCTION NAME '(' inparam (',' inparam)*  ')' returntypename?  closure # FunctionDef
     | FUNCTION NAME '(' ')' returntypename?  block # FunctionDef
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' block # FunctionDef
-    | FUNCTION NAME '(' ')' '('returntypename (',' returntypename) *')'  block # FunctionDef
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' outparam?  block # FunctionDefWithReturnName
-    | FUNCTION NAME '(' ')' typename?  block # FunctionDefWithReturnName
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' block # FunctionDefWithReturnName
-    | FUNCTION NAME '(' ')' '('outparam (',' outparam) *')'  block # FunctionDefWithReturnName
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
+    | FUNCTION NAME '(' ')' '('returntypename (',' returntypename) *')'  closure # FunctionDef
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' outparam?  closure # FunctionDef
+    | FUNCTION NAME '(' ')' typename?  closure # FunctionDef
+    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' closure # FunctionDef
+    | FUNCTION NAME '(' ')' '('outparam (',' outparam) *')'  closure # FunctionDef
     ;
+
+lambda
+    : FUNCTION  '(' inparam (',' inparam)*  ')' returntypename?  closure # LambdaDef
+    | FUNCTION  '(' ')' returntypename?  closure # LambdaDef
+    | FUNCTION  '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' closure # LambdaDef
+    | FUNCTION  '(' ')' '('returntypename (',' returntypename) *')'  closure # LambdaDef
+    | FUNCTION  '(' inparam (',' inparam)*  ')' outparam?  closure # LambdaDef
+    | FUNCTION  '(' ')' typename?  closure # LambdaDef
+    | FUNCTION  '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' closure # LambdaDef
+    | FUNCTION  '(' ')' '('outparam (',' outparam) *')'  closure # LambdaDef
+    ;
+
+closure
+    : block;
 
 inparam
     : param;
 
 outparam
     : param;
+
+intypename
+    : typename;
 
 returntypename
     : typename;
@@ -112,11 +147,18 @@ typedef
 
 typename
     : NAME # SimpleTypeName
-    | 'map' '<' NAME ',' typename '>' # MapTypeName
+    | basicTypeName # SimpleTypeName
+    | functionTypeName # FunctionType
+    | 'map' '<' (NAME|basicTypeName) ',' typename '>' # MapTypeName
     | 'slice' '<' typename '>' # SliceTypeName
     ;
-    // todo: genericTypeName
-    //| NAME '<'typename (',' typename)*'>' # GenericTypeName;
+
+functionTypeName
+    : FUNCTION  '(' intypename (',' intypename)*  ')' returntypename?
+    | FUNCTION  '(' ')' returntypename?
+    | FUNCTION  '(' intypename (',' intypename)*  ')' '('returntypename (',' returntypename) *')'
+    | FUNCTION  '(' ')' '('returntypename (',' returntypename) *')'
+    ;
 
 enumdef
     : TYPEDEF 'enum' NAME '{' (NAME INT ',')* '}';
@@ -131,7 +173,7 @@ control
     | SWITCH '(' expr ')' '{' (CASE constant ':' block)+ '}' # Switch
     | FOR '(' NAME 'in' collection ')' block # ForInSlice
     | FOR '(' NAME ',' NAME 'in' collection ')' block  # ForInMap
-    | FOR '(' expr ';' expr ';' expr ')' block  # For
+    | FOR '(' line ';' expr ';' restoreStack ')' block  # For
     | BREAK ';' # Break
     | CONTINUE ';' # Continue
     | RETURN ';'# ReturnVoid
@@ -142,9 +184,18 @@ collection
     : expr;
 
 block
-    : '{' (execution|vardef)* '}';
+    : '{' (execution)* '}';
 
 line
+    : restoreStack # RestoreStackSp
+    | vardef # GlobalVarDef
+    | localdef # LocalVarDef
+    ;
+
+restoreStack
+    : keepStack;
+
+keepStack
     : expr # ExprEntry
     | lhs (',' lhs)* op=ASSIGN functions # FunctionAssign
     | lhs (',' lhs)* op=ASSIGN expr (',' expr)* # MultiAssign
@@ -190,8 +241,41 @@ expr
     | constant # Pass
     | variable # Pass
     | functions # Pass
+    | lambda # Pass
+    | builtin # Pass
     | constructor # Construct
-    | localdef # LocalDef
+    ;
+
+basicTypeName
+    : UINT32
+    | UINT64
+    | INT32
+    | INT64
+    | FLOAT32
+    | FLOAT64
+    | STRING
+    | BYTES
+    | BOOL
+    | UINT8
+    ;
+
+builtin
+    : PUSHBACK '(' variable',' expr ')'
+    | PUSHFRONT '(' variable',' expr ')'
+    | DELETE '(' variable',' expr ')'
+    | ENUMSTRING '(' variable ')'
+    | LEN '(' variable ')'
+    | TYPEOF '(' variable ')'
+    | UINT32 '(' expr ')'
+    | UINT64 '(' expr ')'
+    | INT32 '(' expr ')'
+    | INT64 '(' expr ')'
+    | FLOAT32 '(' expr ')'
+    | FLOAT64 '(' expr ')'
+    | STRING '(' expr ')'
+    | BYTES '(' expr ')'
+    | BOOL '(' expr ')'
+    | UINT8 '(' expr ')'
     ;
 
 initializationListBegin
@@ -207,27 +291,29 @@ initializationList
 constant
     : INT # ConstantInt
     | FLOAT # ConstantFloat
-    | BOOL # ConstantBool
+    | BOOLLITERAL # ConstantBool
     | NULL # ConstantNil
-    | STRING # ConstantString
+    | STRINGLITERAL # ConstantString
     ;
 
 functions
-    : NAME '(' expr (',' expr)* ')'
-    | NAME '(' ')'
-    | variable DOT NAME '(' ')'
-    | variable DOT NAME '(' expr (',' expr)* ')'
+    : variable '(' expr (',' expr)* ')' # DirectCall
+    | variable '(' ')' # DirectCall
+//    | variable DOT NAME '(' ')' # DotCall
+//    | variable DOT NAME '(' expr (',' expr)* ')' # DotCall
     ;
 
 constructor
-    : NEW NAME '(' ')'
-    | NEW NAME '('expr (',' expr)*')';
+    : NEW typename '(' ')'
+    | NEW typename '('expr (',' expr)*')'
+    ;
 
 vardef
-    : VAR NAME NAME ';'
-    | VAR NAME NAME '=' expr ';';
+    : VAR NAME typename
+    | VAR NAME typename '=' expr
+    ;
 
 localdef
-    : LOCAL NAME NAME # Local
-    | LOCAL NAME NAME '=' expr # LocalAssign
+    : LOCAL NAME typename
+    | LOCAL NAME typename '=' expr
     ;

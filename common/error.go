@@ -23,7 +23,7 @@ type TypeNotFoundErr struct {
 }
 
 func (t *TypeNotFoundErr) Error() string {
-	return "Type not found error: " + t.errorMessage
+	return "DataType not found error: " + t.errorMessage
 }
 
 func (t *TypeNotFoundErr) Type() ScriptErrorType {
@@ -87,7 +87,7 @@ type TypeErr struct {
 }
 
 func (t *TypeErr) Error() string {
-	return "Type error: " + t.errorMessage
+	return "DataType error: " + t.errorMessage
 }
 
 func (t *TypeErr) Type() ScriptErrorType {

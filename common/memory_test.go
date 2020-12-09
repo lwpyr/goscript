@@ -19,9 +19,9 @@ func TestA(t *testing.T) {
 
 func TestSliceMemory(t *testing.T) {
 	varDef := &Variable{
-		Offset: 0,
-		Symbol: "test",
-		Type:   BasicTypeMap["int64"],
+		Offset:   0,
+		Symbol:   "test",
+		DataType: BasicTypeMap["int64"],
 	}
 	sliceMem := &Memory{Data: []interface{}{nil}}
 

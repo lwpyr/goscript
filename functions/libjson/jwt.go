@@ -34,7 +34,7 @@ func JwtParse(_ *common.Memory, stk *common.Stack) {
 	m["payload"] = jsonObjectify(parsedToken.Claims)
 	m["signature"] = parsedToken.Signature
 
-	stk.ReturnVal(m)
+	stk.ReturnValue(m)
 }
 
 func getTokenKey(token *jwt.Token) (interface{}, error) {

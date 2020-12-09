@@ -1112,7 +1112,7 @@ func MergeSliceIndex(slice IConstantNode, index IConstantNode) IConstantNode {
 			DataType: slice.GetDataType().ItemType,
 			Variadic: false,
 		},
-		Val: lambda_chains.GetSliceField(sliceVal, i64ConvertFunc(indexVal).(int64)),
+		Val: *lambda_chains.GetSliceField(sliceVal, i64ConvertFunc(indexVal).(int64)),
 	}
 }
 

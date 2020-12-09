@@ -732,6 +732,19 @@ func GetConvertFunc(from *common.DataType, to *common.DataType) TypeConvertFunc 
 		default:
 			panic("unknown type converter")
 		}
+	case common.Closure:
+		switch to.Kind.Kind {
+		case common.Closure:
+			return func(from interface{}) (to interface{}) {
+				return from
+			}
+		case common.Bool:
+			return func(from interface{}) (to interface{}) {
+				return true
+			}
+		default:
+			panic("unknown type converter")
+		}
 	default:
 		panic("unknown type converter")
 	}

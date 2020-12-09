@@ -12,7 +12,7 @@ var Lib *JsonLib
 
 type JsonLib struct{}
 
-func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMeta {
+func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 	jsonObject := &common.DataType{
 		Type:        "JSONObject",
 		Kind:        common.KindMap[common.Object],
@@ -38,57 +38,62 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.FunctionMeta 
 		tr.AddType("JWT", jwtType)
 	}
 
-	return map[string]*common.FunctionMeta{
+	return map[string]*common.Function{
 		"JsonMarshal": {
-			Name: "JsonMarshal",
-			In: []*common.DataType{
-				common.BasicTypeMap["object"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["bytes"],
-			},
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["object"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["bytes"],
+				},
+			}),
 			F: JsonMarshal,
 		},
 		"JsonUnmarshal": {
-			Name: "JsonUnmarshal",
-			In: []*common.DataType{
-				common.BasicTypeMap["bytes"],
-				common.BasicTypeMap["reflect"],
-			},
-			Out: []*common.DataType{
-				common.BasicTypeMap["object"],
-			},
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["bytes"],
+					common.BasicTypeMap["reflect"],
+				},
+				Out: []*common.DataType{
+					common.BasicTypeMap["object"],
+				},
+			}),
 			F: JsonUnmarshal,
 		},
 		"JwtParse": {
-			Name: "JwtParse",
-			In: []*common.DataType{
-				common.BasicTypeMap["string"],
-			},
-			Out: []*common.DataType{
-				tr.FindType("JWT"),
-			},
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["string"],
+				},
+				Out: []*common.DataType{
+					tr.FindType("JWT"),
+				},
+			}),
 			F: JwtParse,
 		},
 		"JsonObject": {
-			Name: "JsonObject",
-			In: []*common.DataType{
-				common.BasicTypeMap["bytes"],
-			},
-			Out: []*common.DataType{
-				tr.FindType("JSONObject"),
-			},
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					common.BasicTypeMap["bytes"],
+				},
+				Out: []*common.DataType{
+					tr.FindType("JSONObject"),
+				},
+			}),
 			F: JsonObject,
 		},
 		"JsonPath": {
-			Name: "JsonPath",
-			In: []*common.DataType{
-				tr.FindType("JSONObject"),
-				tr.FindType("string"),
-			},
-			Out: []*common.DataType{
-				tr.FindType("JSONObject"),
-			},
+			Type: tr.FindFuncType(&common.FunctionMeta{
+				In: []*common.DataType{
+					tr.FindType("JSONObject"),
+					tr.FindType("string"),
+				},
+				Out: []*common.DataType{
+					tr.FindType("JSONObject"),
+				},
+			}),
 			F: JsonPath,
 		},
 	}

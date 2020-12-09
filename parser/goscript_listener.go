@@ -17,9 +17,6 @@ type goscriptListener interface {
 	// EnterTypeDef is called when entering the TypeDef production.
 	EnterTypeDef(c *TypeDefContext)
 
-	// EnterGlobalDef is called when entering the GlobalDef production.
-	EnterGlobalDef(c *GlobalDefContext)
-
 	// EnterEnumDef is called when entering the EnumDef production.
 	EnterEnumDef(c *EnumDefContext)
 
@@ -29,14 +26,20 @@ type goscriptListener interface {
 	// EnterFunctionDef is called when entering the FunctionDef production.
 	EnterFunctionDef(c *FunctionDefContext)
 
-	// EnterFunctionDefWithReturnName is called when entering the FunctionDefWithReturnName production.
-	EnterFunctionDefWithReturnName(c *FunctionDefWithReturnNameContext)
+	// EnterLambdaDef is called when entering the LambdaDef production.
+	EnterLambdaDef(c *LambdaDefContext)
+
+	// EnterClosure is called when entering the closure production.
+	EnterClosure(c *ClosureContext)
 
 	// EnterInparam is called when entering the inparam production.
 	EnterInparam(c *InparamContext)
 
 	// EnterOutparam is called when entering the outparam production.
 	EnterOutparam(c *OutparamContext)
+
+	// EnterIntypename is called when entering the intypename production.
+	EnterIntypename(c *IntypenameContext)
 
 	// EnterReturntypename is called when entering the returntypename production.
 	EnterReturntypename(c *ReturntypenameContext)
@@ -53,11 +56,17 @@ type goscriptListener interface {
 	// EnterSimpleTypeName is called when entering the SimpleTypeName production.
 	EnterSimpleTypeName(c *SimpleTypeNameContext)
 
+	// EnterFunctionType is called when entering the FunctionType production.
+	EnterFunctionType(c *FunctionTypeContext)
+
 	// EnterMapTypeName is called when entering the MapTypeName production.
 	EnterMapTypeName(c *MapTypeNameContext)
 
 	// EnterSliceTypeName is called when entering the SliceTypeName production.
 	EnterSliceTypeName(c *SliceTypeNameContext)
+
+	// EnterFunctionTypeName is called when entering the functionTypeName production.
+	EnterFunctionTypeName(c *FunctionTypeNameContext)
 
 	// EnterEnumdef is called when entering the enumdef production.
 	EnterEnumdef(c *EnumdefContext)
@@ -100,6 +109,18 @@ type goscriptListener interface {
 
 	// EnterBlock is called when entering the block production.
 	EnterBlock(c *BlockContext)
+
+	// EnterRestoreStackSp is called when entering the RestoreStackSp production.
+	EnterRestoreStackSp(c *RestoreStackSpContext)
+
+	// EnterGlobalVarDef is called when entering the GlobalVarDef production.
+	EnterGlobalVarDef(c *GlobalVarDefContext)
+
+	// EnterLocalVarDef is called when entering the LocalVarDef production.
+	EnterLocalVarDef(c *LocalVarDefContext)
+
+	// EnterRestoreStack is called when entering the restoreStack production.
+	EnterRestoreStack(c *RestoreStackContext)
 
 	// EnterExprEntry is called when entering the ExprEntry production.
 	EnterExprEntry(c *ExprEntryContext)
@@ -167,8 +188,11 @@ type goscriptListener interface {
 	// EnterAssignInitializationlist is called when entering the AssignInitializationlist production.
 	EnterAssignInitializationlist(c *AssignInitializationlistContext)
 
-	// EnterLocalDef is called when entering the LocalDef production.
-	EnterLocalDef(c *LocalDefContext)
+	// EnterBasicTypeName is called when entering the basicTypeName production.
+	EnterBasicTypeName(c *BasicTypeNameContext)
+
+	// EnterBuiltin is called when entering the builtin production.
+	EnterBuiltin(c *BuiltinContext)
 
 	// EnterInitializationListBegin is called when entering the initializationListBegin production.
 	EnterInitializationListBegin(c *InitializationListBeginContext)
@@ -200,8 +224,8 @@ type goscriptListener interface {
 	// EnterConstantString is called when entering the ConstantString production.
 	EnterConstantString(c *ConstantStringContext)
 
-	// EnterFunctions is called when entering the functions production.
-	EnterFunctions(c *FunctionsContext)
+	// EnterDirectCall is called when entering the DirectCall production.
+	EnterDirectCall(c *DirectCallContext)
 
 	// EnterConstructor is called when entering the constructor production.
 	EnterConstructor(c *ConstructorContext)
@@ -209,11 +233,8 @@ type goscriptListener interface {
 	// EnterVardef is called when entering the vardef production.
 	EnterVardef(c *VardefContext)
 
-	// EnterLocal is called when entering the Local production.
-	EnterLocal(c *LocalContext)
-
-	// EnterLocalAssign is called when entering the LocalAssign production.
-	EnterLocalAssign(c *LocalAssignContext)
+	// EnterLocaldef is called when entering the localdef production.
+	EnterLocaldef(c *LocaldefContext)
 
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
@@ -224,9 +245,6 @@ type goscriptListener interface {
 	// ExitTypeDef is called when exiting the TypeDef production.
 	ExitTypeDef(c *TypeDefContext)
 
-	// ExitGlobalDef is called when exiting the GlobalDef production.
-	ExitGlobalDef(c *GlobalDefContext)
-
 	// ExitEnumDef is called when exiting the EnumDef production.
 	ExitEnumDef(c *EnumDefContext)
 
@@ -236,14 +254,20 @@ type goscriptListener interface {
 	// ExitFunctionDef is called when exiting the FunctionDef production.
 	ExitFunctionDef(c *FunctionDefContext)
 
-	// ExitFunctionDefWithReturnName is called when exiting the FunctionDefWithReturnName production.
-	ExitFunctionDefWithReturnName(c *FunctionDefWithReturnNameContext)
+	// ExitLambdaDef is called when exiting the LambdaDef production.
+	ExitLambdaDef(c *LambdaDefContext)
+
+	// ExitClosure is called when exiting the closure production.
+	ExitClosure(c *ClosureContext)
 
 	// ExitInparam is called when exiting the inparam production.
 	ExitInparam(c *InparamContext)
 
 	// ExitOutparam is called when exiting the outparam production.
 	ExitOutparam(c *OutparamContext)
+
+	// ExitIntypename is called when exiting the intypename production.
+	ExitIntypename(c *IntypenameContext)
 
 	// ExitReturntypename is called when exiting the returntypename production.
 	ExitReturntypename(c *ReturntypenameContext)
@@ -260,11 +284,17 @@ type goscriptListener interface {
 	// ExitSimpleTypeName is called when exiting the SimpleTypeName production.
 	ExitSimpleTypeName(c *SimpleTypeNameContext)
 
+	// ExitFunctionType is called when exiting the FunctionType production.
+	ExitFunctionType(c *FunctionTypeContext)
+
 	// ExitMapTypeName is called when exiting the MapTypeName production.
 	ExitMapTypeName(c *MapTypeNameContext)
 
 	// ExitSliceTypeName is called when exiting the SliceTypeName production.
 	ExitSliceTypeName(c *SliceTypeNameContext)
+
+	// ExitFunctionTypeName is called when exiting the functionTypeName production.
+	ExitFunctionTypeName(c *FunctionTypeNameContext)
 
 	// ExitEnumdef is called when exiting the enumdef production.
 	ExitEnumdef(c *EnumdefContext)
@@ -307,6 +337,18 @@ type goscriptListener interface {
 
 	// ExitBlock is called when exiting the block production.
 	ExitBlock(c *BlockContext)
+
+	// ExitRestoreStackSp is called when exiting the RestoreStackSp production.
+	ExitRestoreStackSp(c *RestoreStackSpContext)
+
+	// ExitGlobalVarDef is called when exiting the GlobalVarDef production.
+	ExitGlobalVarDef(c *GlobalVarDefContext)
+
+	// ExitLocalVarDef is called when exiting the LocalVarDef production.
+	ExitLocalVarDef(c *LocalVarDefContext)
+
+	// ExitRestoreStack is called when exiting the restoreStack production.
+	ExitRestoreStack(c *RestoreStackContext)
 
 	// ExitExprEntry is called when exiting the ExprEntry production.
 	ExitExprEntry(c *ExprEntryContext)
@@ -374,8 +416,11 @@ type goscriptListener interface {
 	// ExitAssignInitializationlist is called when exiting the AssignInitializationlist production.
 	ExitAssignInitializationlist(c *AssignInitializationlistContext)
 
-	// ExitLocalDef is called when exiting the LocalDef production.
-	ExitLocalDef(c *LocalDefContext)
+	// ExitBasicTypeName is called when exiting the basicTypeName production.
+	ExitBasicTypeName(c *BasicTypeNameContext)
+
+	// ExitBuiltin is called when exiting the builtin production.
+	ExitBuiltin(c *BuiltinContext)
 
 	// ExitInitializationListBegin is called when exiting the initializationListBegin production.
 	ExitInitializationListBegin(c *InitializationListBeginContext)
@@ -407,8 +452,8 @@ type goscriptListener interface {
 	// ExitConstantString is called when exiting the ConstantString production.
 	ExitConstantString(c *ConstantStringContext)
 
-	// ExitFunctions is called when exiting the functions production.
-	ExitFunctions(c *FunctionsContext)
+	// ExitDirectCall is called when exiting the DirectCall production.
+	ExitDirectCall(c *DirectCallContext)
 
 	// ExitConstructor is called when exiting the constructor production.
 	ExitConstructor(c *ConstructorContext)
@@ -416,9 +461,6 @@ type goscriptListener interface {
 	// ExitVardef is called when exiting the vardef production.
 	ExitVardef(c *VardefContext)
 
-	// ExitLocal is called when exiting the Local production.
-	ExitLocal(c *LocalContext)
-
-	// ExitLocalAssign is called when exiting the LocalAssign production.
-	ExitLocalAssign(c *LocalAssignContext)
+	// ExitLocaldef is called when exiting the localdef production.
+	ExitLocaldef(c *LocaldefContext)
 }

@@ -13,6 +13,11 @@ type LineNode struct {
 	Line ASTNode
 }
 
+type RestoreStackNode struct {
+	Node
+	Line ASTNode
+}
+
 type BlockNode struct {
 	Node
 	Executions []ASTNode
@@ -89,11 +94,23 @@ type SwitchNode struct {
 
 func (b *LineNode) Compile(c *Compiler) {
 	b.Line.Compile(c)
+	b.Instructions = b.Line.GetInstructions()
+	b.Instructions = append(b.Instructions,
+		func(m *common.Memory, stk *common.Stack) {
+			stk.Pc++
+		},
+	)
+}
+
+func (b *RestoreStackNode) Compile(c *Compiler) {
+	b.Line.Compile(c)
 	lineInst := c.InstructionPop()
 	b.Instructions = []common.Instruction{
 		func(m *common.Memory, stk *common.Stack) {
+			sp := stk.Sp
 			lineInst(m, stk)
-			stk.Pop()
+			stk.Data = stk.Data[:sp+1]
+			stk.Sp = sp
 			stk.Pc++
 		},
 	}
@@ -115,13 +132,6 @@ func (b *BlockNode) Compile(c *Compiler) {
 
 // todo: process type
 func (p *ProgramRoot) Compile(c *Compiler) {
-	for _, enum := range p.EnumNode {
-		enumNode := enum.(*EnumNode)
-		c.TypeRegistry.AddEnum(enumNode.EnumName, enumNode.Enum)
-	}
-	for _, funcDef := range p.FunctionDefNode {
-		funcDef.Compile(c)
-	}
 	num := len(p.RunnableNode)
 	var runnableInstructions []common.Instruction
 	for i := 0; i < num; i++ {
@@ -325,23 +335,16 @@ func (f *ForSliceNode) Compile(c *Compiler) {
 
 func (f *ForNode) Compile(c *Compiler) {
 	f.Init.Compile(c)
-	initInstruction := c.InstructionPop()
+	initInstruction := f.Init.GetInstructions()
 	f.Condition.Compile(c)
 	conditionInstruction := c.InstructionPop()
 	f.Step.Compile(c)
-	stepInstruction := c.InstructionPop()
+	stepInstruction := f.Step.GetInstructions()[0]
 	f.Block.Compile(c)
 	serialInstructions := f.Block.GetInstructions()
 	lenSerialInstructions := len(serialInstructions)
 	num := len(f.Scope.Parameters)
-	f.Instructions = []common.Instruction{
-		// initialization
-		func(m *common.Memory, stk *common.Stack) {
-			initInstruction(m, stk)
-			stk.Pop()
-			stk.Pc++
-		},
-	}
+	f.Instructions = initInstruction
 	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
 		// condition
 		conditionInstruction(m, stk)
@@ -357,8 +360,7 @@ func (f *ForNode) Compile(c *Compiler) {
 	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
 		// step
 		stepInstruction(m, stk)
-		stk.Pop()
-		stk.Pc -= lenSerialInstructions + 1
+		stk.Pc -= lenSerialInstructions + 2
 	})
 }
 

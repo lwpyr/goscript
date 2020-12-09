@@ -13,23 +13,23 @@ func StartWith(m *common.Memory, stk *common.Stack) {
 		stk.Set(0, false)
 		return
 	}
-	stk.ReturnVal(str[:len(prefix)] == prefix)
+	stk.ReturnValue(str[:len(prefix)] == prefix)
 }
 
 func EndWith(m *common.Memory, stk *common.Stack) {
 	str := stk.TopIndex(1).(string)
 	suffix := stk.Top().(string)
 	if len(str) < len(suffix) {
-		stk.ReturnVal(false)
+		stk.ReturnValue(false)
 		return
 	}
-	stk.ReturnVal(str[len(str)-len(suffix):] == suffix)
+	stk.ReturnValue(str[len(str)-len(suffix):] == suffix)
 }
 
 func Contain(m *common.Memory, stk *common.Stack) {
 	str := stk.TopIndex(1).(string)
 	substr := stk.Top().(string)
-	stk.ReturnVal(strings.Contains(str, substr))
+	stk.ReturnValue(strings.Contains(str, substr))
 }
 
 func StrCat(m *common.Memory, stk *common.Stack) {
@@ -39,7 +39,7 @@ func StrCat(m *common.Memory, stk *common.Stack) {
 	for _, param := range val {
 		str = append(str, param.(string))
 	}
-	stk.ReturnVal(strings.Join(str, delimiter))
+	stk.ReturnValue(strings.Join(str, delimiter))
 }
 
 func StrSplit(m *common.Memory, stk *common.Stack) {
@@ -51,5 +51,5 @@ func StrSplit(m *common.Memory, stk *common.Stack) {
 	for _, item := range items {
 		ret = append(ret, item)
 	}
-	stk.ReturnVal(ret)
+	stk.ReturnValue(ret)
 }

@@ -87,7 +87,39 @@ who(Tom);
 	p.RunOnMemory(mem)
 }
 
-func BenchmarkC(b *testing.B) {
+func TestE(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+var f func(int64,int64)(int64) = func(a int64, b int64) int64 {
+	return a+b;
+}; 
+print(f(1,2));
+`
+	p := compilePro(expr)
+	p.RunOnMemory(mem)
+}
+
+func TestF(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+func main(a int64, b int64) func()(int64) {
+	return func()int64{
+		return a+b;
+	};
+}
+
+var f1 func()(int64) = main(1,2);
+var f2 func()(int64) = main(3,4);
+print(f1());
+print(f2());
+`
+	p := compilePro(expr)
+	p.RunOnMemory(mem)
+}
+
+func BenchmarkA(b *testing.B) {
 	setupParse()
 	var expr string
 	expr = `
@@ -127,13 +159,14 @@ func setupParse() {
 		Data: make([]interface{}, 100),
 	}
 
+	scope := goscript.NewScope(nil)
+	c.Scope = scope
+
 	c.Include("common")
 	c.Include("string")
 	c.Include("json")
 	c.Include("base64")
 	c.Include("datetime")
-
-	scope := goscript.NewScope(nil)
 
 	scope.AddVariable(goscript.NewVariable("Tom", c.FindType("Person")))
 	scope.AddVariable(goscript.NewVariable("Jerry", c.FindType("Person")))

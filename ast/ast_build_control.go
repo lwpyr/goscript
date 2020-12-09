@@ -5,9 +5,26 @@ import (
 	"github.com/lwpyr/goscript/parser"
 )
 
+//// EnterLineProgram is called when production LineProgram is entered.
+//func (s *ASTBuilder) EnterLineProgram(ctx *parser.LineProgramContext) {
+//	s.VisitPush(&LineNode{
+//		Node: Node{
+//			Parent:   s.VisitTop(),
+//			Variadic: true,
+//		},
+//	})
+//}
+//
+//// ExitLineProgram is called when production LineProgram is exited.
+//func (s *ASTBuilder) ExitLineProgram(ctx *parser.LineProgramContext) {
+//	node := s.VisitPop().(*LineNode)
+//	node.Line = s.NodePop()
+//	s.NodePush(node)
+//}
+
 // EnterRunnableExec is called when production RunnableExec is entered.
-func (s *ASTBuilder) EnterLineProgram(ctx *parser.LineProgramContext) {
-	s.VisitPush(&LineNode{
+func (s *ASTBuilder) EnterRestoreStack(ctx *parser.RestoreStackContext) {
+	s.VisitPush(&RestoreStackNode{
 		Node: Node{
 			Parent:   s.VisitTop(),
 			Variadic: true,
@@ -16,8 +33,8 @@ func (s *ASTBuilder) EnterLineProgram(ctx *parser.LineProgramContext) {
 }
 
 // ExitRunnableExec is called when production RunnableExec is exited.
-func (s *ASTBuilder) ExitLineProgram(ctx *parser.LineProgramContext) {
-	node := s.VisitPop().(*LineNode)
+func (s *ASTBuilder) ExitRestoreStack(ctx *parser.RestoreStackContext) {
+	node := s.VisitPop().(*RestoreStackNode)
 	node.Line = s.NodePop()
 	s.NodePush(node)
 }
@@ -69,7 +86,7 @@ func (s *ASTBuilder) ExitIf(ctx *parser.IfContext) {
 
 // EnterControlReturnVoid is called when production ControlReturnVoid is entered.
 func (s *ASTBuilder) EnterReturnVoid(ctx *parser.ReturnVoidContext) {
-	if s.InFunction == false {
+	if len(s.Closure) == 0 {
 		panic(common.NewCompileErr("cannot return outside a function"))
 	}
 	cur := &ReturnNode{
@@ -88,7 +105,7 @@ func (s *ASTBuilder) ExitReturnVoid(ctx *parser.ReturnVoidContext) {
 
 // EnterControlReturnVal is called when production ControlReturnVal is entered.
 func (s *ASTBuilder) EnterReturnVal(ctx *parser.ReturnValContext) {
-	if s.InFunction == false {
+	if len(s.Closure) == 0 {
 		panic(common.NewCompileErr("cannot return outside a function"))
 	}
 	cur := &ReturnNode{
@@ -154,12 +171,14 @@ func (s *ASTBuilder) ExitCollection(ctx *parser.CollectionContext) {
 	if collection.GetDataType().Kind.Kind == common.Slice {
 		if node, ok := forNode.(*ForSliceNode); ok {
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
-				Symbol: "$",
-				Type:   common.BasicTypeMap[common.Int64Type],
+				Symbol:   "$",
+				DataType: common.BasicTypeMap[common.Int64Type],
+				Scope:    s.Compiler.Scope,
 			})
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
-				Symbol: node.ItemName,
-				Type:   collection.GetDataType().ItemType,
+				Symbol:   node.ItemName,
+				DataType: collection.GetDataType().ItemType,
+				Scope:    s.Compiler.Scope,
 			})
 			node.Item = s.Compiler.Scope.GetVariable(node.ItemName)
 		} else {
@@ -168,18 +187,21 @@ func (s *ASTBuilder) ExitCollection(ctx *parser.CollectionContext) {
 	} else if collection.GetDataType().Kind.Kind == common.Map {
 		if node, ok := forNode.(*ForMapNode); ok {
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
-				Symbol: "$",
-				Type:   common.BasicTypeMap[common.ObjectType],
+				Symbol:   "$",
+				DataType: common.BasicTypeMap[common.ObjectType],
+				Scope:    s.Compiler.Scope,
 			})
 			node.Key = s.Compiler.Scope.GetVariable(node.KeyName)
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
-				Symbol: node.KeyName,
-				Type:   collection.GetDataType().KeyType,
+				Symbol:   node.KeyName,
+				DataType: collection.GetDataType().KeyType,
+				Scope:    s.Compiler.Scope,
 			})
 			node.Key = s.Compiler.Scope.GetVariable(node.KeyName)
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
-				Symbol: node.ValName,
-				Type:   collection.GetDataType().ValueType,
+				Symbol:   node.ValName,
+				DataType: collection.GetDataType().ValueType,
+				Scope:    s.Compiler.Scope,
 			})
 			node.Val = s.Compiler.Scope.GetVariable(node.ValName)
 		} else {
