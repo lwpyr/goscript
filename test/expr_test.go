@@ -322,9 +322,9 @@ func TestFunction(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	//expr = "Tom.name.startWith('To')"
-	//p = compile(expr)
-	//assert.Equal(t, true, p.RunOnMemory(mem))
+	expr = "startWith('China', 'chi') || startWith('China', 'cHI')"
+	p = compile(expr)
+	assert.Equal(t, false, p.RunOnMemory(mem))
 
 	expr = "!startWith('China', 'chi')"
 	p = compile(expr)

@@ -9,8 +9,7 @@ func StartWith(m *common.Memory, stk *common.Stack) {
 	str := stk.TopIndex(1).(string)
 	prefix := stk.TopIndex(0).(string)
 	if len(str) < len(prefix) {
-		stk.Pop()
-		stk.Set(0, false)
+		stk.ReturnValue(false)
 		return
 	}
 	stk.ReturnValue(str[:len(prefix)] == prefix)
