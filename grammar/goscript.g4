@@ -88,6 +88,7 @@ NAME: [a-zA-Z_]+[a-zA-Z0-9_]*;
 
 DOT: '.';
 WHITESPACE: [ \r\n\t]+ -> skip;
+COMMENT :  '//' ~( '\r' | '\n' )* ( '\r' | '\n' ) -> skip;
 
 // 1
 program
@@ -197,7 +198,7 @@ restoreStack
 
 keepStack
     : expr # ExprEntry
-    | lhs (',' lhs)* op=ASSIGN functions # FunctionAssign
+    | lhs (',' lhs)* op=ASSIGN variable # FunctionAssign
     | lhs (',' lhs)* op=ASSIGN expr (',' expr)* # MultiAssign
     ;
 
@@ -210,6 +211,8 @@ variable
     | variable '[' expr ']' # Index
     | variable '[' indexs (',' indexs)* ']' # SliceMultiIndex
     | variable '[' '[' expr (',' expr)* ']' ']' # MapMultiIndex
+    | variable '(' expr (',' expr)* ')' # DirectCall
+    | variable '(' ')' # DirectCall
     | NAME # VariableName
     | '@' # VariableName
     ;
@@ -240,7 +243,6 @@ expr
     | <assoc=right> lhs op=ASSIGN initializationListBegin # AssignInitializationlist
     | constant # Pass
     | variable # Pass
-    | functions # Pass
     | lambda # Pass
     | builtin # Pass
     | constructor # Construct
@@ -294,13 +296,6 @@ constant
     | BOOLLITERAL # ConstantBool
     | NULL # ConstantNil
     | STRINGLITERAL # ConstantString
-    ;
-
-functions
-    : variable '(' expr (',' expr)* ')' # DirectCall
-    | variable '(' ')' # DirectCall
-//    | variable DOT NAME '(' ')' # DotCall
-//    | variable DOT NAME '(' expr (',' expr)* ')' # DotCall
     ;
 
 constructor

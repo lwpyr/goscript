@@ -13,6 +13,16 @@ var Lib *StringLib
 type StringLib struct{}
 
 func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	var test1Func common.Instruction = func(m *common.Memory, stk *common.Stack) {
+		i1 := stk.TopIndex(1).(int64)
+		i2 := stk.Top().(int64)
+		stk.ReturnValues(i1/i2, i1%i2)
+	}
+	var StartWithFunc common.Instruction = StartWith
+	var EndWithFunc common.Instruction = EndWith
+	var ContainFunc common.Instruction = Contain
+	var StrCatFunc common.Instruction = StrCat
+	var StrSplitFunc common.Instruction = StrSplit
 	return map[string]*common.Function{
 		"startWith": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -24,7 +34,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["bool"],
 				},
 			}),
-			F: StartWith,
+			F: &StartWithFunc,
 		},
 		"endWith": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -36,7 +46,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["bool"],
 				},
 			}),
-			F: EndWith,
+			F: &EndWithFunc,
 		},
 		"contain": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -48,7 +58,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["bool"],
 				},
 			}),
-			F: Contain,
+			F: &ContainFunc,
 		},
 		"strCat": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -61,7 +71,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 				},
 				TailArray: true,
 			}),
-			F: StrCat,
+			F: &StrCatFunc,
 		},
 		"strSplit": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -73,7 +83,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					tr.FindSliceType("string"),
 				},
 			}),
-			F: StrSplit,
+			F: &StrSplitFunc,
 		},
 		"test1": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -86,11 +96,7 @@ func (s *StringLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["int64"],
 				},
 			}),
-			F: func(m *common.Memory, stk *common.Stack) {
-				i1 := stk.TopIndex(1).(int64)
-				i2 := stk.Top().(int64)
-				stk.ReturnValues(i1/i2, i1%i2)
-			},
+			F: &test1Func,
 		},
 	}
 }

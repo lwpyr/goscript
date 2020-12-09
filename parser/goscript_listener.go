@@ -137,6 +137,9 @@ type goscriptListener interface {
 	// EnterSliceFilter is called when entering the SliceFilter production.
 	EnterSliceFilter(c *SliceFilterContext)
 
+	// EnterDirectCall is called when entering the DirectCall production.
+	EnterDirectCall(c *DirectCallContext)
+
 	// EnterVariableName is called when entering the VariableName production.
 	EnterVariableName(c *VariableNameContext)
 
@@ -223,9 +226,6 @@ type goscriptListener interface {
 
 	// EnterConstantString is called when entering the ConstantString production.
 	EnterConstantString(c *ConstantStringContext)
-
-	// EnterDirectCall is called when entering the DirectCall production.
-	EnterDirectCall(c *DirectCallContext)
 
 	// EnterConstructor is called when entering the constructor production.
 	EnterConstructor(c *ConstructorContext)
@@ -365,6 +365,9 @@ type goscriptListener interface {
 	// ExitSliceFilter is called when exiting the SliceFilter production.
 	ExitSliceFilter(c *SliceFilterContext)
 
+	// ExitDirectCall is called when exiting the DirectCall production.
+	ExitDirectCall(c *DirectCallContext)
+
 	// ExitVariableName is called when exiting the VariableName production.
 	ExitVariableName(c *VariableNameContext)
 
@@ -451,9 +454,6 @@ type goscriptListener interface {
 
 	// ExitConstantString is called when exiting the ConstantString production.
 	ExitConstantString(c *ConstantStringContext)
-
-	// ExitDirectCall is called when exiting the DirectCall production.
-	ExitDirectCall(c *DirectCallContext)
 
 	// ExitConstructor is called when exiting the constructor production.
 	ExitConstructor(c *ConstructorContext)

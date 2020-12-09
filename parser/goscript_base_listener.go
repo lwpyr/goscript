@@ -279,6 +279,12 @@ func (s *BasegoscriptListener) EnterSliceFilter(ctx *SliceFilterContext) {}
 // ExitSliceFilter is called when production SliceFilter is exited.
 func (s *BasegoscriptListener) ExitSliceFilter(ctx *SliceFilterContext) {}
 
+// EnterDirectCall is called when production DirectCall is entered.
+func (s *BasegoscriptListener) EnterDirectCall(ctx *DirectCallContext) {}
+
+// ExitDirectCall is called when production DirectCall is exited.
+func (s *BasegoscriptListener) ExitDirectCall(ctx *DirectCallContext) {}
+
 // EnterVariableName is called when production VariableName is entered.
 func (s *BasegoscriptListener) EnterVariableName(ctx *VariableNameContext) {}
 
@@ -452,12 +458,6 @@ func (s *BasegoscriptListener) EnterConstantString(ctx *ConstantStringContext) {
 
 // ExitConstantString is called when production ConstantString is exited.
 func (s *BasegoscriptListener) ExitConstantString(ctx *ConstantStringContext) {}
-
-// EnterDirectCall is called when production DirectCall is entered.
-func (s *BasegoscriptListener) EnterDirectCall(ctx *DirectCallContext) {}
-
-// ExitDirectCall is called when production DirectCall is exited.
-func (s *BasegoscriptListener) ExitDirectCall(ctx *DirectCallContext) {}
 
 // EnterConstructor is called when production constructor is entered.
 func (s *BasegoscriptListener) EnterConstructor(ctx *ConstructorContext) {}

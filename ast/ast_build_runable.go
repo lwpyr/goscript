@@ -21,21 +21,24 @@ func (s *ASTBuilder) EnterFunctionAssign(_ *parser.FunctionAssignContext) {
 
 // ExitStartFunctionAssign is called when production StartFunctionAssign is exited.
 func (s *ASTBuilder) ExitFunctionAssign(ctx *parser.FunctionAssignContext) {
-	node := s.VisitPop().(*FunctionAssignNode)
-	node.Function = s.NodePop().(IFunctionNode)
-	node.Lhs = []ASTNode{}
-	num := len(ctx.AllLhs())
-	if num > len(node.Function.(*FunctionCallNode).Meta.Out) {
-		panic(common.NewMismatchErr("number of placeholders is larger than the function output " + ctx.GetText()))
-	}
-	for i := 0; i < num; i++ {
-		temp := s.NodePop()
-		if temp.GetDataType().Type != node.Function.(*FunctionCallNode).Meta.Out[num-1-i].Type {
-			panic(common.NewMismatchErr("cannot assign different type to an variable " + ctx.GetText()))
+	if node, ok := s.VisitPop().(*FunctionAssignNode); ok {
+		node.Function = s.NodePop().(IFunctionNode)
+		node.Lhs = []ASTNode{}
+		num := len(ctx.AllLhs())
+		if num > len(node.Function.(*FunctionCallNode).Meta.Out) {
+			panic(common.NewMismatchErr("number of placeholders is larger than the function output " + ctx.GetText()))
 		}
-		node.Lhs = append(node.Lhs, temp)
+		for i := 0; i < num; i++ {
+			temp := s.NodePop()
+			if temp.GetDataType().Type != node.Function.(*FunctionCallNode).Meta.Out[num-1-i].Type {
+				panic(common.NewMismatchErr("cannot assign different type to an variable " + ctx.GetText()))
+			}
+			node.Lhs = append(node.Lhs, temp)
+		}
+		s.NodePush(node)
+	} else {
+		panic(common.NewCompileErr("multi-assign can only be applied on function call"))
 	}
-	s.NodePush(node)
 }
 
 // EnterStartAssign is called when production StartAssign is entered.
@@ -542,19 +545,19 @@ func (s *ASTBuilder) ExitBinary(ctx *parser.BinaryContext) {
 			}
 		case "%":
 			if ResType = common.CanMod(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
-				panic(common.NewMathErr("type cannot '%','//'" + ctx.GetText()))
+				panic(common.NewMathErr("type cannot '%','//' " + ctx.GetText()))
 			}
 		case "&&", "||":
 			if ResType = common.CanAndOr(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
-				panic(common.NewTypeErr("type is not boolean" + ctx.GetText()))
+				panic(common.NewTypeErr("type is not boolean " + ctx.GetText()))
 			}
 		case ">", "<", ">=", "<=":
 			if ResType = common.CanCompare(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
-				panic(common.NewMathErr("type cannot compare" + ctx.GetText()))
+				panic(common.NewMathErr("type cannot compare " + ctx.GetText()))
 			}
 		case "==", "!=":
 			if ResType = common.CanEqual(lhs.GetDataType(), rhs.GetDataType()); ResType == nil {
-				panic(common.NewMathErr("type cannot compare" + ctx.GetText()))
+				panic(common.NewMathErr("type cannot compare " + ctx.GetText()))
 			}
 		case "=":
 			if rhs.GetDataType().Kind.Kind == common.Nil {

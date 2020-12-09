@@ -13,6 +13,8 @@ var Lib *Base64Lib
 type Base64Lib struct{}
 
 func (b *Base64Lib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	var EncodeBase64Func common.Instruction = EncodeBase64
+	var DecodeBase64Func common.Instruction = DecodeBase64
 	return map[string]*common.Function{
 		"EncodeBase64": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -23,7 +25,7 @@ func (b *Base64Lib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["string"],
 				},
 			}),
-			F: EncodeBase64,
+			F: &EncodeBase64Func,
 		},
 		"DecodeBase64": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -34,7 +36,7 @@ func (b *Base64Lib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["bytes"],
 				},
 			}),
-			F: DecodeBase64,
+			F: &DecodeBase64Func,
 		},
 	}
 }

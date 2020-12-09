@@ -544,7 +544,10 @@ func GetBinaryOpFunc(op string, lhs *common.DataType, rhs *common.DataType) comm
 				stk.Pop()
 			}
 		default:
-			panic("not support == : " + lhs.Type + " " + rhs.Type)
+			return func(_ *common.Memory, stk *common.Stack) {
+				stk.Set(1, stk.TopIndex(1) == stk.TopIndex(0))
+				stk.Pop()
+			}
 		}
 	case "!=":
 		t := lhs

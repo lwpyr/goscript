@@ -13,6 +13,9 @@ var Lib *DateTimeLib
 type DateTimeLib struct{}
 
 func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	var DateTimeAddFunc common.Instruction = DateTimeAdd
+	var NowFunc common.Instruction = Now
+	var NowStrFunc common.Instruction = NowStr
 	return map[string]*common.Function{
 		"DateTimeAdd": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -23,7 +26,7 @@ func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.Function 
 					common.BasicTypeMap["string"],
 				},
 			}),
-			F: DateTimeAdd,
+			F: &DateTimeAddFunc,
 		},
 		"Now": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -31,7 +34,7 @@ func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.Function 
 					common.BasicTypeMap["int64"],
 				},
 			}),
-			F: Now,
+			F: &NowStrFunc,
 		},
 		"NowStr": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -39,7 +42,7 @@ func (d *DateTimeLib) Init(tr *common.TypeRegistry) map[string]*common.Function 
 					common.BasicTypeMap["string"],
 				},
 			}),
-			F: NowStr,
+			F: &NowFunc,
 		},
 	}
 }

@@ -88,13 +88,6 @@ func (t *TypeRegistry) FindFuncType(meta *FunctionMeta) *DataType {
 			Kind:       KindMap[Closure],
 			LambdaMeta: meta,
 		}
-		//dtype.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
-		//	var ret []interface{}
-		//	for iter.ReadArray() {
-		//		ret = append(ret, itemType.Unmarshal(iter))
-		//	}
-		//	return ret
-		//}
 		t.Types[typeName] = dtype
 	}
 	return t.Types[typeName]

@@ -76,7 +76,7 @@ func (c *Compiler) Include(libName string) {
 		c.Scope.AddConstant(name, &common.Constant{
 			Symbol: name,
 			Type:   f.Type,
-			Data:   f,
+			Data:   f.F,
 		})
 	}
 }

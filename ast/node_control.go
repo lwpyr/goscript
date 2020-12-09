@@ -132,6 +132,9 @@ func (b *BlockNode) Compile(c *Compiler) {
 
 // todo: process type
 func (p *ProgramRoot) Compile(c *Compiler) {
+	for _, fDefNode := range p.FunctionDefNode {
+		fDefNode.Compile(c)
+	}
 	num := len(p.RunnableNode)
 	var runnableInstructions []common.Instruction
 	for i := 0; i < num; i++ {

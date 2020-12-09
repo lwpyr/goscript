@@ -31,7 +31,7 @@ func (f *FunctionMeta) GenerateTypeName() string {
 
 type Function struct {
 	Type *DataType
-	F    Instruction
+	F    *Instruction
 }
 
 type FunctionLib interface {

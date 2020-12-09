@@ -13,6 +13,14 @@ var Lib *commonLib
 type commonLib struct{}
 
 func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
+	var ItoAFunc common.Instruction = ItoA
+	var AtoIFunc common.Instruction = AtoI
+	var FtoAFunc common.Instruction = FtoA
+	var AtoFFunc common.Instruction = AtoF
+	var RandomFunc common.Instruction = Random
+	var PrintFunc common.Instruction = Print
+	var SleepFunc common.Instruction = Sleep
+
 	return map[string]*common.Function{
 		"itoa": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -23,7 +31,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["string"],
 				},
 			}),
-			F: ItoA,
+			F: &ItoAFunc,
 		},
 		"atoi": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -34,7 +42,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["int64"],
 				},
 			}),
-			F: AtoI,
+			F: &AtoIFunc,
 		},
 		"ftoa": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -45,7 +53,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["string"],
 				},
 			}),
-			F: FtoA,
+			F: &FtoAFunc,
 		},
 		"atof": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -56,7 +64,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["float64"],
 				},
 			}),
-			F: AtoF,
+			F: &AtoFFunc,
 		},
 		"random": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -65,7 +73,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["float64"],
 				},
 			}),
-			F: Random,
+			F: &RandomFunc,
 		},
 		"print": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -74,7 +82,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 				},
 				TailArray: true,
 			}),
-			F: Print,
+			F: &PrintFunc,
 		},
 		"sleep": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -82,7 +90,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["int64"],
 				},
 			}),
-			F: Sleep,
+			F: &SleepFunc,
 		},
 	}
 }

@@ -13,6 +13,7 @@ func (s *ASTBuilder) EnterFunctionDef(ctx *parser.FunctionDefContext) {
 	s.Compiler.Scope = common.NewScope(s.Compiler.Scope)
 	s.Compiler.Scope.LocalIndex = 0
 	funcName := ctx.NAME().GetText()
+	funcPlaceHolder := common.Instruction(nil)
 	cur := &FunctionDefNode{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -25,6 +26,7 @@ func (s *ASTBuilder) EnterFunctionDef(ctx *parser.FunctionDefContext) {
 			},
 		},
 		FuncName: funcName,
+		Function: &funcPlaceHolder,
 	}
 	s.Closure = append(s.Closure, cur.DataType.LambdaMeta)
 	s.VisitPush(cur)
@@ -36,7 +38,6 @@ func (s *ASTBuilder) ExitFunctionDef(ctx *parser.FunctionDefContext) {
 	s.Compiler.Scope = s.Compiler.Scope.Outer
 	fNode := s.VisitPop().(*FunctionDefNode)
 	fNode.Block = s.NodePop()
-	fNode.Compile(s.Compiler)
 	s.NodePush(fNode)
 }
 
@@ -68,7 +69,6 @@ func (s *ASTBuilder) ExitLambdaDef(ctx *parser.LambdaDefContext) {
 	s.Compiler.Scope = s.Compiler.Scope.Outer
 	fNode := s.VisitPop().(*LambdaDefNode)
 	fNode.Block = s.NodePop()
-	fNode.Compile(s.Compiler)
 	s.NodePush(fNode)
 }
 
@@ -192,9 +192,6 @@ func (s *ASTBuilder) EnterClosure(ctx *parser.ClosureContext) {
 	}
 
 	if fDef, ok := node.(*FunctionDefNode); ok {
-		fDef.Function = &common.Function{
-			Type: fDef.DataType,
-		}
 		s.Compiler.Scope.Outer.AddConstant(fDef.FuncName, &common.Constant{
 			Symbol: fDef.FuncName,
 			Type:   fDef.DataType,

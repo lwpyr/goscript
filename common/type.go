@@ -145,14 +145,14 @@ func CanCompare(d *DataType, b *DataType) *DataType {
 }
 
 func CanEqual(d *DataType, b *DataType) *DataType {
-	if b.Kind.Kind == Nil || d.Kind.Kind == Nil {
+	if b.Kind.Kind == Nil || d.Kind.Kind == Nil || b.Kind.Kind == Object || d.Kind.Kind == Object {
 		return BasicTypeMap["bool"]
 	}
 	switch b.Kind.Kind {
 	case Message, Map, Slice:
 		return nil
-	case ReflectType:
-		if d.Kind.Kind == ReflectType {
+	case ReflectType, Closure:
+		if d.Kind.Kind == b.Kind.Kind {
 			return BasicTypeMap["bool"]
 		}
 		return nil

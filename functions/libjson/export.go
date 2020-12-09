@@ -38,6 +38,12 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 		tr.AddType("JWT", jwtType)
 	}
 
+	var JsonMarshalFunc common.Instruction = JsonMarshal
+	var JsonUnmarshalFunc common.Instruction = JsonUnmarshal
+	var JwtParseFunc common.Instruction = JwtParse
+	var JsonObjectFunc common.Instruction = JsonObject
+	var JsonPathFunc common.Instruction = JsonPath
+
 	return map[string]*common.Function{
 		"JsonMarshal": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -48,7 +54,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["bytes"],
 				},
 			}),
-			F: JsonMarshal,
+			F: &JsonMarshalFunc,
 		},
 		"JsonUnmarshal": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -60,7 +66,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["object"],
 				},
 			}),
-			F: JsonUnmarshal,
+			F: &JsonUnmarshalFunc,
 		},
 		"JwtParse": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -71,7 +77,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					tr.FindType("JWT"),
 				},
 			}),
-			F: JwtParse,
+			F: &JwtParseFunc,
 		},
 		"JsonObject": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -82,7 +88,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					tr.FindType("JSONObject"),
 				},
 			}),
-			F: JsonObject,
+			F: &JsonObjectFunc,
 		},
 		"JsonPath": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
@@ -94,7 +100,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					tr.FindType("JSONObject"),
 				},
 			}),
-			F: JsonPath,
+			F: &JsonPathFunc,
 		},
 	}
 }
