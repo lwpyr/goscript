@@ -100,12 +100,19 @@ func (s *ASTBuilder) EnterReturnVal(ctx *parser.ReturnValContext) {
 	s.VisitPush(cur)
 }
 
-// todo: check type
 // ExitControlReturnVal is called when production ControlReturnVal is exited.
 func (s *ASTBuilder) ExitReturnVal(ctx *parser.ReturnValContext) {
+	closure := s.Closure[len(s.Closure)-1]
 	node := s.VisitPop().(*ReturnNode)
+	if len(closure.Out) != len(ctx.AllExpr()) {
+		panic(common.NewMismatchErr("number of return values mismatches function signature " + ctx.GetText()))
+	}
 	for i := 0; i < len(ctx.AllExpr()); i++ {
-		node.Expr = append(node.Expr, s.NodePop())
+		returnNode := s.NodePop()
+		if !returnNode.GetDataType().CanConvertTo(closure.Out[len(ctx.AllExpr())-1-i]) {
+			panic(common.NewTypeErr("function return value type mismatches function signature " + ctx.GetText()))
+		}
+		node.Expr = append(node.Expr, returnNode)
 	}
 	s.NodePush(node)
 }

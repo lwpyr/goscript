@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"errors"
+	"fmt"
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/lwpyr/goscript/common"
 	"github.com/lwpyr/goscript/parser"
@@ -150,9 +150,9 @@ func (c *Compiler) BuildAST(expr string) (root ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(common.ScriptError); ok {
-				err = errors.New(e.Error() + "\n" + string(debug.Stack()))
+				err = fmt.Errorf("%v\n%s", e, string(debug.Stack()))
 			} else {
-				err = errors.New(r.(string) + "\n" + string(debug.Stack()))
+				err = fmt.Errorf("%v\n%s", r, string(debug.Stack()))
 			}
 		}
 	}()
