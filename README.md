@@ -13,7 +13,7 @@ Goscript is completely written in Golang. Goscript's purpose is to build a compl
 - [x] Function Definition
 - [x] Lambda function and function type
 - [x] type define in script
-- [ ] Golang channel type
+- [x] Golang channel type
 - [ ] Unit test
 
 #### consider to support
