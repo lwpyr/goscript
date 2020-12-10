@@ -59,6 +59,13 @@ func NewSliceValue(params ...interface{}) interface{} {
 	}
 }
 
+func NewChannelValue(params ...interface{}) interface{} {
+	if len(params) == 0 {
+		return make(chan interface{})
+	}
+	return make(chan interface{}, reflect.ValueOf(params[0]).Int())
+}
+
 func NewMapValue(params ...interface{}) interface{} {
 	return make(map[interface{}]interface{})
 }

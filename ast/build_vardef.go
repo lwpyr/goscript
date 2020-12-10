@@ -13,72 +13,22 @@ func (s *ASTBuilder) EnterVardef(ctx *parser.VardefContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 		},
-		IsGlobal: true,
+		IsGlobal: ctx.VAR() != nil,
 	})
 }
 
 func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
 	node := s.VisitPop().(*VariableDefNode)
-	if ctx.InitializationListBegin() != nil {
-		node.Assign = s.NodePop()
-		typeNode := node.Assign.(*BinaryNode).Lhs
-		node.Variable = &common.Variable{
-			Symbol:       ctx.NAME().GetText(),
-			VariableType: common.Global,
-			Scope:        s.Compiler.Scope,
-			DataType:     typeNode.GetDataType(),
-		}
-		node.Assign.(*BinaryNode).Lhs = &VarNode{
-			Node: Node{
-				DataType: node.Variable.DataType,
-			},
-			Variable: node.Variable,
-		}
-	} else if ctx.Expr() != nil {
-		valNode := s.NodePop()
-		typeNode := s.NodePop()
-		node.Variable = &common.Variable{
-			Symbol:       ctx.NAME().GetText(),
-			VariableType: common.Global,
-			Scope:        s.Compiler.Scope,
-			DataType:     typeNode.GetDataType(),
-		}
-		node.Assign = &BinaryNode{
-			Node: Node{},
-			Lhs: &VarNode{
-				Node: Node{
-					DataType: node.Variable.DataType,
-				},
-				Variable: node.Variable,
-			},
-			Rhs: valNode,
-			Op:  "=",
-		}
+	varType := common.Global
+	if ctx.LOCAL() != nil {
+		varType = common.Local
 	}
-
-	s.Compiler.Scope.AddVariable(node.Variable)
-	s.NodePush(node)
-}
-
-// EnterLocalVariable is called when production LocalVariable is entered.
-func (s *ASTBuilder) EnterLocaldef(ctx *parser.LocaldefContext) {
-	s.VisitPush(&VariableDefNode{
-		Node: Node{
-			Parent:   s.VisitTop(),
-			Variadic: true,
-		},
-		IsGlobal: false,
-	})
-}
-
-func (s *ASTBuilder) ExitLocaldef(ctx *parser.LocaldefContext) {
-	node := s.VisitPop().(*VariableDefNode)
 	if ctx.InitializationListBegin() != nil {
 		node.Assign = s.NodePop()
 		typeNode := node.Assign.(*BinaryNode).Lhs
 		node.Variable = &common.Variable{
 			Symbol:       ctx.NAME().GetText(),
-			VariableType: common.Global,
+			VariableType: varType,
 			Scope:        s.Compiler.Scope,
 			DataType:     typeNode.GetDataType(),
 		}
@@ -93,7 +43,7 @@ func (s *ASTBuilder) ExitLocaldef(ctx *parser.LocaldefContext) {
 		typeNode := s.NodePop()
 		node.Variable = &common.Variable{
 			Symbol:       ctx.NAME().GetText(),
-			VariableType: common.Global,
+			VariableType: varType,
 			Scope:        s.Compiler.Scope,
 			DataType:     typeNode.GetDataType(),
 		}

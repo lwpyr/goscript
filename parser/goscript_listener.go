@@ -47,6 +47,9 @@ type goscriptListener interface {
 	// EnterSliceTypeName is called when entering the SliceTypeName production.
 	EnterSliceTypeName(c *SliceTypeNameContext)
 
+	// EnterChanTypeName is called when entering the ChanTypeName production.
+	EnterChanTypeName(c *ChanTypeNameContext)
+
 	// EnterFunctionTypeName is called when entering the functionTypeName production.
 	EnterFunctionTypeName(c *FunctionTypeNameContext)
 
@@ -79,6 +82,9 @@ type goscriptListener interface {
 
 	// EnterSliceTypeNameInDef is called when entering the SliceTypeNameInDef production.
 	EnterSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+
+	// EnterChanTypeNameInDef is called when entering the ChanTypeNameInDef production.
+	EnterChanTypeNameInDef(c *ChanTypeNameInDefContext)
 
 	// EnterFunctionTypeNameindef is called when entering the functionTypeNameindef production.
 	EnterFunctionTypeNameindef(c *FunctionTypeNameindefContext)
@@ -131,14 +137,11 @@ type goscriptListener interface {
 	// EnterRestoreStackSp is called when entering the RestoreStackSp production.
 	EnterRestoreStackSp(c *RestoreStackSpContext)
 
-	// EnterGlobalVarDef is called when entering the GlobalVarDef production.
-	EnterGlobalVarDef(c *GlobalVarDefContext)
+	// EnterVarDef is called when entering the VarDef production.
+	EnterVarDef(c *VarDefContext)
 
 	// EnterConstDef is called when entering the ConstDef production.
 	EnterConstDef(c *ConstDefContext)
-
-	// EnterLocalVarDef is called when entering the LocalVarDef production.
-	EnterLocalVarDef(c *LocalVarDefContext)
 
 	// EnterRestoreStack is called when entering the restoreStack production.
 	EnterRestoreStack(c *RestoreStackContext)
@@ -200,6 +203,9 @@ type goscriptListener interface {
 	// EnterIndexType5 is called when entering the IndexType5 production.
 	EnterIndexType5(c *IndexType5Context)
 
+	// EnterRecv is called when entering the Recv production.
+	EnterRecv(c *RecvContext)
+
 	// EnterPass is called when entering the Pass production.
 	EnterPass(c *PassContext)
 
@@ -214,6 +220,9 @@ type goscriptListener interface {
 
 	// EnterRightUnary is called when entering the RightUnary production.
 	EnterRightUnary(c *RightUnaryContext)
+
+	// EnterSend is called when entering the Send production.
+	EnterSend(c *SendContext)
 
 	// EnterAssignInitializationlist is called when entering the AssignInitializationlist production.
 	EnterAssignInitializationlist(c *AssignInitializationlistContext)
@@ -260,9 +269,6 @@ type goscriptListener interface {
 	// EnterVardef is called when entering the vardef production.
 	EnterVardef(c *VardefContext)
 
-	// EnterLocaldef is called when entering the localdef production.
-	EnterLocaldef(c *LocaldefContext)
-
 	// EnterConstdef is called when entering the constdef production.
 	EnterConstdef(c *ConstdefContext)
 
@@ -305,6 +311,9 @@ type goscriptListener interface {
 	// ExitSliceTypeName is called when exiting the SliceTypeName production.
 	ExitSliceTypeName(c *SliceTypeNameContext)
 
+	// ExitChanTypeName is called when exiting the ChanTypeName production.
+	ExitChanTypeName(c *ChanTypeNameContext)
+
 	// ExitFunctionTypeName is called when exiting the functionTypeName production.
 	ExitFunctionTypeName(c *FunctionTypeNameContext)
 
@@ -337,6 +346,9 @@ type goscriptListener interface {
 
 	// ExitSliceTypeNameInDef is called when exiting the SliceTypeNameInDef production.
 	ExitSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+
+	// ExitChanTypeNameInDef is called when exiting the ChanTypeNameInDef production.
+	ExitChanTypeNameInDef(c *ChanTypeNameInDefContext)
 
 	// ExitFunctionTypeNameindef is called when exiting the functionTypeNameindef production.
 	ExitFunctionTypeNameindef(c *FunctionTypeNameindefContext)
@@ -389,14 +401,11 @@ type goscriptListener interface {
 	// ExitRestoreStackSp is called when exiting the RestoreStackSp production.
 	ExitRestoreStackSp(c *RestoreStackSpContext)
 
-	// ExitGlobalVarDef is called when exiting the GlobalVarDef production.
-	ExitGlobalVarDef(c *GlobalVarDefContext)
+	// ExitVarDef is called when exiting the VarDef production.
+	ExitVarDef(c *VarDefContext)
 
 	// ExitConstDef is called when exiting the ConstDef production.
 	ExitConstDef(c *ConstDefContext)
-
-	// ExitLocalVarDef is called when exiting the LocalVarDef production.
-	ExitLocalVarDef(c *LocalVarDefContext)
 
 	// ExitRestoreStack is called when exiting the restoreStack production.
 	ExitRestoreStack(c *RestoreStackContext)
@@ -458,6 +467,9 @@ type goscriptListener interface {
 	// ExitIndexType5 is called when exiting the IndexType5 production.
 	ExitIndexType5(c *IndexType5Context)
 
+	// ExitRecv is called when exiting the Recv production.
+	ExitRecv(c *RecvContext)
+
 	// ExitPass is called when exiting the Pass production.
 	ExitPass(c *PassContext)
 
@@ -472,6 +484,9 @@ type goscriptListener interface {
 
 	// ExitRightUnary is called when exiting the RightUnary production.
 	ExitRightUnary(c *RightUnaryContext)
+
+	// ExitSend is called when exiting the Send production.
+	ExitSend(c *SendContext)
 
 	// ExitAssignInitializationlist is called when exiting the AssignInitializationlist production.
 	ExitAssignInitializationlist(c *AssignInitializationlistContext)
@@ -517,9 +532,6 @@ type goscriptListener interface {
 
 	// ExitVardef is called when exiting the vardef production.
 	ExitVardef(c *VardefContext)
-
-	// ExitLocaldef is called when exiting the localdef production.
-	ExitLocaldef(c *LocaldefContext)
 
 	// ExitConstdef is called when exiting the constdef production.
 	ExitConstdef(c *ConstdefContext)

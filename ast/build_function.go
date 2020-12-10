@@ -135,6 +135,20 @@ func (s *ASTBuilder) ExitSimpleTypeName(ctx *parser.SimpleTypeNameContext) {
 	})
 }
 
+// ExitChanTypeName is called when production ChanTypeName is exited.
+func (s *ASTBuilder) ExitChanTypeName(ctx *parser.ChanTypeNameContext) {
+	itemType := s.NodePop().GetDataType().Type
+	t := s.Compiler.TypeRegistry.FindChanType(itemType)
+	if t == nil {
+		panic(common.NewTypeNotFoundErr(fmt.Sprintf("chan<%s>", itemType)))
+	}
+	s.NodePush(&TypeNode{
+		Node: Node{
+			DataType: t,
+		},
+	})
+}
+
 // ExitMapTypeName is called when production MapTypeName is exited.
 func (s *ASTBuilder) ExitMapTypeName(ctx *parser.MapTypeNameContext) {
 	keyType := ctx.BasicTypeName().GetText()

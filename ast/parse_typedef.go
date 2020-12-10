@@ -209,6 +209,24 @@ func (s *TypeParser) ExitMapTypeNameInDef(ctx *parser.MapTypeNameInDefContext) {
 	s.NodePush(node)
 }
 
+// EnterChanTypeNameInDef is called when production ChanTypeNameInDef is entered.
+func (s *TypeParser) EnterChanTypeNameInDef(ctx *parser.ChanTypeNameInDefContext) {
+	s.VisitPush(&ChanTypeDef{
+		Node: Node{
+			Parent:   s.VisitTop(),
+			NodeType: "ChanTypeDef",
+			Variadic: false,
+		},
+	})
+}
+
+// ExitChanTypeNameInDef is called when production ChanTypeNameInDef is exited.
+func (s *TypeParser) ExitChanTypeNameInDef(ctx *parser.ChanTypeNameInDefContext) {
+	node := s.VisitPop().(*ChanTypeDef)
+	node.Item = s.NodePop().(ITypeDefNode)
+	s.NodePush(node)
+}
+
 // EnterSliceTypeNameInDef is called when production SliceTypeNameInDef is entered.
 func (s *TypeParser) EnterSliceTypeNameInDef(ctx *parser.SliceTypeNameInDefContext) {
 	s.VisitPush(&SliceTypeDef{

@@ -81,29 +81,60 @@ func (t *TypeRegistry) FindFuncType(meta *FunctionMeta) *DataType {
 	return t.Types[typeName]
 }
 
+func (t *TypeRegistry) FindChanType(name string) *DataType {
+	if t.FindType(name) == nil {
+		return nil
+	}
+	chanTypeName := "chan<" + name + ">"
+	if _, ok := t.Types[chanTypeName]; !ok {
+		t.Types[chanTypeName] = t.MakeChanType(name)
+	}
+	return t.Types[chanTypeName]
+}
+
+func (t *TypeRegistry) MakeChanType(name string) *DataType {
+	chanTypeName := "chan<" + name + ">"
+	itemType := t.FindType(name)
+	dType := &DataType{
+		Type:        chanTypeName,
+		Kind:        KindMap[Channel],
+		ItemType:    itemType,
+		Constructor: ConstructorMap[Channel],
+	}
+	dType.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
+		panic("cannot serialize channel")
+	}
+	return dType
+}
+
 func (t *TypeRegistry) FindSliceType(name string) *DataType {
 	if t.FindType(name) == nil {
 		return nil
 	}
 	sliceTypeName := "slice<" + name + ">"
 	if _, ok := t.Types[sliceTypeName]; !ok {
-		itemType := t.FindType(name)
-		dtype := &DataType{
-			Type:        sliceTypeName,
-			Kind:        KindMap[Slice],
-			ItemType:    itemType,
-			Constructor: ConstructorMap[Slice],
-		}
-		dtype.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
-			var ret []interface{}
-			for iter.ReadArray() {
-				ret = append(ret, itemType.Unmarshal(iter))
-			}
-			return ret
-		}
-		t.Types[sliceTypeName] = dtype
+		t.Types[sliceTypeName] = t.MakeSliceType(name)
 	}
 	return t.Types[sliceTypeName]
+}
+
+func (t *TypeRegistry) MakeSliceType(name string) *DataType {
+	sliceTypeName := "slice<" + name + ">"
+	itemType := t.FindType(name)
+	dType := &DataType{
+		Type:        sliceTypeName,
+		Kind:        KindMap[Slice],
+		ItemType:    itemType,
+		Constructor: ConstructorMap[Slice],
+	}
+	dType.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
+		var ret []interface{}
+		for iter.ReadArray() {
+			ret = append(ret, itemType.Unmarshal(iter))
+		}
+		return ret
+	}
+	return dType
 }
 
 func (t *TypeRegistry) FindMapType(key, val string) *DataType {
@@ -113,7 +144,6 @@ func (t *TypeRegistry) FindMapType(key, val string) *DataType {
 	}
 	if _, ok := t.Types[mapTypeName]; !ok {
 		t.Types[mapTypeName] = t.MakeMapType(key, val)
-
 	}
 	return t.Types[mapTypeName]
 }

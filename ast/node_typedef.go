@@ -56,6 +56,26 @@ func (e *EnumNode) Compile(c *Compiler) {
 	c.TypeRegistry.REnums[enumName] = re
 }
 
+type ChanTypeDef struct {
+	Node
+	TypeDefName
+	Item ITypeDefNode
+}
+
+func (t *ChanTypeDef) Compile(c *Compiler) {
+	t.Item.Compile(c)
+	ItemType := t.Item.GetDataType()
+	dt := c.TypeRegistry.MakeChanType(ItemType.Type)
+	if c.TypeRegistry.FindType(dt.Type) == nil {
+		c.TypeRegistry.AddType(dt.Type, dt)
+	}
+	if t.DataType != nil {
+		*t.DataType = *dt
+	} else {
+		t.DataType = dt
+	}
+}
+
 type MapTypeDef struct {
 	Node
 	TypeDefName
@@ -67,6 +87,9 @@ func (t *MapTypeDef) Compile(c *Compiler) {
 	t.Value.Compile(c)
 	ValType := t.Value.GetDataType()
 	dt := c.TypeRegistry.MakeMapType(t.KeyType.Type, ValType.Type)
+	if c.TypeRegistry.FindType(dt.Type) == nil {
+		c.TypeRegistry.AddType(dt.Type, dt)
+	}
 	if t.DataType != nil {
 		*t.DataType = *dt
 	} else {
@@ -83,7 +106,10 @@ type SliceTypeDef struct {
 func (t *SliceTypeDef) Compile(c *Compiler) {
 	t.Item.Compile(c)
 	ItemType := t.Item.GetDataType()
-	dt := c.FindSliceType(ItemType.Type)
+	dt := c.TypeRegistry.MakeSliceType(ItemType.Type)
+	if c.TypeRegistry.FindType(dt.Type) == nil {
+		c.TypeRegistry.AddType(dt.Type, dt)
+	}
 	if t.DataType != nil {
 		*t.DataType = *dt
 	} else {

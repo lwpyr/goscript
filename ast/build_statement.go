@@ -901,3 +901,48 @@ func (s *ASTBuilder) ExitConstructor(ctx *parser.ConstructorContext) {
 	cur.DataType = s.NodePop().GetDataType()
 	s.NodePush(cur)
 }
+
+// ExitSendOrRecv is called when production SendOrRecv is exited.
+func (s *ASTBuilder) ExitSend(ctx *parser.SendContext) {
+	rhs := s.NodePop()
+	rhsType := rhs.GetDataType()
+	lhs := s.NodePop()
+	lhsType := lhs.GetDataType()
+	if lhsType.Kind.Kind == common.Channel && rhsType.CanConvertTo(lhsType.ItemType) {
+		//send
+		s.NodePush(&ChanSend{
+			Node: Node{
+				Parent:   s.VisitTop(),
+				NodeType: "ChanSend",
+				DataType: common.BasicTypeMap[common.BoolType],
+				Variadic: true,
+			},
+			ToSend:   rhs,
+			Chan:     lhs,
+			NonBlock: ctx.CHANOPNONBLOCK() != nil,
+		})
+	} else {
+		panic(common.NewCompileErr("cannot parse the channel operation"))
+	}
+}
+
+// ExitRecv is called when production Recv is entered.
+func (s *ASTBuilder) ExitRecv(ctx *parser.RecvContext) {
+	rhs := s.NodePop()
+	rhsType := rhs.GetDataType()
+	if rhsType.Kind.Kind == common.Channel {
+		// recv
+		s.NodePush(&ChanRecv{
+			Node: Node{
+				Parent:   s.VisitTop(),
+				NodeType: "ChanRecv",
+				DataType: rhsType.ItemType,
+				Variadic: true,
+			},
+			Chan:     rhs,
+			NonBlock: ctx.CHANOPNONBLOCK() != nil,
+		})
+	} else {
+		panic(common.NewCompileErr("cannot parse the channel operation"))
+	}
+}

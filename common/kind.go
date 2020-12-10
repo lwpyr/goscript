@@ -19,6 +19,7 @@ const ( // Kind
 	Slice
 	Map
 	Message
+	Channel
 	Nil
 	Enum
 	Func
@@ -65,6 +66,9 @@ var KindMap = map[int]*DataKind{
 	},
 	Message: {
 		Kind: Message,
+	},
+	Channel: {
+		Kind: Channel,
 	},
 	Nil: {
 		Kind: Nil,

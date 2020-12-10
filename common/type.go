@@ -110,10 +110,9 @@ func (d *DataType) CanConvertTo(b *DataType) bool {
 	case Nil, UInt8: // now we don't open the uint8 type
 		return false
 	case Func:
-		if d.Kind.Kind == Func {
-			b.LambdaMeta = d.LambdaMeta
-		}
-		return true
+		return d.Kind.Kind == Func && b.LambdaMeta == d.LambdaMeta
+	case Channel:
+		return d.Kind.Kind == Func && b.ItemType == d.ItemType
 	default:
 		return true
 	}
@@ -426,6 +425,7 @@ var ConstructorMap = map[int]Constructor{
 	Nil:     NewNilValue,
 	Message: NewMessageValue,
 	Slice:   NewSliceValue,
+	Channel: NewChannelValue,
 	Object:  NewObjectValue,
 }
 

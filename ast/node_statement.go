@@ -118,6 +118,19 @@ type ValueNode struct {
 	Val interface{}
 }
 
+type ChanSend struct {
+	Node
+	ToSend   ASTNode
+	Chan     ASTNode
+	NonBlock bool
+}
+
+type ChanRecv struct {
+	Node
+	Chan     ASTNode
+	NonBlock bool
+}
+
 func (i *InitializationSliceNode) Compile(c *Compiler) {
 	num := len(i.Items)
 	itemInstructions := make([]common.Instruction, 0, num)
@@ -792,4 +805,55 @@ func (v *ValueNode) GetConstantKind() int {
 
 func (v *ValueNode) GetConstantValue() interface{} {
 	return v.Val
+}
+
+func (v *ChanSend) Compile(c *Compiler) {
+	v.Chan.Compile(c)
+	chanInstruction := c.InstructionPop()
+	v.ToSend.Compile(c)
+	toSendInstruction := c.InstructionPop()
+	convertFunc := lambda_chains.GetConvertFunc(v.ToSend.GetDataType(), v.Chan.GetDataType().ItemType)
+	if v.NonBlock {
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			chanInstruction(m, stk)
+			toSendInstruction(m, stk)
+			select {
+			case stk.TopIndex(1).(chan interface{}) <- convertFunc(stk.Top()):
+				stk.PopN(2)
+				stk.Push(true)
+			default:
+				stk.PopN(2)
+				stk.Push(false)
+			}
+		})
+	} else {
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			chanInstruction(m, stk)
+			toSendInstruction(m, stk)
+			stk.TopIndex(1).(chan interface{}) <- convertFunc(stk.Top())
+			stk.PopN(2)
+			stk.Push(true)
+		})
+	}
+}
+
+func (v *ChanRecv) Compile(c *Compiler) {
+	v.Chan.Compile(c)
+	chanInstruction := c.InstructionPop()
+	if v.NonBlock {
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			chanInstruction(m, stk)
+			select {
+			case temp := <-stk.Top().(chan interface{}):
+				stk.Set(0, temp)
+			default:
+				stk.Set(0, nil)
+			}
+		})
+	} else {
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+			chanInstruction(m, stk)
+			stk.Set(0, <-stk.Top().(chan interface{}))
+		})
+	}
 }

@@ -25,6 +25,7 @@ STRING: 'string';
 BYTES: 'bytes';
 BOOL: 'bool';
 UINT8: 'uint8';
+CHAN: 'chan';
 OBJECT: 'object';
 
 NEW: 'new';
@@ -78,6 +79,9 @@ REGEX: '=~';
 AND: '&&';
 OR: '||';
 NOT: '!';
+
+CHANOP: '<-';
+CHANOPNONBLOCK: '<<-';
 
 ASSIGN: '=';
 ADDEQUAL: '+=';
@@ -143,6 +147,7 @@ typename
     | functionTypeName # FunctionType
     | MAP '<' basicTypeName ',' typename '>' # MapTypeName
     | SLICE '<' typename '>' # SliceTypeName
+    | CHAN '<' typename '>' # ChanTypeName
     ;
 
 functionTypeName
@@ -166,6 +171,7 @@ typenameindef
     | functionTypeNameindef # FunctionTypeInDef
     | MAP '<' basicTypeName ',' typenameindef '>' # MapTypeNameInDef
     | SLICE '<' typenameindef '>' # SliceTypeNameInDef
+    | CHAN '<' typenameindef '>' # ChanTypeNameInDef
     ;
 
 functionTypeNameindef
@@ -204,9 +210,8 @@ block
 
 line
     : restoreStack # RestoreStackSp
-    | vardef # GlobalVarDef
+    | vardef # VarDef
     | constdef # ConstDef
-    | localdef # LocalVarDef
     ;
 
 restoreStack
@@ -247,6 +252,10 @@ indexs
 
 expr
     : '(' expr ')' # Pass
+    | constant # Pass
+    | variable # Pass
+    | lambda # Pass
+    | builtin # Pass
     | op=(UNARYADD|UNARYSUB) variable # LeftUnary
     | op=(NOT|SUB) expr # LeftUnary
     | variable op=(UNARYADD|UNARYSUB) # RightUnary
@@ -256,28 +265,15 @@ expr
     | expr op=(EQ | INEQ | GT | GE | LT | LE | REGEX) expr # Binary
     | expr op=AND expr # Binary
     | expr op=OR expr # Binary
+    | variable (CHANOP|CHANOPNONBLOCK) variable # Send
+    | (CHANOP|CHANOPNONBLOCK) variable # Recv
     | <assoc=right> lhs op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Binary
     | <assoc=right> lhs op=ASSIGN initializationListBegin # AssignInitializationlist
-    | constant # Pass
-    | variable # Pass
-    | lambda # Pass
-    | builtin # Pass
     | constructor # Construct
     ;
 
 basicTypeName
-    : UINT32
-    | UINT64
-    | INT32
-    | INT64
-    | FLOAT32
-    | FLOAT64
-    | STRING
-    | BYTES
-    | BOOL
-    | UINT8
-    | OBJECT
-    ;
+    : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|OBJECT);
 
 builtin
     : PUSHBACK '(' variable',' expr ')'
@@ -325,10 +321,7 @@ vardef
     : VAR NAME typename
     | VAR NAME typename '=' expr
     | VAR NAME typename '=' initializationListBegin
-    ;
-
-localdef
-    : LOCAL NAME typename
+    | LOCAL NAME typename
     | LOCAL NAME typename '=' expr
     | LOCAL NAME typename '=' initializationListBegin
     ;
