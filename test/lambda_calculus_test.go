@@ -1,9 +1,18 @@
 package test
 
-import "testing"
+import (
+	"github.com/lwpyr/goscript"
+	"github.com/lwpyr/goscript/common"
+	"testing"
+)
 
 func TestLambdaCalculus(t *testing.T) {
-	setupParse()
+	c = goscript.NewCompiler()
+	c.Scope = goscript.NewScope(nil)
+	c.Include("common")
+	mem = &common.Memory{
+		Data: make([]interface{}, 1000),
+	}
 	var expr string
 	expr = `
 func Identity(x object) object {
@@ -11,91 +20,81 @@ func Identity(x object) object {
 }
 
 func SelfApply(x object) object {
-	local f func(object)object = x;
-	return f(x);
+	return x.(func(object)object)(x);
 }
 
-func Apply(x object) func(object)object {
-	local f func(object)object = x;
+func Apply(x object) object {
 	return func(y object) object {
-		return f(y);
+		return x.(func(object)object)(y);
 	};
 }
 
-func TRUE(x object) func(object)object {
-	local f func(object)object = x;
+func TRUE(x object) object {
 	return func(y object) object {
-		return f;
+		return x;
 	};
 }
 
-func FALSE(x object) func(object)object {
+func FALSE(x object) object {
 	return func(y object) object {
 		return y;
 	};
 }
 
-func CONDITION(x object) func(object)(func(object)object) {
-	local f func(object)object = x;
+func CONDITION(x object) object {
 	return func(y object) object {
 		return func(c object) object {
-			local BOOL func(object)(func(object)object) = c;
-			return BOOL(x)(y);
+			return c.(func(object)object)(x).(func(object)object)(y);
 		};
 	};
 }
 
 func NOT(x object) object {
-	local f func(object)(func(object)object) = x;
-	return f(FALSE)(TRUE);
+	return x.(func(object)object)(FALSE).(func(object)object)(TRUE);
 }
 
-func AND(x object) func(object)object {
-	local f func(object)(func(object)object) = x;
+func AND(x object) object {
 	return func(y object)object {
-		return f(y)(FALSE);
+		return x.(func(object)object)(y).(func(object)object)(FALSE);
 	};
 }
 
-func OR(x object) func(object)object {
-	local f func(object)(func(object)object) = x;
+func OR(x object) object {
 	return func(y object)object {
-		return f(TRUE)(y);
+		return x.(func(object)object)(TRUE).(func(object)object)(y);
 	};
 }
 
 print(Identity == Identity(Identity)); // true
 print(Identity == SelfApply(Identity)); // true
 
-print(Apply(Identity)(Identity) == Identity); // true
+print(Apply(Identity).(func(object)object)(Identity) == Identity); // true
 
-print(TRUE(Identity)(Apply) == Identity); // true
-print(FALSE(Identity)(Apply) == Apply); // true
+print(TRUE(Identity).(func(object)object)(Apply) == Identity); // true
+print(FALSE(Identity).(func(object)object)(Apply) == Apply); // true
 
-print(CONDITION(Identity)(Apply)(TRUE) == Identity); // true
-print(CONDITION(Identity)(Apply)(FALSE) == Identity); // false
-print(CONDITION(Apply)(Identity)(TRUE) == Identity); // false
-print(CONDITION(Apply)(Identity)(FALSE) == Identity); // true
+print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(TRUE) == Identity); // true
+print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(FALSE) == Identity); // false
+print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(TRUE) == Identity); // false
+print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(FALSE) == Identity); // true
 
 print(NOT(TRUE) == FALSE); // true
 print(NOT(NOT(TRUE)) == TRUE); // true
 
-print(OR(TRUE)(TRUE) == TRUE); // true
-print(OR(TRUE)(FALSE) == TRUE); // true
-print(OR(FALSE)(TRUE) == TRUE); // true
-print(OR(FALSE)(FALSE) == FALSE); // true
+print(OR(TRUE).(func(object)object)(TRUE) == TRUE); // true
+print(OR(TRUE).(func(object)object)(FALSE) == TRUE); // true
+print(OR(FALSE).(func(object)object)(TRUE) == TRUE); // true
+print(OR(FALSE).(func(object)object)(FALSE) == FALSE); // true
 
 // Natural Number
 func Next(x object) func(object)object {
 	return func(y object) object {
-		local f func(object)(func(object)object) = y;
-		return f(FALSE)(x);
+		return y.(func(object)object)(FALSE).(func(object)object)(x);
 	};
 }
 
 func IsZero(x object) object {
-	local f func(object)object = x;
-	return f(TRUE);
+	return x.(func(object)object)(TRUE);
 }
 
 var zero  func(object)object = Identity;
@@ -113,15 +112,13 @@ print(IsZero(zero) == TRUE); // true
 print(IsZero(one) == FALSE); // true
 
 func Prev(x object) object {
-	local n func(object)object = x;
-	local z func(object)(func(object)object) = IsZero(n);
-	return z(zero)(n(FALSE));
+	return IsZero(x).(func(object)object)(zero).(func(object)object)(x.(func(object)object)(FALSE));
 }
 
 print(Prev(one) == zero); // true
 print(Prev(nine) == eight); // true
 print(Prev(nine) == seven); // false
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }

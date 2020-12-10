@@ -5,23 +5,6 @@ import (
 	"github.com/lwpyr/goscript/parser"
 )
 
-//// EnterLineProgram is called when production LineProgram is entered.
-//func (s *ASTBuilder) EnterLineProgram(ctx *parser.LineProgramContext) {
-//	s.VisitPush(&LineNode{
-//		Node: Node{
-//			Parent:   s.VisitTop(),
-//			Variadic: true,
-//		},
-//	})
-//}
-//
-//// ExitLineProgram is called when production LineProgram is exited.
-//func (s *ASTBuilder) ExitLineProgram(ctx *parser.LineProgramContext) {
-//	node := s.VisitPop().(*LineNode)
-//	node.Line = s.NodePop()
-//	s.NodePush(node)
-//}
-
 // EnterRunnableExec is called when production RunnableExec is entered.
 func (s *ASTBuilder) EnterRestoreStack(ctx *parser.RestoreStackContext) {
 	s.VisitPush(&RestoreStackNode{
@@ -117,6 +100,7 @@ func (s *ASTBuilder) EnterReturnVal(ctx *parser.ReturnValContext) {
 	s.VisitPush(cur)
 }
 
+// todo: check type
 // ExitControlReturnVal is called when production ControlReturnVal is exited.
 func (s *ASTBuilder) ExitReturnVal(ctx *parser.ReturnValContext) {
 	node := s.VisitPop().(*ReturnNode)

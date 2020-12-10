@@ -204,7 +204,7 @@ func (i *InitializationConstantNode) Compile(c *Compiler) {
 func (v *VarNode) Compile(c *Compiler) {
 	if v.Variable != nil {
 		variable := v.Variable
-		if v.Lhs {
+		if v.LhsFlag {
 			switch variable.VariableType {
 			case common.Global:
 				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
@@ -244,7 +244,7 @@ func (v *VarNode) Compile(c *Compiler) {
 }
 
 func (s *SelectorNode) Compile(c *Compiler) {
-	if s.Lhs {
+	if s.LhsFlag {
 		s.Data.SetLhs()
 	}
 	s.Data.Compile(c)
@@ -260,7 +260,7 @@ func (s *SelectorNode) Compile(c *Compiler) {
 			}
 		}
 	}
-	if s.Lhs {
+	if s.LhsFlag {
 		if len(oneOfs) > 0 {
 			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 				dataInstruction(m, stk)
@@ -297,7 +297,7 @@ func (s *SelectorNode) Compile(c *Compiler) {
 }
 
 func (s *SliceFilterNode) Compile(c *Compiler) {
-	if s.Lhs {
+	if s.LhsFlag {
 		panic("cannot use slice-filter an array on the left hand side")
 	}
 	s.Slice.Compile(c)
@@ -330,7 +330,7 @@ func (s *SliceFilterNode) Compile(c *Compiler) {
 
 func (s *SliceMultiIndexNode) Compile(c *Compiler) {
 	if s.Slice.GetDataType().Kind.Kind == common.Slice {
-		if s.Lhs {
+		if s.LhsFlag {
 			panic("cannot use slice-index an array on the left hand side")
 		}
 		s.Slice.Compile(c)
@@ -373,7 +373,7 @@ func (s *SliceMultiIndexNode) Compile(c *Compiler) {
 			stk.Set(0, val)
 		})
 	} else {
-		if s.Lhs {
+		if s.LhsFlag {
 			panic("cannot use slice-index an array on the left hand side")
 		}
 		s.Slice.Compile(c)
@@ -395,7 +395,7 @@ func (s *SliceMultiIndexNode) Compile(c *Compiler) {
 }
 
 func (i *IndexNode) Compile(c *Compiler) {
-	if i.Lhs {
+	if i.LhsFlag {
 		i.ToIndex.SetLhs()
 	}
 	i.ToIndex.Compile(c)
@@ -405,7 +405,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 		indexInstruction := c.InstructionPop()
 		sliceInstruction := c.InstructionPop()
 		i64ConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), common.BasicTypeMap["int64"])
-		if i.Lhs {
+		if i.LhsFlag {
 			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 				sliceInstruction(m, stk)
 				indexInstruction(m, stk)
@@ -426,7 +426,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 		indexInstruction := c.InstructionPop()
 		sliceInstruction := c.InstructionPop()
 		i64ConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), common.BasicTypeMap["int64"])
-		if i.Lhs {
+		if i.LhsFlag {
 			panic("string is immutable")
 		} else {
 			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
@@ -445,7 +445,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 		keyConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), i.ToIndex.GetDataType().KeyType)
 		mapMustGet := lambda_chains.GetMapMustGetFunc(i.ToIndex.GetDataType().KeyType)
 		mapGet := lambda_chains.GetMapGetFunc(i.ToIndex.GetDataType().KeyType)
-		if i.Lhs {
+		if i.LhsFlag {
 			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
 				mapInstruction(m, stk)
 				keyInstruction(m, stk)
@@ -472,7 +472,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 }
 
 func (i *IndicesNode) Compile(c *Compiler) {
-	if i.Lhs {
+	if i.LhsFlag {
 		panic("cannot use slice-index an array on left hand side")
 	}
 	switch i.NodeType {
@@ -557,7 +557,7 @@ func (i *IndicesNode) Compile(c *Compiler) {
 }
 
 func (m *MapMultiIndexNode) Compile(c *Compiler) {
-	if m.Lhs {
+	if m.LhsFlag {
 		panic("cannot use slice-index a map on the left hand side")
 	}
 	m.Data.Compile(c)

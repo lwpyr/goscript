@@ -109,8 +109,8 @@ func (d *DataType) CanConvertTo(b *DataType) bool {
 		return d.Kind.Kind == Bytes || d.Kind.Kind == String
 	case Nil, UInt8: // now we don't open the uint8 type
 		return false
-	case Closure:
-		if d.Kind.Kind == Closure {
+	case Func:
+		if d.Kind.Kind == Func {
 			b.LambdaMeta = d.LambdaMeta
 		}
 		return true
@@ -151,7 +151,7 @@ func CanEqual(d *DataType, b *DataType) *DataType {
 	switch b.Kind.Kind {
 	case Message, Map, Slice:
 		return nil
-	case ReflectType, Closure:
+	case ReflectType, Func:
 		if d.Kind.Kind == b.Kind.Kind {
 			return BasicTypeMap["bool"]
 		}
@@ -369,7 +369,7 @@ var BasicTypeMap = map[string]*DataType{
 	"lambda": {
 		Type:   "lambda",
 		Method: map[string]*FunctionMeta{},
-		Kind:   KindMap[Closure],
+		Kind:   KindMap[Func],
 	},
 	"reflect": { // only for reflect type
 		Type:   "reflect",

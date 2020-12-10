@@ -486,6 +486,20 @@ func TestEnum(t *testing.T) {
 	assert.Equal(t, "banana", p.RunOnMemory(mem))
 }
 
+func TestAssert(t *testing.T) {
+	setup()
+	var expr string
+	var p *program.SingleLineProgram
+
+	expr = "TomObj = Tom"
+	p = compile(expr)
+	assert.Equal(t, map[string]interface{}{"age": int32(12), "name": "Tom"}, p.RunOnMemory(mem))
+
+	expr = "TomObj.(Person).name"
+	p = compile(expr)
+	assert.Equal(t, "Tom", p.RunOnMemory(mem))
+}
+
 func BenchmarkExpr(b *testing.B) {
 	setup()
 	expr := "Friends[1].age * Tom.age"
@@ -556,7 +570,7 @@ func BenchmarkInitializationList(b *testing.B) {
 
 func BenchmarkInitNaive(b *testing.B) {
 	setup()
-	p1 := compile("Class = new('map<int64,Person>')")
+	p1 := compile("Class = new map<int64,Person>()")
 	p2 := compile("Class[1].name = 'alpha'")
 	p3 := compile("Class[1].age = 100")
 	p4 := compile("Class[2].name = 'beta'")
@@ -646,8 +660,7 @@ func setup() {
 	scope.AddVariable(goscript.NewVariable("stringMap", c.FindMapType("string", "Person")))
 	scope.AddVariable(goscript.NewVariable("float32Map", c.FindMapType("float32", "Person")))
 	scope.AddVariable(goscript.NewVariable("forMap", c.FindMapType("int32", "string")))
-
-	c.Scope = scope
+	scope.AddVariable(goscript.NewVariable("TomObj", c.FindType("object")))
 
 	// init some data
 	var expr string

@@ -152,7 +152,7 @@ func (c *Compiler) BuildAST(expr string) (root ASTNode, err error) {
 			if e, ok := r.(common.ScriptError); ok {
 				err = errors.New(e.Error() + "\n" + string(debug.Stack()))
 			} else {
-				err = errors.New(r.(error).Error() + "\n" + string(debug.Stack()))
+				err = errors.New(r.(string) + "\n" + string(debug.Stack()))
 			}
 		}
 	}()

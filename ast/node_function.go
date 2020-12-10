@@ -234,16 +234,20 @@ type BuiltinFunctionNode struct {
 	Aux         interface{}
 }
 
+// todo: process non-variadic
 func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 	switch b.BuiltinName {
+	case "object":
+		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {})
 	case "uint8":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc32u(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
+		panic(common.NewCompileErr("uint8 is not opened"))
+		//b.Params[0].Compile(c)
+		//valInst := c.InstructionPop()
+		//convertFunc := lambda_chains.GetConvertFunc32u(b.Params[0].GetDataType(), b.DataType)
+		//c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
+		//	valInst(m, stk)
+		//	stk.Set(0, convertFunc(stk.Top()))
+		//})
 	case "uint32":
 		b.Params[0].Compile(c)
 		valInst := c.InstructionPop()

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func compilePro(expr string) *program.ScriptProgram {
+func compileScript(expr string) *program.ScriptProgram {
 	ret, err := c.CompileScript(expr)
 	if err != nil {
 		panic(err)
@@ -29,7 +29,7 @@ func fib(v int64) int64 {
 }
 
 print(fib(35));`
-	p := compilePro(expr)
+	p := compileScript(expr)
 	start := time.Now()
 	p.RunOnMemory(mem)
 	fmt.Println(time.Since(start))
@@ -46,7 +46,7 @@ for (num1=1; num1<=100; num1 = num1 + 1) {
 }
 print(num2);
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
 
@@ -60,7 +60,7 @@ for (local i int64 = 1; i <= 100; i++) {
 }
 print(sum);
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
 
@@ -85,7 +85,7 @@ who(Tom);
 Tom = {name('Lisa')};
 who(Tom);
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
 
@@ -98,7 +98,7 @@ var f func(int64,int64)(int64) = func(a int64, b int64) int64 {
 }; 
 print(f(1,2));
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
 
@@ -118,7 +118,7 @@ fs[1] = main(3,4);
 print(fs[0]());
 print(fs[1]());
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
 
@@ -132,7 +132,7 @@ for (local i int64 = 1; i <= 100; i++) {
 	sum = sum + i;
 }
 `
-	p := compilePro(expr)
+	p := compileScript(expr)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		p.RunOnMemory(mem)
@@ -170,6 +170,4 @@ func setupParse() {
 	c.Include("json")
 	c.Include("base64")
 	c.Include("datetime")
-
-	c.Scope = scope
 }

@@ -10,33 +10,21 @@ type TypeRegistry struct {
 	Types        map[string]*DataType
 	Enums        map[string]map[string]int32
 	REnums       map[string]map[int32]string
-	TypeBuilders map[string]*DataTypeBuilder
+	TypesInBuild map[string]*DataType
 }
 
-func (t *TypeRegistry) FindDataTypeBuilder(name string) *DataTypeBuilder {
-	return t.TypeBuilders[name]
-}
-
-func (t *TypeRegistry) AddNameToBuild(name string) {
+func (t *TypeRegistry) AddTypePlaceHolderInBuild(name string) *DataType {
+	if _, ok := BasicTypeMap[name]; ok {
+		panic("try to overwritten a basic type: " + name)
+	}
 	if t.Types[name] != nil {
-		return
+		panic(NewCompileErr("try to create duplicate type name " + name))
 	}
-	dtb := NewDataTypeBuilder(name)
-	t.TypeBuilders[name] = dtb
-}
-
-func (t *TypeRegistry) FindTypeInTypeBuilding(name string) *DataType {
-	if dtb, ok := t.TypeBuilders[name]; ok {
-		return dtb.T
+	placeHolder := &DataType{
+		Type: name,
 	}
-	return t.FindType(name)
-}
-
-// todo: robust check
-func (t *TypeRegistry) FinishTypeBuild() {
-	for _, v := range t.TypeBuilders {
-		t.AddBuiltType(v)
-	}
+	t.Types[name] = placeHolder
+	return placeHolder
 }
 
 func NewTypeRegistry() *TypeRegistry {
@@ -83,12 +71,12 @@ func (t *TypeRegistry) GetREnums(name string) map[int32]string {
 func (t *TypeRegistry) FindFuncType(meta *FunctionMeta) *DataType {
 	typeName := meta.GenerateTypeName()
 	if _, ok := t.Types[typeName]; !ok {
-		dtype := &DataType{
+		dType := &DataType{
 			Type:       typeName,
-			Kind:       KindMap[Closure],
+			Kind:       KindMap[Func],
 			LambdaMeta: meta,
 		}
-		t.Types[typeName] = dtype
+		t.Types[typeName] = dType
 	}
 	return t.Types[typeName]
 }
@@ -124,103 +112,107 @@ func (t *TypeRegistry) FindMapType(key, val string) *DataType {
 		return nil
 	}
 	if _, ok := t.Types[mapTypeName]; !ok {
-		keyType := t.FindType(key)
-		valType := t.FindType(val)
-		var constructor Constructor
-		var unmarshal func(iter *jsoniter.Iterator) interface{}
-		switch keyType.Kind.Kind {
-		case Int32:
-			constructor = NewMapInt32Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[int32]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseInt(field, 10, 32)
-					ret[int32(k)] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case Int64:
-			constructor = NewMapInt64Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[int64]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseInt(field, 10, 32)
-					ret[k] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case UInt32:
-			constructor = NewMapUInt32Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[uint32]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseUint(field, 10, 32)
-					ret[uint32(k)] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case UInt64:
-			constructor = NewMapUInt64Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[uint64]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseUint(field, 10, 32)
-					ret[uint64(k)] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case Float32:
-			constructor = NewMapFloat32Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[float32]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseFloat(field, 32)
-					ret[float32(k)] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case Float64:
-			constructor = NewMapFloat64Value
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[float64]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseFloat(field, 64)
-					ret[k] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case String:
-			constructor = NewMapStringValue
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[string]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					ret[field] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		case Bool:
-			constructor = NewMapBoolValue
-			unmarshal = func(iter *jsoniter.Iterator) interface{} {
-				ret := map[bool]interface{}{}
-				for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
-					k, _ := strconv.ParseBool(field)
-					ret[k] = valType.Unmarshal(iter)
-				}
-				return ret
-			}
-		}
-		dtype := &DataType{
-			Type:        mapTypeName,
-			Kind:        KindMap[Map],
-			KeyType:     keyType,
-			ValueType:   valType,
-			Constructor: constructor,
-			Unmarshal:   unmarshal,
-		}
-		t.Types[mapTypeName] = dtype
+		t.Types[mapTypeName] = t.MakeMapType(key, val)
 
 	}
 	return t.Types[mapTypeName]
+}
+
+func (t *TypeRegistry) MakeMapType(key, val string) *DataType {
+	mapTypeName := "map<" + key + "," + val + ">"
+	keyType := t.FindType(key)
+	valType := t.FindType(val)
+	var constructor Constructor
+	var unmarshal func(iter *jsoniter.Iterator) interface{}
+	switch keyType.Kind.Kind {
+	case Int32:
+		constructor = NewMapInt32Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[int32]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseInt(field, 10, 32)
+				ret[int32(k)] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case Int64:
+		constructor = NewMapInt64Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[int64]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseInt(field, 10, 32)
+				ret[k] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case UInt32:
+		constructor = NewMapUInt32Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[uint32]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseUint(field, 10, 32)
+				ret[uint32(k)] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case UInt64:
+		constructor = NewMapUInt64Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[uint64]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseUint(field, 10, 32)
+				ret[uint64(k)] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case Float32:
+		constructor = NewMapFloat32Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[float32]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseFloat(field, 32)
+				ret[float32(k)] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case Float64:
+		constructor = NewMapFloat64Value
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[float64]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseFloat(field, 64)
+				ret[k] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case String:
+		constructor = NewMapStringValue
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[string]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				ret[field] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	case Bool:
+		constructor = NewMapBoolValue
+		unmarshal = func(iter *jsoniter.Iterator) interface{} {
+			ret := map[bool]interface{}{}
+			for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+				k, _ := strconv.ParseBool(field)
+				ret[k] = valType.Unmarshal(iter)
+			}
+			return ret
+		}
+	}
+	return &DataType{
+		Type:        mapTypeName,
+		Kind:        KindMap[Map],
+		KeyType:     keyType,
+		ValueType:   valType,
+		Constructor: constructor,
+		Unmarshal:   unmarshal,
+	}
 }
 
 // not suggested to use, use DataTypeBuilder instead

@@ -19,9 +19,10 @@ func (s *ASTBuilder) EnterFunctionDef(ctx *parser.FunctionDefContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 			DataType: &common.DataType{
-				Kind: common.KindMap[common.Closure],
+				Kind: common.KindMap[common.Func],
 				LambdaMeta: &common.FunctionMeta{
 					ConstExpr: false,
+					TailArray: ctx.TAILARRAY() != nil,
 				},
 			},
 		},
@@ -51,9 +52,10 @@ func (s *ASTBuilder) EnterLambdaDef(ctx *parser.LambdaDefContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 			DataType: &common.DataType{
-				Kind: common.KindMap[common.Closure],
+				Kind: common.KindMap[common.Func],
 				LambdaMeta: &common.FunctionMeta{
 					ConstExpr: false,
+					TailArray: ctx.TAILARRAY() != nil,
 				},
 			},
 		},
@@ -135,7 +137,7 @@ func (s *ASTBuilder) ExitSimpleTypeName(ctx *parser.SimpleTypeNameContext) {
 
 // ExitMapTypeName is called when production MapTypeName is exited.
 func (s *ASTBuilder) ExitMapTypeName(ctx *parser.MapTypeNameContext) {
-	keyType := ctx.NAME().GetText()
+	keyType := ctx.BasicTypeName().GetText()
 	valType := s.NodePop().GetDataType().Type
 	t := s.Compiler.TypeRegistry.FindMapType(keyType, valType)
 	if t == nil {
@@ -182,7 +184,13 @@ func (s *ASTBuilder) ExitFunctionTypeName(ctx *parser.FunctionTypeNameContext) {
 // EnterClosure is called when production closure is entered.
 func (s *ASTBuilder) EnterClosure(ctx *parser.ClosureContext) {
 	node := s.VisitTop()
-	node.SetDataType(s.Compiler.FindFuncType(node.GetDataType().LambdaMeta))
+	meta := node.GetDataType().LambdaMeta
+	node.SetDataType(s.Compiler.FindFuncType(meta))
+	if meta.TailArray {
+		lenOut := len(meta.Out)
+		v := s.Compiler.Scope.GetVariable(meta.Out[lenOut-1].Type)
+		v.DataType = s.Compiler.FindSliceType(v.DataType.Type)
+	}
 	if _, ok := node.(*LambdaDefNode); ok {
 		s.Compiler.Scope.AddParameterVariable(&common.Variable{
 			Symbol:       "#",
@@ -234,7 +242,7 @@ func (s *ASTBuilder) ExitDirectCall(ctx *parser.DirectCallContext) {
 		cur.Function = functionConstant
 	} else {
 		// lambda
-		if lambdaVarType.Kind.Kind != common.Closure {
+		if lambdaVarType.Kind.Kind != common.Func {
 			panic(common.NewTypeErr("symbol is not lambda: " + funcName))
 		}
 		meta = lambdaVarType.LambdaMeta
@@ -307,7 +315,7 @@ func (s *ASTBuilder) ExitBuiltin(ctx *parser.BuiltinContext) {
 			Parent:   s.VisitTop(),
 			NodeType: "BuiltinFunctionNode",
 			DataType: dType,
-			Lhs:      false,
+			LhsFlag:  false,
 			Variadic: true,
 		},
 		Params:      params,

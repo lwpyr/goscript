@@ -27,30 +27,6 @@ func (s *BasegoscriptListener) EnterProgram(ctx *ProgramContext) {}
 // ExitProgram is called when production program is exited.
 func (s *BasegoscriptListener) ExitProgram(ctx *ProgramContext) {}
 
-// EnterFuncDef is called when production FuncDef is entered.
-func (s *BasegoscriptListener) EnterFuncDef(ctx *FuncDefContext) {}
-
-// ExitFuncDef is called when production FuncDef is exited.
-func (s *BasegoscriptListener) ExitFuncDef(ctx *FuncDefContext) {}
-
-// EnterTypeDef is called when production TypeDef is entered.
-func (s *BasegoscriptListener) EnterTypeDef(ctx *TypeDefContext) {}
-
-// ExitTypeDef is called when production TypeDef is exited.
-func (s *BasegoscriptListener) ExitTypeDef(ctx *TypeDefContext) {}
-
-// EnterEnumDef is called when production EnumDef is entered.
-func (s *BasegoscriptListener) EnterEnumDef(ctx *EnumDefContext) {}
-
-// ExitEnumDef is called when production EnumDef is exited.
-func (s *BasegoscriptListener) ExitEnumDef(ctx *EnumDefContext) {}
-
-// EnterRun is called when production Run is entered.
-func (s *BasegoscriptListener) EnterRun(ctx *RunContext) {}
-
-// ExitRun is called when production Run is exited.
-func (s *BasegoscriptListener) ExitRun(ctx *RunContext) {}
-
 // EnterFunctionDef is called when production FunctionDef is entered.
 func (s *BasegoscriptListener) EnterFunctionDef(ctx *FunctionDefContext) {}
 
@@ -99,18 +75,6 @@ func (s *BasegoscriptListener) EnterParam(ctx *ParamContext) {}
 // ExitParam is called when production param is exited.
 func (s *BasegoscriptListener) ExitParam(ctx *ParamContext) {}
 
-// EnterTypeDefAlias is called when production TypeDefAlias is entered.
-func (s *BasegoscriptListener) EnterTypeDefAlias(ctx *TypeDefAliasContext) {}
-
-// ExitTypeDefAlias is called when production TypeDefAlias is exited.
-func (s *BasegoscriptListener) ExitTypeDefAlias(ctx *TypeDefAliasContext) {}
-
-// EnterTypeDefComplex is called when production TypeDefComplex is entered.
-func (s *BasegoscriptListener) EnterTypeDefComplex(ctx *TypeDefComplexContext) {}
-
-// ExitTypeDefComplex is called when production TypeDefComplex is exited.
-func (s *BasegoscriptListener) ExitTypeDefComplex(ctx *TypeDefComplexContext) {}
-
 // EnterSimpleTypeName is called when production SimpleTypeName is entered.
 func (s *BasegoscriptListener) EnterSimpleTypeName(ctx *SimpleTypeNameContext) {}
 
@@ -141,11 +105,83 @@ func (s *BasegoscriptListener) EnterFunctionTypeName(ctx *FunctionTypeNameContex
 // ExitFunctionTypeName is called when production functionTypeName is exited.
 func (s *BasegoscriptListener) ExitFunctionTypeName(ctx *FunctionTypeNameContext) {}
 
-// EnterEnumdef is called when production enumdef is entered.
-func (s *BasegoscriptListener) EnterEnumdef(ctx *EnumdefContext) {}
+// EnterTypeDefMap is called when production TypeDefMap is entered.
+func (s *BasegoscriptListener) EnterTypeDefMap(ctx *TypeDefMapContext) {}
 
-// ExitEnumdef is called when production enumdef is exited.
-func (s *BasegoscriptListener) ExitEnumdef(ctx *EnumdefContext) {}
+// ExitTypeDefMap is called when production TypeDefMap is exited.
+func (s *BasegoscriptListener) ExitTypeDefMap(ctx *TypeDefMapContext) {}
+
+// EnterTypeDefSlice is called when production TypeDefSlice is entered.
+func (s *BasegoscriptListener) EnterTypeDefSlice(ctx *TypeDefSliceContext) {}
+
+// ExitTypeDefSlice is called when production TypeDefSlice is exited.
+func (s *BasegoscriptListener) ExitTypeDefSlice(ctx *TypeDefSliceContext) {}
+
+// EnterTypeDefMessage is called when production TypeDefMessage is entered.
+func (s *BasegoscriptListener) EnterTypeDefMessage(ctx *TypeDefMessageContext) {}
+
+// ExitTypeDefMessage is called when production TypeDefMessage is exited.
+func (s *BasegoscriptListener) ExitTypeDefMessage(ctx *TypeDefMessageContext) {}
+
+// EnterTypeDefEnum is called when production TypeDefEnum is entered.
+func (s *BasegoscriptListener) EnterTypeDefEnum(ctx *TypeDefEnumContext) {}
+
+// ExitTypeDefEnum is called when production TypeDefEnum is exited.
+func (s *BasegoscriptListener) ExitTypeDefEnum(ctx *TypeDefEnumContext) {}
+
+// EnterTypeDefFunction is called when production TypeDefFunction is entered.
+func (s *BasegoscriptListener) EnterTypeDefFunction(ctx *TypeDefFunctionContext) {}
+
+// ExitTypeDefFunction is called when production TypeDefFunction is exited.
+func (s *BasegoscriptListener) ExitTypeDefFunction(ctx *TypeDefFunctionContext) {}
+
+// EnterMessagefield is called when production messagefield is entered.
+func (s *BasegoscriptListener) EnterMessagefield(ctx *MessagefieldContext) {}
+
+// ExitMessagefield is called when production messagefield is exited.
+func (s *BasegoscriptListener) ExitMessagefield(ctx *MessagefieldContext) {}
+
+// EnterSimpleTypeNameInDef is called when production SimpleTypeNameInDef is entered.
+func (s *BasegoscriptListener) EnterSimpleTypeNameInDef(ctx *SimpleTypeNameInDefContext) {}
+
+// ExitSimpleTypeNameInDef is called when production SimpleTypeNameInDef is exited.
+func (s *BasegoscriptListener) ExitSimpleTypeNameInDef(ctx *SimpleTypeNameInDefContext) {}
+
+// EnterFunctionTypeInDef is called when production FunctionTypeInDef is entered.
+func (s *BasegoscriptListener) EnterFunctionTypeInDef(ctx *FunctionTypeInDefContext) {}
+
+// ExitFunctionTypeInDef is called when production FunctionTypeInDef is exited.
+func (s *BasegoscriptListener) ExitFunctionTypeInDef(ctx *FunctionTypeInDefContext) {}
+
+// EnterMapTypeNameInDef is called when production MapTypeNameInDef is entered.
+func (s *BasegoscriptListener) EnterMapTypeNameInDef(ctx *MapTypeNameInDefContext) {}
+
+// ExitMapTypeNameInDef is called when production MapTypeNameInDef is exited.
+func (s *BasegoscriptListener) ExitMapTypeNameInDef(ctx *MapTypeNameInDefContext) {}
+
+// EnterSliceTypeNameInDef is called when production SliceTypeNameInDef is entered.
+func (s *BasegoscriptListener) EnterSliceTypeNameInDef(ctx *SliceTypeNameInDefContext) {}
+
+// ExitSliceTypeNameInDef is called when production SliceTypeNameInDef is exited.
+func (s *BasegoscriptListener) ExitSliceTypeNameInDef(ctx *SliceTypeNameInDefContext) {}
+
+// EnterFunctionTypeNameindef is called when production functionTypeNameindef is entered.
+func (s *BasegoscriptListener) EnterFunctionTypeNameindef(ctx *FunctionTypeNameindefContext) {}
+
+// ExitFunctionTypeNameindef is called when production functionTypeNameindef is exited.
+func (s *BasegoscriptListener) ExitFunctionTypeNameindef(ctx *FunctionTypeNameindefContext) {}
+
+// EnterIntypenameindef is called when production intypenameindef is entered.
+func (s *BasegoscriptListener) EnterIntypenameindef(ctx *IntypenameindefContext) {}
+
+// ExitIntypenameindef is called when production intypenameindef is exited.
+func (s *BasegoscriptListener) ExitIntypenameindef(ctx *IntypenameindefContext) {}
+
+// EnterReturntypenameindef is called when production returntypenameindef is entered.
+func (s *BasegoscriptListener) EnterReturntypenameindef(ctx *ReturntypenameindefContext) {}
+
+// ExitReturntypenameindef is called when production returntypenameindef is exited.
+func (s *BasegoscriptListener) ExitReturntypenameindef(ctx *ReturntypenameindefContext) {}
 
 // EnterCtrl is called when production Ctrl is entered.
 func (s *BasegoscriptListener) EnterCtrl(ctx *CtrlContext) {}
@@ -314,6 +350,18 @@ func (s *BasegoscriptListener) EnterSliceMultiIndex(ctx *SliceMultiIndexContext)
 
 // ExitSliceMultiIndex is called when production SliceMultiIndex is exited.
 func (s *BasegoscriptListener) ExitSliceMultiIndex(ctx *SliceMultiIndexContext) {}
+
+// EnterTypeAssert is called when production TypeAssert is entered.
+func (s *BasegoscriptListener) EnterTypeAssert(ctx *TypeAssertContext) {}
+
+// ExitTypeAssert is called when production TypeAssert is exited.
+func (s *BasegoscriptListener) ExitTypeAssert(ctx *TypeAssertContext) {}
+
+// EnterAsserted is called when production asserted is entered.
+func (s *BasegoscriptListener) EnterAsserted(ctx *AssertedContext) {}
+
+// ExitAsserted is called when production asserted is exited.
+func (s *BasegoscriptListener) ExitAsserted(ctx *AssertedContext) {}
 
 // EnterFilter is called when production filter is entered.
 func (s *BasegoscriptListener) EnterFilter(ctx *FilterContext) {}

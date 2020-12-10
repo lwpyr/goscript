@@ -60,7 +60,7 @@ func parseRSAPublicKeyFromPEM(key []byte) (*rsa.PublicKey, error) {
 	// Parse PEM block
 	var block *pem.Block
 	if block, _ = pem.Decode(key); block == nil {
-		return nil, fmt.Errorf("invalid Key: Key must be a PEM encoded PKCS1 or PKCS8 key")
+		return nil, fmt.Errorf("invalid KeyType: KeyType must be a PEM encoded PKCS1 or PKCS8 key")
 	}
 
 	// Parse the key

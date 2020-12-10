@@ -31,11 +31,9 @@ type ReturnNode struct {
 
 type ProgramRoot struct {
 	Node
-	EnumNode        []ASTNode
-	TypeDefNode     []ASTNode
-	VarDefNode      []ASTNode
+	TypeDefNode     []ITypeDefNode
 	FunctionDefNode []ASTNode
-	RunnableNode    []ASTNode
+	StatementNode   []ASTNode
 }
 
 type BreakNode struct {
@@ -127,27 +125,6 @@ func (b *BlockNode) Compile(c *Compiler) {
 	b.Instructions = append(b.Instructions, func(m *common.Memory, stk *common.Stack) {
 		stk.PopN(num)
 		stk.Pc++
-	})
-}
-
-// todo: process type
-func (p *ProgramRoot) Compile(c *Compiler) {
-	for _, fDefNode := range p.FunctionDefNode {
-		fDefNode.Compile(c)
-	}
-	num := len(p.RunnableNode)
-	var runnableInstructions []common.Instruction
-	for i := 0; i < num; i++ {
-		p.RunnableNode[i].Compile(c)
-		runnableInstructions = append(runnableInstructions, p.RunnableNode[i].GetInstructions()...)
-	}
-	runnableInstructions = append(runnableInstructions, func(m *common.Memory, stk *common.Stack) {
-		stk.Pc = -1
-	})
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		for stk.Pc != -1 {
-			runnableInstructions[stk.Pc](m, stk)
-		}
 	})
 }
 

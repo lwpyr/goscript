@@ -21,7 +21,7 @@ const ( // Kind
 	Message
 	Nil
 	Enum
-	Closure
+	Func
 	ReflectType
 	Object
 )
@@ -72,8 +72,8 @@ var KindMap = map[int]*DataKind{
 	Enum: {
 		Kind: Enum,
 	},
-	Closure: {
-		Kind: Closure,
+	Func: {
+		Kind: Func,
 	},
 	ReflectType: {
 		Kind: ReflectType,

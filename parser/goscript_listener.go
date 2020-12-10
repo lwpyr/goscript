@@ -11,18 +11,6 @@ type goscriptListener interface {
 	// EnterProgram is called when entering the program production.
 	EnterProgram(c *ProgramContext)
 
-	// EnterFuncDef is called when entering the FuncDef production.
-	EnterFuncDef(c *FuncDefContext)
-
-	// EnterTypeDef is called when entering the TypeDef production.
-	EnterTypeDef(c *TypeDefContext)
-
-	// EnterEnumDef is called when entering the EnumDef production.
-	EnterEnumDef(c *EnumDefContext)
-
-	// EnterRun is called when entering the Run production.
-	EnterRun(c *RunContext)
-
 	// EnterFunctionDef is called when entering the FunctionDef production.
 	EnterFunctionDef(c *FunctionDefContext)
 
@@ -47,12 +35,6 @@ type goscriptListener interface {
 	// EnterParam is called when entering the param production.
 	EnterParam(c *ParamContext)
 
-	// EnterTypeDefAlias is called when entering the TypeDefAlias production.
-	EnterTypeDefAlias(c *TypeDefAliasContext)
-
-	// EnterTypeDefComplex is called when entering the TypeDefComplex production.
-	EnterTypeDefComplex(c *TypeDefComplexContext)
-
 	// EnterSimpleTypeName is called when entering the SimpleTypeName production.
 	EnterSimpleTypeName(c *SimpleTypeNameContext)
 
@@ -68,8 +50,44 @@ type goscriptListener interface {
 	// EnterFunctionTypeName is called when entering the functionTypeName production.
 	EnterFunctionTypeName(c *FunctionTypeNameContext)
 
-	// EnterEnumdef is called when entering the enumdef production.
-	EnterEnumdef(c *EnumdefContext)
+	// EnterTypeDefMap is called when entering the TypeDefMap production.
+	EnterTypeDefMap(c *TypeDefMapContext)
+
+	// EnterTypeDefSlice is called when entering the TypeDefSlice production.
+	EnterTypeDefSlice(c *TypeDefSliceContext)
+
+	// EnterTypeDefMessage is called when entering the TypeDefMessage production.
+	EnterTypeDefMessage(c *TypeDefMessageContext)
+
+	// EnterTypeDefEnum is called when entering the TypeDefEnum production.
+	EnterTypeDefEnum(c *TypeDefEnumContext)
+
+	// EnterTypeDefFunction is called when entering the TypeDefFunction production.
+	EnterTypeDefFunction(c *TypeDefFunctionContext)
+
+	// EnterMessagefield is called when entering the messagefield production.
+	EnterMessagefield(c *MessagefieldContext)
+
+	// EnterSimpleTypeNameInDef is called when entering the SimpleTypeNameInDef production.
+	EnterSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)
+
+	// EnterFunctionTypeInDef is called when entering the FunctionTypeInDef production.
+	EnterFunctionTypeInDef(c *FunctionTypeInDefContext)
+
+	// EnterMapTypeNameInDef is called when entering the MapTypeNameInDef production.
+	EnterMapTypeNameInDef(c *MapTypeNameInDefContext)
+
+	// EnterSliceTypeNameInDef is called when entering the SliceTypeNameInDef production.
+	EnterSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+
+	// EnterFunctionTypeNameindef is called when entering the functionTypeNameindef production.
+	EnterFunctionTypeNameindef(c *FunctionTypeNameindefContext)
+
+	// EnterIntypenameindef is called when entering the intypenameindef production.
+	EnterIntypenameindef(c *IntypenameindefContext)
+
+	// EnterReturntypenameindef is called when entering the returntypenameindef production.
+	EnterReturntypenameindef(c *ReturntypenameindefContext)
 
 	// EnterCtrl is called when entering the Ctrl production.
 	EnterCtrl(c *CtrlContext)
@@ -155,6 +173,12 @@ type goscriptListener interface {
 	// EnterSliceMultiIndex is called when entering the SliceMultiIndex production.
 	EnterSliceMultiIndex(c *SliceMultiIndexContext)
 
+	// EnterTypeAssert is called when entering the TypeAssert production.
+	EnterTypeAssert(c *TypeAssertContext)
+
+	// EnterAsserted is called when entering the asserted production.
+	EnterAsserted(c *AssertedContext)
+
 	// EnterFilter is called when entering the filter production.
 	EnterFilter(c *FilterContext)
 
@@ -239,18 +263,6 @@ type goscriptListener interface {
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
 
-	// ExitFuncDef is called when exiting the FuncDef production.
-	ExitFuncDef(c *FuncDefContext)
-
-	// ExitTypeDef is called when exiting the TypeDef production.
-	ExitTypeDef(c *TypeDefContext)
-
-	// ExitEnumDef is called when exiting the EnumDef production.
-	ExitEnumDef(c *EnumDefContext)
-
-	// ExitRun is called when exiting the Run production.
-	ExitRun(c *RunContext)
-
 	// ExitFunctionDef is called when exiting the FunctionDef production.
 	ExitFunctionDef(c *FunctionDefContext)
 
@@ -275,12 +287,6 @@ type goscriptListener interface {
 	// ExitParam is called when exiting the param production.
 	ExitParam(c *ParamContext)
 
-	// ExitTypeDefAlias is called when exiting the TypeDefAlias production.
-	ExitTypeDefAlias(c *TypeDefAliasContext)
-
-	// ExitTypeDefComplex is called when exiting the TypeDefComplex production.
-	ExitTypeDefComplex(c *TypeDefComplexContext)
-
 	// ExitSimpleTypeName is called when exiting the SimpleTypeName production.
 	ExitSimpleTypeName(c *SimpleTypeNameContext)
 
@@ -296,8 +302,44 @@ type goscriptListener interface {
 	// ExitFunctionTypeName is called when exiting the functionTypeName production.
 	ExitFunctionTypeName(c *FunctionTypeNameContext)
 
-	// ExitEnumdef is called when exiting the enumdef production.
-	ExitEnumdef(c *EnumdefContext)
+	// ExitTypeDefMap is called when exiting the TypeDefMap production.
+	ExitTypeDefMap(c *TypeDefMapContext)
+
+	// ExitTypeDefSlice is called when exiting the TypeDefSlice production.
+	ExitTypeDefSlice(c *TypeDefSliceContext)
+
+	// ExitTypeDefMessage is called when exiting the TypeDefMessage production.
+	ExitTypeDefMessage(c *TypeDefMessageContext)
+
+	// ExitTypeDefEnum is called when exiting the TypeDefEnum production.
+	ExitTypeDefEnum(c *TypeDefEnumContext)
+
+	// ExitTypeDefFunction is called when exiting the TypeDefFunction production.
+	ExitTypeDefFunction(c *TypeDefFunctionContext)
+
+	// ExitMessagefield is called when exiting the messagefield production.
+	ExitMessagefield(c *MessagefieldContext)
+
+	// ExitSimpleTypeNameInDef is called when exiting the SimpleTypeNameInDef production.
+	ExitSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)
+
+	// ExitFunctionTypeInDef is called when exiting the FunctionTypeInDef production.
+	ExitFunctionTypeInDef(c *FunctionTypeInDefContext)
+
+	// ExitMapTypeNameInDef is called when exiting the MapTypeNameInDef production.
+	ExitMapTypeNameInDef(c *MapTypeNameInDefContext)
+
+	// ExitSliceTypeNameInDef is called when exiting the SliceTypeNameInDef production.
+	ExitSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+
+	// ExitFunctionTypeNameindef is called when exiting the functionTypeNameindef production.
+	ExitFunctionTypeNameindef(c *FunctionTypeNameindefContext)
+
+	// ExitIntypenameindef is called when exiting the intypenameindef production.
+	ExitIntypenameindef(c *IntypenameindefContext)
+
+	// ExitReturntypenameindef is called when exiting the returntypenameindef production.
+	ExitReturntypenameindef(c *ReturntypenameindefContext)
 
 	// ExitCtrl is called when exiting the Ctrl production.
 	ExitCtrl(c *CtrlContext)
@@ -382,6 +424,12 @@ type goscriptListener interface {
 
 	// ExitSliceMultiIndex is called when exiting the SliceMultiIndex production.
 	ExitSliceMultiIndex(c *SliceMultiIndexContext)
+
+	// ExitTypeAssert is called when exiting the TypeAssert production.
+	ExitTypeAssert(c *TypeAssertContext)
+
+	// ExitAsserted is called when exiting the asserted production.
+	ExitAsserted(c *AssertedContext)
 
 	// ExitFilter is called when exiting the filter production.
 	ExitFilter(c *FilterContext)

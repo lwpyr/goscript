@@ -7,6 +7,14 @@ DELETE: 'delete';
 ENUMSTRING: 'enumString';
 LEN: 'len';
 TYPEOF: 'typeof';
+
+// kind
+MAP: 'map';
+SLICE: 'slice';
+MESSAGE: 'message';
+ENUM: 'enum';
+
+// basic type name
 UINT32: 'uint32';
 UINT64: 'uint64';
 INT32: 'int32';
@@ -17,6 +25,7 @@ STRING: 'string';
 BYTES: 'bytes';
 BOOL: 'bool';
 UINT8: 'uint8';
+OBJECT: 'object';
 
 NEW: 'new';
 
@@ -87,40 +96,27 @@ STRINGLITERAL
 NAME: [a-zA-Z_]+[a-zA-Z0-9_]*;
 
 DOT: '.';
+TAILARRAY : '...';
+
 WHITESPACE: [ \r\n\t]+ -> skip;
 COMMENT :  '//' ~( '\r' | '\n' )* ( '\r' | '\n' ) -> skip;
 
 // 1
 program
-    : statement+;
-// 2
-statement
-    : functiondef # FuncDef
-    | typedef ';' # TypeDef
-    | enumdef # EnumDef
-    | execution # Run
-    ;
+    : (functiondef|typedef|execution)+;
 
 functiondef
-    : FUNCTION NAME '(' inparam (',' inparam)*  ')' returntypename?  closure # FunctionDef
-    | FUNCTION NAME '(' ')' returntypename?  closure # FunctionDef
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
-    | FUNCTION NAME '(' ')' '('returntypename (',' returntypename) *')'  closure # FunctionDef
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' outparam?  closure # FunctionDef
-    | FUNCTION NAME '(' ')' typename?  closure # FunctionDef
-    | FUNCTION NAME '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' closure # FunctionDef
-    | FUNCTION NAME '(' ')' '('outparam (',' outparam) *')'  closure # FunctionDef
+    : FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # FunctionDef
+    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
+    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # FunctionDef
+    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # FunctionDef
     ;
 
 lambda
-    : FUNCTION  '(' inparam (',' inparam)*  ')' returntypename?  closure # LambdaDef
-    | FUNCTION  '(' ')' returntypename?  closure # LambdaDef
-    | FUNCTION  '(' inparam (',' inparam)*  ')' '('returntypename (',' returntypename) *')' closure # LambdaDef
-    | FUNCTION  '(' ')' '('returntypename (',' returntypename) *')'  closure # LambdaDef
-    | FUNCTION  '(' inparam (',' inparam)*  ')' outparam?  closure # LambdaDef
-    | FUNCTION  '(' ')' typename?  closure # LambdaDef
-    | FUNCTION  '(' inparam (',' inparam)*  ')' '('outparam (',' outparam) *')' closure # LambdaDef
-    | FUNCTION  '(' ')' '('outparam (',' outparam) *')'  closure # LambdaDef
+    : FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # LambdaDef
     ;
 
 closure
@@ -141,28 +137,46 @@ returntypename
 param
     : NAME typename;
 
-typedef
-    : TYPEDEF NAME typename # TypeDefAlias
-    | TYPEDEF NAME '{' (NAME typename ',')* '}' # TypeDefComplex
-    ;
-
 typename
-    : NAME # SimpleTypeName
-    | basicTypeName # SimpleTypeName
+    : (NAME|basicTypeName) # SimpleTypeName
     | functionTypeName # FunctionType
-    | 'map' '<' (NAME|basicTypeName) ',' typename '>' # MapTypeName
-    | 'slice' '<' typename '>' # SliceTypeName
+    | MAP '<' basicTypeName ',' typename '>' # MapTypeName
+    | SLICE '<' typename '>' # SliceTypeName
     ;
 
 functionTypeName
-    : FUNCTION  '(' intypename (',' intypename)*  ')' returntypename?
-    | FUNCTION  '(' ')' returntypename?
-    | FUNCTION  '(' intypename (',' intypename)*  ')' '('returntypename (',' returntypename) *')'
-    | FUNCTION  '(' ')' '('returntypename (',' returntypename) *')'
+    : FUNCTION  '(' (intypename (',' intypename)* (TAILARRAY)?)?  ')' returntypename?
+    | FUNCTION  '(' (intypename (',' intypename)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')'
     ;
 
-enumdef
-    : TYPEDEF 'enum' NAME '{' (NAME INT ',')* '}';
+typedef
+    : TYPEDEF NAME MAP '<'  basicTypeName ',' typenameindef '>'# TypeDefMap
+    | TYPEDEF NAME SLICE '<' typenameindef '>'# TypeDefSlice
+    | TYPEDEF NAME MESSAGE '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
+    | TYPEDEF NAME ENUM '{' (NAME ':' INT)* '}' # TypeDefEnum
+    | TYPEDEF NAME functionTypeNameindef # TypeDefFunction
+    ;
+
+messagefield
+    : NAME typenameindef;
+
+typenameindef
+    : (NAME|basicTypeName) # SimpleTypeNameInDef
+    | functionTypeNameindef # FunctionTypeInDef
+    | MAP '<' basicTypeName ',' typenameindef '>' # MapTypeNameInDef
+    | SLICE '<' typenameindef '>' # SliceTypeNameInDef
+    ;
+
+functionTypeNameindef
+    : FUNCTION  '(' (intypenameindef (',' intypenameindef)* (TAILARRAY)?)?  ')' returntypenameindef?
+    | FUNCTION  '(' (intypenameindef (',' intypenameindef)* (TAILARRAY)?)?  ')' '('returntypenameindef (',' returntypenameindef) *')'
+    ;
+
+intypenameindef
+    : typenameindef;
+
+returntypenameindef
+    : typenameindef;
 
 execution
     : control # Ctrl
@@ -211,14 +225,15 @@ variable
     | variable '[' expr ']' # Index
     | variable '[' indexs (',' indexs)* ']' # SliceMultiIndex
     | variable '[' '[' expr (',' expr)* ']' ']' # MapMultiIndex
-    | variable '(' expr (',' expr)* ')' # DirectCall
-    | variable '(' ')' # DirectCall
+    | variable '(' (expr (',' expr)*)? ')' # DirectCall
+    | variable DOT '(' asserted ')' # TypeAssert
     | NAME # VariableName
     | '@' # VariableName
     ;
 
-filter
-    : expr;
+asserted: typename;
+
+filter: expr;
 
 indexs
     : expr ':' expr ':' expr # IndexType1
@@ -259,6 +274,7 @@ basicTypeName
     | BYTES
     | BOOL
     | UINT8
+    | OBJECT
     ;
 
 builtin
@@ -284,7 +300,7 @@ initializationListBegin
     : initializationList;
 
 initializationList
-    : '[' initializationList (',' initializationList)* ']' # InitSlice
+    : '[' (initializationList (',' initializationList)*)? ']' # InitSlice
     | '{'  NAME '('initializationList')' (',' NAME '(' initializationList ')' )* '}' # InitMessage
     | '{'  initializationList ':' initializationList (',' initializationList ':' initializationList )* '}' # InitMap
     | expr # InitConstant
@@ -306,9 +322,11 @@ constructor
 vardef
     : VAR NAME typename
     | VAR NAME typename '=' expr
+    | VAR NAME typename '=' initializationListBegin
     ;
 
 localdef
     : LOCAL NAME typename
     | LOCAL NAME typename '=' expr
+    | LOCAL NAME typename '=' initializationListBegin
     ;

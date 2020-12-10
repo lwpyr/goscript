@@ -19,7 +19,7 @@ type Node struct {
 	Parent       ASTNode
 	NodeType     string
 	DataType     *common.DataType
-	Lhs          bool
+	LhsFlag      bool
 	Variadic     bool
 }
 
@@ -52,5 +52,5 @@ func (n *Node) SetDataType(dt *common.DataType) {
 }
 
 func (n *Node) SetLhs() {
-	n.Lhs = true
+	n.LhsFlag = true
 }

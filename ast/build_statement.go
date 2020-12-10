@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// ExitAsserted is called when production asserted is exited.
+func (s *ASTBuilder) ExitAsserted(ctx *parser.AssertedContext) {
+	typeNode := s.NodePop()
+	dType := s.NodeTop().GetDataType()
+	if dType.Type != "object" {
+		panic("type assertion can only be applied on 'object' data")
+	}
+	s.NodeTop().SetDataType(typeNode.GetDataType())
+}
+
 // EnterStartFunctionAssign is called when production StartFunctionAssign is entered.
 func (s *ASTBuilder) EnterFunctionAssign(_ *parser.FunctionAssignContext) {
 	cur := &FunctionAssignNode{

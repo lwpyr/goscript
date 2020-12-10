@@ -137,7 +137,7 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 			}
 		}
 	}
-	panic(common.NewTypeErr("not support " + op + " for Lhs " + lhs.Type + " and Rhs " + rhs.Type))
+	panic(common.NewTypeErr("not support " + op + " for LhsFlag " + lhs.Type + " and Rhs " + rhs.Type))
 }
 
 func GetBinaryOpFunc(op string, lhs *common.DataType, rhs *common.DataType) common.Instruction {
