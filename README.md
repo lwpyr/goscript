@@ -182,40 +182,18 @@ see more in the **test** folder
 
 a. fib(35)
 ```go
-func TestFib35Example(t *testing.T) {
-	c = goscript.NewCompiler()
-    	c.Scope = goscript.NewScope(nil)
-    	c.Include("common")
-    	mem = &common.Memory{
-    		Data: make([]interface{}, 100),
-    	}
-	expr = `
-func fib(v int64) int64 {
-	if(v<2) {
-		return v;
-	}
-	return fib(v-1)+fib(v-2);
-}
+package test
 
-print(fib(35));`
-	p, err := c.CompileScript(expr)
-	if err != nil {
-		panic(err)
-	}
-	start := time.Now()
-	p.RunOnMemory(mem)
-	fmt.Println(time.Since(start))
-}
-```
-b. Lambda calculus
-```go
+import (
+	"github.com/lwpyr/goscript"
+	"testing"
+)
+
 func TestLambdaCalculus(t *testing.T) {
 	c = goscript.NewCompiler()
 	c.Scope = goscript.NewScope(nil)
 	c.Include("common")
-	mem = &common.Memory{
-		Data: make([]interface{}, 100),
-	}
+	mem = goscript.NewMemory(100)
 	var expr string
 	expr = `
 func Identity(x object) object {
@@ -268,22 +246,34 @@ func OR(x object) object {
 	};
 }
 
+print('=== test BASIC ===');
 print(Identity == Identity(Identity)); // true
 print(Identity == SelfApply(Identity)); // true
 
+print('=== test APPLY ===');
 print(Apply(Identity).(func(object)object)(Identity) == Identity); // true
 
+print('=== test BOOL ===');
 print(TRUE(Identity).(func(object)object)(Apply) == Identity); // true
 print(FALSE(Identity).(func(object)object)(Apply) == Apply); // true
 
+print('=== test COND ===');
 print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(TRUE) == Identity); // true
-print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(FALSE) == Identity); // false
-print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(TRUE) == Identity); // false
+print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(FALSE) == Apply); // true
+print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(TRUE) == Apply); // true
 print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(FALSE) == Identity); // true
 
+print('=== test NOT ===');
 print(NOT(TRUE) == FALSE); // true
 print(NOT(NOT(TRUE)) == TRUE); // true
 
+print('=== test AND ===');
+print(AND(TRUE).(func(object)object)(TRUE) == TRUE); // true
+print(AND(TRUE).(func(object)object)(FALSE) == FALSE); // true
+print(AND(FALSE).(func(object)object)(TRUE) == FALSE); // true
+print(AND(FALSE).(func(object)object)(FALSE) == FALSE); // true
+
+print('=== test OR ===');
 print(OR(TRUE).(func(object)object)(TRUE) == TRUE); // true
 print(OR(TRUE).(func(object)object)(FALSE) == TRUE); // true
 print(OR(FALSE).(func(object)object)(TRUE) == TRUE); // true
@@ -311,6 +301,7 @@ var seven func(object)object = Next(six);
 var eight func(object)object = Next(seven);
 var nine  func(object)object = Next(eight);
 
+print('=== test IsZero ===');
 print(IsZero(zero) == TRUE); // true
 print(IsZero(one) == FALSE); // true
 
@@ -318,6 +309,7 @@ func Prev(x object) object {
 	return IsZero(x).(func(object)object)(zero).(func(object)object)(x.(func(object)object)(FALSE));
 }
 
+print('=== test Prev ===');
 print(Prev(one) == zero); // true
 print(Prev(nine) == eight); // true
 print(Prev(nine) == seven); // false
@@ -325,7 +317,6 @@ print(Prev(nine) == seven); // false
 	p := compileScript(expr)
 	p.RunOnMemory(mem)
 }
-
 ```
 
 

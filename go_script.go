@@ -53,6 +53,12 @@ func NewVariable(name string, t *common.DataType) *common.Variable {
 	}
 }
 
+func NewMemory(size int) *common.Memory {
+	return &common.Memory{
+		Data: make([]interface{}, 100),
+	}
+}
+
 func NewCompiler() *ast.Compiler {
 	return &ast.Compiler{
 		TypeRegistry: NewTypeRegistry(),
