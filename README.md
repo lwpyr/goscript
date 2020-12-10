@@ -180,8 +180,7 @@ see more in the **test** folder
 
 1. Script-mode
 
-
-a. fib(35)
+lambda calculus
 ```go
 package test
 
