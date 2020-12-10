@@ -273,6 +273,12 @@ func (s *BasegoscriptListener) EnterGlobalVarDef(ctx *GlobalVarDefContext) {}
 // ExitGlobalVarDef is called when production GlobalVarDef is exited.
 func (s *BasegoscriptListener) ExitGlobalVarDef(ctx *GlobalVarDefContext) {}
 
+// EnterConstDef is called when production ConstDef is entered.
+func (s *BasegoscriptListener) EnterConstDef(ctx *ConstDefContext) {}
+
+// ExitConstDef is called when production ConstDef is exited.
+func (s *BasegoscriptListener) ExitConstDef(ctx *ConstDefContext) {}
+
 // EnterLocalVarDef is called when production LocalVarDef is entered.
 func (s *BasegoscriptListener) EnterLocalVarDef(ctx *LocalVarDefContext) {}
 
@@ -524,3 +530,9 @@ func (s *BasegoscriptListener) EnterLocaldef(ctx *LocaldefContext) {}
 
 // ExitLocaldef is called when production localdef is exited.
 func (s *BasegoscriptListener) ExitLocaldef(ctx *LocaldefContext) {}
+
+// EnterConstdef is called when production constdef is entered.
+func (s *BasegoscriptListener) EnterConstdef(ctx *ConstdefContext) {}
+
+// ExitConstdef is called when production constdef is exited.
+func (s *BasegoscriptListener) ExitConstdef(ctx *ConstdefContext) {}

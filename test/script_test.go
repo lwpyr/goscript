@@ -122,6 +122,33 @@ print(fs[1]());
 	p.RunOnMemory(mem)
 }
 
+func TestG(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+const NAME string = 'Wonderful Goscript!';
+
+var str1 string = NAME + ' yes!';
+var str2 string = NAME + ' ok!';
+
+print(NAME);
+print(str1);
+print(str2);
+
+var str3 string = NAME;
+var str4 string = NAME;
+
+str3 += ' yes!';
+str4 += ' ok!';
+
+print(NAME);
+print(str3);
+print(str4);
+`
+	p := compileScript(expr)
+	p.RunOnMemory(mem)
+}
+
 func BenchmarkA(b *testing.B) {
 	setupParse()
 	var expr string

@@ -2,6 +2,7 @@ package ast
 
 import (
 	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/lambda_chains"
 	"github.com/lwpyr/goscript/parser"
 )
 
@@ -111,4 +112,19 @@ func (s *ASTBuilder) ExitLocaldef(ctx *parser.LocaldefContext) {
 
 	s.Compiler.Scope.AddVariable(node.Variable)
 	s.NodePush(node)
+}
+
+// ExitConstdef is called when production constdef is exited.
+func (s *ASTBuilder) ExitConstdef(ctx *parser.ConstdefContext) {
+	constName := ctx.NAME().GetText()
+	constType := common.BasicTypeMap[ctx.BasicTypeName().GetText()]
+	ValNode := s.NodePop().(IConstantNode)
+	convert := lambda_chains.GetConvertFunc(ValNode.GetDataType(), constType)
+	constValue := convert(ValNode.GetConstantValue())
+	s.Compiler.Scope.AddConstant(constName, &common.Constant{
+		Symbol: constName,
+		Type:   constType,
+		Data:   constValue,
+	})
+	s.NodePush(&VariableDefNode{IsGlobal: true, Assign: nil})
 }

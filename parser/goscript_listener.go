@@ -134,6 +134,9 @@ type goscriptListener interface {
 	// EnterGlobalVarDef is called when entering the GlobalVarDef production.
 	EnterGlobalVarDef(c *GlobalVarDefContext)
 
+	// EnterConstDef is called when entering the ConstDef production.
+	EnterConstDef(c *ConstDefContext)
+
 	// EnterLocalVarDef is called when entering the LocalVarDef production.
 	EnterLocalVarDef(c *LocalVarDefContext)
 
@@ -259,6 +262,9 @@ type goscriptListener interface {
 
 	// EnterLocaldef is called when entering the localdef production.
 	EnterLocaldef(c *LocaldefContext)
+
+	// EnterConstdef is called when entering the constdef production.
+	EnterConstdef(c *ConstdefContext)
 
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
@@ -386,6 +392,9 @@ type goscriptListener interface {
 	// ExitGlobalVarDef is called when exiting the GlobalVarDef production.
 	ExitGlobalVarDef(c *GlobalVarDefContext)
 
+	// ExitConstDef is called when exiting the ConstDef production.
+	ExitConstDef(c *ConstDefContext)
+
 	// ExitLocalVarDef is called when exiting the LocalVarDef production.
 	ExitLocalVarDef(c *LocalVarDefContext)
 
@@ -511,4 +520,7 @@ type goscriptListener interface {
 
 	// ExitLocaldef is called when exiting the localdef production.
 	ExitLocaldef(c *LocaldefContext)
+
+	// ExitConstdef is called when exiting the constdef production.
+	ExitConstdef(c *ConstdefContext)
 }

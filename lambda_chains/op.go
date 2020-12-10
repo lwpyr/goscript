@@ -13,19 +13,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.UInt64:
@@ -33,19 +33,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*uint64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.Int32:
@@ -53,19 +53,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.Int64:
@@ -73,19 +73,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*int64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.Float32:
@@ -93,19 +93,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float32)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.Float64:
@@ -113,19 +113,19 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "-=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) -= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) - rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "*=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) *= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) * rhsConvertFunc(stk.TopIndex(1))
 			}
 		case "/=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) /= rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*float64)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) / rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	case common.String:
@@ -133,7 +133,9 @@ func GetCalAssignOpFunc(op string, lhs *common.DataType, rhs *common.DataType) c
 		switch op {
 		case "+=":
 			return func(_ *common.Memory, stk *common.Stack) {
-				*(*string)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
+				*(stk.TopIndex(0).(*interface{})) = *(*string)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) + rhsConvertFunc(stk.TopIndex(1))
+				// to avoid const value being changed, we use '+' instead of '+='
+				// *(*string)((*EmptyFace)(unsafe.Pointer(stk.TopIndex(0).(*interface{}))).Data) += rhsConvertFunc(stk.TopIndex(1))
 			}
 		}
 	}

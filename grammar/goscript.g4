@@ -43,6 +43,7 @@ RETURN: 'return';
 
 VAR: 'var';
 LOCAL: 'local';
+CONST: 'const';
 
 FUNCTION: 'func';
 
@@ -204,6 +205,7 @@ block
 line
     : restoreStack # RestoreStackSp
     | vardef # GlobalVarDef
+    | constdef # ConstDef
     | localdef # LocalVarDef
     ;
 
@@ -329,4 +331,8 @@ localdef
     : LOCAL NAME typename
     | LOCAL NAME typename '=' expr
     | LOCAL NAME typename '=' initializationListBegin
+    ;
+
+constdef
+    : CONST NAME basicTypeName '=' constant
     ;
