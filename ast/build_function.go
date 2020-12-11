@@ -237,12 +237,13 @@ func (s *ASTBuilder) EnterDirectCall(ctx *parser.DirectCallContext) {
 
 // ExitFunctions is called when production functions is exited.
 func (s *ASTBuilder) ExitDirectCall(ctx *parser.DirectCallContext) {
-	params := make([]ASTNode, len(ctx.AllExpr()))
-	for i := 0; i < len(ctx.AllExpr()); i++ {
+	numParam := len(ctx.AllExpr()) - 1
+	params := make([]ASTNode, numParam)
+	for i := 0; i < numParam; i++ {
 		params[i] = s.NodePop()
 	}
 	functionNameNode := s.NodePop()
-	funcName := ctx.Variable().GetText()
+	funcName := ctx.Expr(0).GetText()
 	cur := s.VisitPop().(*FunctionCallNode)
 	var meta *common.FunctionMeta
 	lambdaVarType := functionNameNode.GetDataType()
@@ -266,15 +267,14 @@ func (s *ASTBuilder) ExitDirectCall(ctx *parser.DirectCallContext) {
 	if len(meta.Out) == 1 {
 		cur.DataType = meta.Out[0]
 	}
-	provided := len(ctx.AllExpr())
-	if provided > len(meta.In) && meta.TailArray == false || provided < len(meta.In) {
+	if numParam > len(meta.In) && meta.TailArray == false || numParam < len(meta.In) {
 		panic(common.NewMismatchErr("parameter given mismatch with needed " + funcName))
 	}
-	for i := 0; i < len(ctx.AllExpr()); i++ {
+	for i := 0; i < numParam; i++ {
 		temp := params[i]
 		var requireType *common.DataType
-		if provided-1-i < len(meta.In) {
-			requireType = meta.In[provided-1-i]
+		if numParam-1-i < len(meta.In) {
+			requireType = meta.In[numParam-1-i]
 		} else {
 			requireType = meta.In[len(meta.In)-1]
 		}

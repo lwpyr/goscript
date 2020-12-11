@@ -84,7 +84,7 @@ func (c *Compiler) Include(libName string) {
 func (c *Compiler) BuildSingleLineAST(expr string) (root ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = r.(common.ScriptError)
+			err = fmt.Errorf("%v", r)
 		}
 	}()
 	l := NewASTBuilder()

@@ -121,9 +121,13 @@ func TestAssign(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	expr = "newPerson.name, Teacher.name = 'Steve', 'Dannel'"
+	expr = "newPerson.name = 'Steve'"
 	p = compile(expr)
-	assert.Equal(t, nil, p.RunOnMemory(mem))
+	assert.Equal(t, "Steve", p.RunOnMemory(mem))
+
+	expr = "Teacher.name = 'Dannel'"
+	p = compile(expr)
+	assert.Equal(t, "Dannel", p.RunOnMemory(mem))
 
 	expr = "newPerson.name == 'Steve'"
 	p = compile(expr)

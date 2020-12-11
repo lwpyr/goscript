@@ -225,22 +225,11 @@ restoreStack
 
 keepStack
     : expr # ExprEntry
-    | lhs (',' lhs)* op=ASSIGN variable # FunctionAssign
-    | lhs (',' lhs)* op=ASSIGN expr (',' expr)* # MultiAssign
+    | expr (',' expr)+ op=ASSIGN expr # FunctionAssign
     ;
 
-lhs
-    : variable;
-
 variable
-    : variable DOT NAME # Select
-    | variable '[?(' filter ')]' # SliceFilter
-    | variable '[' expr ']' # Index
-    | variable '[' indexs (',' indexs)* ']' # SliceMultiIndex
-    | variable '[' '[' expr (',' expr)* ']' ']' # MapMultiIndex
-    | variable '(' (expr (',' expr)*)? ')' # DirectCall
-    | variable DOT '(' asserted ')' # TypeAssert
-    | NAME # VariableName
+    : NAME # VariableName
     | '@' # VariableName
     ;
 
@@ -262,19 +251,25 @@ expr
     | variable # Pass
     | lambda # Pass
     | builtin # Pass
-    | op=(UNARYADD|UNARYSUB) variable # LeftUnary
-    | op=(NOT|SUB) expr # LeftUnary
-    | variable op=(UNARYADD|UNARYSUB) # RightUnary
+    | expr DOT NAME # Select
+    | expr DOT '(' asserted ')' # TypeAssert
+    | expr '[?(' filter ')]' # SliceFilter
+    | expr '[' expr ']' # Index
+    | expr '[' indexs (',' indexs)* ']' # SliceMultiIndex
+    | expr '[' '[' expr (',' expr)* ']' ']' # MapMultiIndex
+    | expr '(' (expr (',' expr)*)? ')' # DirectCall
+    | op=(UNARYADD|UNARYSUB|NOT|SUB) expr # LeftUnary
+    | expr op=(UNARYADD|UNARYSUB) # RightUnary
     | <assoc=right> expr op=POW  expr # Binary
     | expr op=(MUL | DIV | MOD) expr # Binary
     | expr op=(ADD | SUB) expr # Binary
     | expr op=(EQ | INEQ | GT | GE | LT | LE | REGEX) expr # Binary
     | expr op=AND expr # Binary
     | expr op=OR expr # Binary
-    | variable (CHANOP|CHANOPNONBLOCK) variable # Send
-    | (CHANOP|CHANOPNONBLOCK) variable # Recv
-    | <assoc=right> lhs op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Binary
-    | <assoc=right> lhs op=ASSIGN initializationListBegin # AssignInitializationlist
+    | expr (CHANOP|CHANOPNONBLOCK) expr # Send
+    | (CHANOP|CHANOPNONBLOCK) expr # Recv
+    | <assoc=right> expr op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Binary
+    | <assoc=right> expr op=ASSIGN initializationListBegin # AssignInitializationlist
     | constructor # Construct
     ;
 
@@ -282,12 +277,12 @@ basicTypeName
     : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|OBJECT);
 
 builtin
-    : PUSHBACK '(' variable',' expr ')'
-    | PUSHFRONT '(' variable',' expr ')'
-    | DELETE '(' variable',' expr ')'
-    | ENUMSTRING '(' variable ')'
-    | LEN '(' variable ')'
-    | TYPEOF '(' variable ')'
+    : PUSHBACK '(' expr',' expr ')'
+    | PUSHFRONT '(' expr',' expr ')'
+    | DELETE '(' expr',' expr ')'
+    | ENUMSTRING '(' expr ')'
+    | LEN '(' expr ')'
+    | TYPEOF '(' expr ')'
     | UINT32 '(' expr ')'
     | UINT64 '(' expr ')'
     | INT32 '(' expr ')'
@@ -298,6 +293,7 @@ builtin
     | BYTES '(' expr ')'
     | BOOL '(' expr ')'
     | UINT8 '(' expr ')'
+    | OBJECT '(' expr ')'
     ;
 
 initializationListBegin

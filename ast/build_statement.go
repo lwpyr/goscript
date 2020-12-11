@@ -32,9 +32,12 @@ func (s *ASTBuilder) EnterFunctionAssign(_ *parser.FunctionAssignContext) {
 // ExitStartFunctionAssign is called when production StartFunctionAssign is exited.
 func (s *ASTBuilder) ExitFunctionAssign(ctx *parser.FunctionAssignContext) {
 	if node, ok := s.VisitPop().(*FunctionAssignNode); ok {
-		node.Function = s.NodePop().(IFunctionNode)
+		if node.Function, ok = s.NodePop().(IFunctionNode); !ok {
+			panic(common.NewCompileErr("multi assign rhs must be function " + ctx.GetText()))
+		}
+
 		node.Lhs = []ASTNode{}
-		num := len(ctx.AllLhs())
+		num := len(ctx.AllExpr()) - 1
 		if num > len(node.Function.(*FunctionCallNode).Meta.Out) {
 			panic(common.NewMismatchErr("number of placeholders is larger than the function output " + ctx.GetText()))
 		}
@@ -49,41 +52,6 @@ func (s *ASTBuilder) ExitFunctionAssign(ctx *parser.FunctionAssignContext) {
 	} else {
 		panic(common.NewCompileErr("multi-assign can only be applied on function call"))
 	}
-}
-
-// EnterStartAssign is called when production StartAssign is entered.
-func (s *ASTBuilder) EnterMultiAssign(_ *parser.MultiAssignContext) {
-	cur := &AssignNode{
-		Node: Node{
-			Parent:   s.VisitTop(),
-			Variadic: true,
-		},
-	}
-	s.VisitPush(cur)
-}
-
-// ExitStartAssign is called when production StartAssign is exited.
-func (s *ASTBuilder) ExitMultiAssign(ctx *parser.MultiAssignContext) {
-	node := s.VisitPop().(*AssignNode)
-	if len(ctx.AllLhs()) != len(ctx.AllExpr()) {
-		panic(common.NewMismatchErr("number mismatch " + ctx.GetText()))
-	}
-	lenAssign := len(ctx.AllLhs())
-	for i := 0; i < lenAssign; i++ {
-		node.Rhs = append(node.Rhs, s.NodePop())
-	}
-	for i := 0; i < lenAssign; i++ {
-		node.Lhs = append(node.Lhs, s.NodePop())
-	}
-	for i := 0; i < lenAssign; i++ {
-		if !node.Lhs[i].GetDataType().CanConvertTo(node.Rhs[i].GetDataType()) {
-			panic(common.NewMismatchErr("cannot assign different type to an variable " + ctx.GetText()))
-		}
-		if !node.Lhs[i].IsVariadic() {
-			panic(common.NewMismatchErr("cannot assign to constant value " + ctx.GetText()))
-		}
-	}
-	s.NodePush(node)
 }
 
 // EnterVariableSliceFilter is called when production VariableSliceFilter is entered.
@@ -351,7 +319,7 @@ func (s *ASTBuilder) EnterMapMultiIndex(_ *parser.MapMultiIndexContext) {
 func (s *ASTBuilder) ExitMapMultiIndex(ctx *parser.MapMultiIndexContext) {
 	node := s.VisitPop().(*MapMultiIndexNode)
 	allConstant := true
-	for i := 0; i < len(ctx.AllExpr()); i++ {
+	for i := 0; i < len(ctx.AllExpr())-1; i++ {
 		temp := s.NodePop().(ASTNode)
 		allConstant = allConstant && !temp.IsVariadic()
 		node.Fields = append(node.Fields, temp)

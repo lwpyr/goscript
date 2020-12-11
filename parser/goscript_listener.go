@@ -158,35 +158,8 @@ type goscriptListener interface {
 	// EnterFunctionAssign is called when entering the FunctionAssign production.
 	EnterFunctionAssign(c *FunctionAssignContext)
 
-	// EnterMultiAssign is called when entering the MultiAssign production.
-	EnterMultiAssign(c *MultiAssignContext)
-
-	// EnterLhs is called when entering the lhs production.
-	EnterLhs(c *LhsContext)
-
-	// EnterSliceFilter is called when entering the SliceFilter production.
-	EnterSliceFilter(c *SliceFilterContext)
-
-	// EnterDirectCall is called when entering the DirectCall production.
-	EnterDirectCall(c *DirectCallContext)
-
 	// EnterVariableName is called when entering the VariableName production.
 	EnterVariableName(c *VariableNameContext)
-
-	// EnterSelect is called when entering the Select production.
-	EnterSelect(c *SelectContext)
-
-	// EnterIndex is called when entering the Index production.
-	EnterIndex(c *IndexContext)
-
-	// EnterMapMultiIndex is called when entering the MapMultiIndex production.
-	EnterMapMultiIndex(c *MapMultiIndexContext)
-
-	// EnterSliceMultiIndex is called when entering the SliceMultiIndex production.
-	EnterSliceMultiIndex(c *SliceMultiIndexContext)
-
-	// EnterTypeAssert is called when entering the TypeAssert production.
-	EnterTypeAssert(c *TypeAssertContext)
 
 	// EnterAsserted is called when entering the asserted production.
 	EnterAsserted(c *AssertedContext)
@@ -212,8 +185,26 @@ type goscriptListener interface {
 	// EnterRecv is called when entering the Recv production.
 	EnterRecv(c *RecvContext)
 
+	// EnterSliceFilter is called when entering the SliceFilter production.
+	EnterSliceFilter(c *SliceFilterContext)
+
+	// EnterDirectCall is called when entering the DirectCall production.
+	EnterDirectCall(c *DirectCallContext)
+
+	// EnterIndex is called when entering the Index production.
+	EnterIndex(c *IndexContext)
+
+	// EnterMapMultiIndex is called when entering the MapMultiIndex production.
+	EnterMapMultiIndex(c *MapMultiIndexContext)
+
+	// EnterSend is called when entering the Send production.
+	EnterSend(c *SendContext)
+
 	// EnterPass is called when entering the Pass production.
 	EnterPass(c *PassContext)
+
+	// EnterSelect is called when entering the Select production.
+	EnterSelect(c *SelectContext)
 
 	// EnterConstruct is called when entering the Construct production.
 	EnterConstruct(c *ConstructContext)
@@ -224,11 +215,14 @@ type goscriptListener interface {
 	// EnterLeftUnary is called when entering the LeftUnary production.
 	EnterLeftUnary(c *LeftUnaryContext)
 
+	// EnterTypeAssert is called when entering the TypeAssert production.
+	EnterTypeAssert(c *TypeAssertContext)
+
+	// EnterSliceMultiIndex is called when entering the SliceMultiIndex production.
+	EnterSliceMultiIndex(c *SliceMultiIndexContext)
+
 	// EnterRightUnary is called when entering the RightUnary production.
 	EnterRightUnary(c *RightUnaryContext)
-
-	// EnterSend is called when entering the Send production.
-	EnterSend(c *SendContext)
 
 	// EnterAssignInitializationlist is called when entering the AssignInitializationlist production.
 	EnterAssignInitializationlist(c *AssignInitializationlistContext)
@@ -428,35 +422,8 @@ type goscriptListener interface {
 	// ExitFunctionAssign is called when exiting the FunctionAssign production.
 	ExitFunctionAssign(c *FunctionAssignContext)
 
-	// ExitMultiAssign is called when exiting the MultiAssign production.
-	ExitMultiAssign(c *MultiAssignContext)
-
-	// ExitLhs is called when exiting the lhs production.
-	ExitLhs(c *LhsContext)
-
-	// ExitSliceFilter is called when exiting the SliceFilter production.
-	ExitSliceFilter(c *SliceFilterContext)
-
-	// ExitDirectCall is called when exiting the DirectCall production.
-	ExitDirectCall(c *DirectCallContext)
-
 	// ExitVariableName is called when exiting the VariableName production.
 	ExitVariableName(c *VariableNameContext)
-
-	// ExitSelect is called when exiting the Select production.
-	ExitSelect(c *SelectContext)
-
-	// ExitIndex is called when exiting the Index production.
-	ExitIndex(c *IndexContext)
-
-	// ExitMapMultiIndex is called when exiting the MapMultiIndex production.
-	ExitMapMultiIndex(c *MapMultiIndexContext)
-
-	// ExitSliceMultiIndex is called when exiting the SliceMultiIndex production.
-	ExitSliceMultiIndex(c *SliceMultiIndexContext)
-
-	// ExitTypeAssert is called when exiting the TypeAssert production.
-	ExitTypeAssert(c *TypeAssertContext)
 
 	// ExitAsserted is called when exiting the asserted production.
 	ExitAsserted(c *AssertedContext)
@@ -482,8 +449,26 @@ type goscriptListener interface {
 	// ExitRecv is called when exiting the Recv production.
 	ExitRecv(c *RecvContext)
 
+	// ExitSliceFilter is called when exiting the SliceFilter production.
+	ExitSliceFilter(c *SliceFilterContext)
+
+	// ExitDirectCall is called when exiting the DirectCall production.
+	ExitDirectCall(c *DirectCallContext)
+
+	// ExitIndex is called when exiting the Index production.
+	ExitIndex(c *IndexContext)
+
+	// ExitMapMultiIndex is called when exiting the MapMultiIndex production.
+	ExitMapMultiIndex(c *MapMultiIndexContext)
+
+	// ExitSend is called when exiting the Send production.
+	ExitSend(c *SendContext)
+
 	// ExitPass is called when exiting the Pass production.
 	ExitPass(c *PassContext)
+
+	// ExitSelect is called when exiting the Select production.
+	ExitSelect(c *SelectContext)
 
 	// ExitConstruct is called when exiting the Construct production.
 	ExitConstruct(c *ConstructContext)
@@ -494,11 +479,14 @@ type goscriptListener interface {
 	// ExitLeftUnary is called when exiting the LeftUnary production.
 	ExitLeftUnary(c *LeftUnaryContext)
 
+	// ExitTypeAssert is called when exiting the TypeAssert production.
+	ExitTypeAssert(c *TypeAssertContext)
+
+	// ExitSliceMultiIndex is called when exiting the SliceMultiIndex production.
+	ExitSliceMultiIndex(c *SliceMultiIndexContext)
+
 	// ExitRightUnary is called when exiting the RightUnary production.
 	ExitRightUnary(c *RightUnaryContext)
-
-	// ExitSend is called when exiting the Send production.
-	ExitSend(c *SendContext)
 
 	// ExitAssignInitializationlist is called when exiting the AssignInitializationlist production.
 	ExitAssignInitializationlist(c *AssignInitializationlistContext)

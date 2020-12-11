@@ -321,65 +321,11 @@ func (s *BasegoscriptListener) EnterFunctionAssign(ctx *FunctionAssignContext) {
 // ExitFunctionAssign is called when production FunctionAssign is exited.
 func (s *BasegoscriptListener) ExitFunctionAssign(ctx *FunctionAssignContext) {}
 
-// EnterMultiAssign is called when production MultiAssign is entered.
-func (s *BasegoscriptListener) EnterMultiAssign(ctx *MultiAssignContext) {}
-
-// ExitMultiAssign is called when production MultiAssign is exited.
-func (s *BasegoscriptListener) ExitMultiAssign(ctx *MultiAssignContext) {}
-
-// EnterLhs is called when production lhs is entered.
-func (s *BasegoscriptListener) EnterLhs(ctx *LhsContext) {}
-
-// ExitLhs is called when production lhs is exited.
-func (s *BasegoscriptListener) ExitLhs(ctx *LhsContext) {}
-
-// EnterSliceFilter is called when production SliceFilter is entered.
-func (s *BasegoscriptListener) EnterSliceFilter(ctx *SliceFilterContext) {}
-
-// ExitSliceFilter is called when production SliceFilter is exited.
-func (s *BasegoscriptListener) ExitSliceFilter(ctx *SliceFilterContext) {}
-
-// EnterDirectCall is called when production DirectCall is entered.
-func (s *BasegoscriptListener) EnterDirectCall(ctx *DirectCallContext) {}
-
-// ExitDirectCall is called when production DirectCall is exited.
-func (s *BasegoscriptListener) ExitDirectCall(ctx *DirectCallContext) {}
-
 // EnterVariableName is called when production VariableName is entered.
 func (s *BasegoscriptListener) EnterVariableName(ctx *VariableNameContext) {}
 
 // ExitVariableName is called when production VariableName is exited.
 func (s *BasegoscriptListener) ExitVariableName(ctx *VariableNameContext) {}
-
-// EnterSelect is called when production Select is entered.
-func (s *BasegoscriptListener) EnterSelect(ctx *SelectContext) {}
-
-// ExitSelect is called when production Select is exited.
-func (s *BasegoscriptListener) ExitSelect(ctx *SelectContext) {}
-
-// EnterIndex is called when production Index is entered.
-func (s *BasegoscriptListener) EnterIndex(ctx *IndexContext) {}
-
-// ExitIndex is called when production Index is exited.
-func (s *BasegoscriptListener) ExitIndex(ctx *IndexContext) {}
-
-// EnterMapMultiIndex is called when production MapMultiIndex is entered.
-func (s *BasegoscriptListener) EnterMapMultiIndex(ctx *MapMultiIndexContext) {}
-
-// ExitMapMultiIndex is called when production MapMultiIndex is exited.
-func (s *BasegoscriptListener) ExitMapMultiIndex(ctx *MapMultiIndexContext) {}
-
-// EnterSliceMultiIndex is called when production SliceMultiIndex is entered.
-func (s *BasegoscriptListener) EnterSliceMultiIndex(ctx *SliceMultiIndexContext) {}
-
-// ExitSliceMultiIndex is called when production SliceMultiIndex is exited.
-func (s *BasegoscriptListener) ExitSliceMultiIndex(ctx *SliceMultiIndexContext) {}
-
-// EnterTypeAssert is called when production TypeAssert is entered.
-func (s *BasegoscriptListener) EnterTypeAssert(ctx *TypeAssertContext) {}
-
-// ExitTypeAssert is called when production TypeAssert is exited.
-func (s *BasegoscriptListener) ExitTypeAssert(ctx *TypeAssertContext) {}
 
 // EnterAsserted is called when production asserted is entered.
 func (s *BasegoscriptListener) EnterAsserted(ctx *AssertedContext) {}
@@ -429,11 +375,47 @@ func (s *BasegoscriptListener) EnterRecv(ctx *RecvContext) {}
 // ExitRecv is called when production Recv is exited.
 func (s *BasegoscriptListener) ExitRecv(ctx *RecvContext) {}
 
+// EnterSliceFilter is called when production SliceFilter is entered.
+func (s *BasegoscriptListener) EnterSliceFilter(ctx *SliceFilterContext) {}
+
+// ExitSliceFilter is called when production SliceFilter is exited.
+func (s *BasegoscriptListener) ExitSliceFilter(ctx *SliceFilterContext) {}
+
+// EnterDirectCall is called when production DirectCall is entered.
+func (s *BasegoscriptListener) EnterDirectCall(ctx *DirectCallContext) {}
+
+// ExitDirectCall is called when production DirectCall is exited.
+func (s *BasegoscriptListener) ExitDirectCall(ctx *DirectCallContext) {}
+
+// EnterIndex is called when production Index is entered.
+func (s *BasegoscriptListener) EnterIndex(ctx *IndexContext) {}
+
+// ExitIndex is called when production Index is exited.
+func (s *BasegoscriptListener) ExitIndex(ctx *IndexContext) {}
+
+// EnterMapMultiIndex is called when production MapMultiIndex is entered.
+func (s *BasegoscriptListener) EnterMapMultiIndex(ctx *MapMultiIndexContext) {}
+
+// ExitMapMultiIndex is called when production MapMultiIndex is exited.
+func (s *BasegoscriptListener) ExitMapMultiIndex(ctx *MapMultiIndexContext) {}
+
+// EnterSend is called when production Send is entered.
+func (s *BasegoscriptListener) EnterSend(ctx *SendContext) {}
+
+// ExitSend is called when production Send is exited.
+func (s *BasegoscriptListener) ExitSend(ctx *SendContext) {}
+
 // EnterPass is called when production Pass is entered.
 func (s *BasegoscriptListener) EnterPass(ctx *PassContext) {}
 
 // ExitPass is called when production Pass is exited.
 func (s *BasegoscriptListener) ExitPass(ctx *PassContext) {}
+
+// EnterSelect is called when production Select is entered.
+func (s *BasegoscriptListener) EnterSelect(ctx *SelectContext) {}
+
+// ExitSelect is called when production Select is exited.
+func (s *BasegoscriptListener) ExitSelect(ctx *SelectContext) {}
 
 // EnterConstruct is called when production Construct is entered.
 func (s *BasegoscriptListener) EnterConstruct(ctx *ConstructContext) {}
@@ -453,17 +435,23 @@ func (s *BasegoscriptListener) EnterLeftUnary(ctx *LeftUnaryContext) {}
 // ExitLeftUnary is called when production LeftUnary is exited.
 func (s *BasegoscriptListener) ExitLeftUnary(ctx *LeftUnaryContext) {}
 
+// EnterTypeAssert is called when production TypeAssert is entered.
+func (s *BasegoscriptListener) EnterTypeAssert(ctx *TypeAssertContext) {}
+
+// ExitTypeAssert is called when production TypeAssert is exited.
+func (s *BasegoscriptListener) ExitTypeAssert(ctx *TypeAssertContext) {}
+
+// EnterSliceMultiIndex is called when production SliceMultiIndex is entered.
+func (s *BasegoscriptListener) EnterSliceMultiIndex(ctx *SliceMultiIndexContext) {}
+
+// ExitSliceMultiIndex is called when production SliceMultiIndex is exited.
+func (s *BasegoscriptListener) ExitSliceMultiIndex(ctx *SliceMultiIndexContext) {}
+
 // EnterRightUnary is called when production RightUnary is entered.
 func (s *BasegoscriptListener) EnterRightUnary(ctx *RightUnaryContext) {}
 
 // ExitRightUnary is called when production RightUnary is exited.
 func (s *BasegoscriptListener) ExitRightUnary(ctx *RightUnaryContext) {}
-
-// EnterSend is called when production Send is entered.
-func (s *BasegoscriptListener) EnterSend(ctx *SendContext) {}
-
-// ExitSend is called when production Send is exited.
-func (s *BasegoscriptListener) ExitSend(ctx *SendContext) {}
 
 // EnterAssignInitializationlist is called when production AssignInitializationlist is entered.
 func (s *BasegoscriptListener) EnterAssignInitializationlist(ctx *AssignInitializationlistContext) {}
