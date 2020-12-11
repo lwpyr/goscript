@@ -3,6 +3,9 @@ Goscript is completely written in Golang. Goscript's purpose is to build a compl
 
 ## NOTICE: Goscript is in a very early stage, there are still many thing to be done and many bugs to be fixed.
 
+### TODO
+check lhs flag cannot be set to intermediate result (throw panic).
+
 ### TODO LIST
 
 - [x] Type System: Basic value type and basic reference type(Message, Map, Slice)
