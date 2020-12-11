@@ -106,6 +106,6 @@ func NewMessageValue(params ...interface{}) interface{} {
 	return make(map[string]interface{})
 }
 
-func NewObjectValue(params ...interface{}) interface{} {
+func NewAnyValue(params ...interface{}) interface{} {
 	return nil
 }

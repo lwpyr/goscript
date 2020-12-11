@@ -664,7 +664,7 @@ func setup() {
 	scope.AddVariable(goscript.NewVariable("stringMap", c.FindMapType("string", "Person")))
 	scope.AddVariable(goscript.NewVariable("float32Map", c.FindMapType("float32", "Person")))
 	scope.AddVariable(goscript.NewVariable("forMap", c.FindMapType("int32", "string")))
-	scope.AddVariable(goscript.NewVariable("TomObj", c.FindType("object")))
+	scope.AddVariable(goscript.NewVariable("TomObj", c.FindType("any")))
 
 	// init some data
 	var expr string

@@ -15,8 +15,8 @@ type JsonLib struct{}
 func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 	jsonObject := &common.DataType{
 		Type:        "JSONObject",
-		Kind:        common.KindMap[common.Object],
-		Constructor: common.ConstructorMap[common.Object],
+		Kind:        common.KindMap[common.Any],
+		Constructor: common.ConstructorMap[common.Any],
 		Unmarshal:   nil,
 	}
 
@@ -48,7 +48,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 		"JsonMarshal": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
 				In: []*common.DataType{
-					common.BasicTypeMap["object"],
+					common.BasicTypeMap[common.AnyType],
 				},
 				Out: []*common.DataType{
 					common.BasicTypeMap["bytes"],
@@ -63,7 +63,7 @@ func (j *JsonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 					common.BasicTypeMap["reflect"],
 				},
 				Out: []*common.DataType{
-					common.BasicTypeMap["object"],
+					common.BasicTypeMap[common.AnyType],
 				},
 			}),
 			F: &JsonUnmarshalFunc,

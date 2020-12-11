@@ -279,7 +279,7 @@ func (s *ASTBuilder) ExitDirectCall(ctx *parser.DirectCallContext) {
 			requireType = meta.In[len(meta.In)-1]
 		}
 		if i < len(meta.In) {
-			if requireType.Kind.Kind != common.Object && !temp.GetDataType().CanConvertTo(requireType) {
+			if requireType.Kind.Kind != common.Any && !temp.GetDataType().CanConvertTo(requireType) {
 				panic(common.NewTypeErr("function parameter type cannot be implicitly casted " + funcName))
 			}
 		}

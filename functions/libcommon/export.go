@@ -78,7 +78,7 @@ func (b *commonLib) Init(tr *common.TypeRegistry) map[string]*common.Function {
 		"print": {
 			Type: tr.FindFuncType(&common.FunctionMeta{
 				In: []*common.DataType{
-					common.BasicTypeMap["object"],
+					common.BasicTypeMap[common.AnyType],
 				},
 				TailArray: true,
 			}),

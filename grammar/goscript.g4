@@ -12,7 +12,7 @@ BYTES: 'bytes';
 BOOL: 'bool';
 UINT8: 'uint8';
 CHAN: 'chan';
-OBJECT: 'object';
+ANY: 'any';
 
 FOR: 'for';
 BREAK: 'break';
@@ -255,7 +255,7 @@ expr
     ;
 
 basicTypeName
-    : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|OBJECT);
+    : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|ANY);
 
 builtin
     : 'pushBack' '(' expr',' expr ')'
@@ -274,7 +274,7 @@ builtin
     | BYTES '(' expr ')'
     | BOOL '(' expr ')'
     | UINT8 '(' expr ')'
-    | OBJECT '(' expr ')'
+    | ANY '(' expr ')'
     ;
 
 initializationListBegin

@@ -86,7 +86,7 @@ func TestPanic(t *testing.T) {
 	assert.Panics(t, func() { tr.AddType("int64", tr.FindMapType("string", "string")) })
 
 	dtb := NewDataTypeBuilder("int64")
-	assert.Panics(t, func() { dtb.SetKind(Object) })
+	assert.Panics(t, func() { dtb.SetKind(Any) })
 	assert.Panics(t, func() { tr.AddBuiltType(dtb) })
 	assert.Panics(t, func() { dtb.SetKind(Map); dtb.SetField("number", tr.FindType("int64")) })
 	assert.Panics(t, func() { dtb.SetKind(Map); dtb.SetOneOf("number", "foo") })

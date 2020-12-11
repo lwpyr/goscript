@@ -24,7 +24,7 @@ const ( // Kind
 	Enum
 	Func
 	ReflectType
-	Object
+	Any
 )
 
 var KindMap = map[int]*DataKind{
@@ -82,7 +82,7 @@ var KindMap = map[int]*DataKind{
 	ReflectType: {
 		Kind: ReflectType,
 	},
-	Object: {
-		Kind: Object,
+	Any: {
+		Kind: Any,
 	},
 }

@@ -34,7 +34,7 @@ null
 'bool'
 'uint8'
 'chan'
-'object'
+'any'
 'for'
 'break'
 'continue'
@@ -119,7 +119,7 @@ BYTES
 BOOL
 UINT8
 CHAN
-OBJECT
+ANY
 FOR
 BREAK
 CONTINUE

@@ -380,9 +380,9 @@ func (t *TypeRegistry) AddBuiltType(dtb *DataTypeBuilder) {
 			return ret
 		}
 		dtb.T.Constructor = ConstructorMap[Message]
-	} else if dtb.T.Kind.Kind == Object {
+	} else if dtb.T.Kind.Kind == Any {
 		dtb.T.Unmarshal = nil
-		dtb.T.Constructor = ConstructorMap[Object]
+		dtb.T.Constructor = ConstructorMap[Any]
 	}
 	if ret, ok := t.Types[typeName]; ok {
 		if !(len(typeName) >= 6 && typeName[:6] == "slice<" || len(typeName) >= 4 && typeName[:4] == "map<") {

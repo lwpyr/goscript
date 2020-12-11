@@ -95,7 +95,7 @@ func (d *DataTypeBuilder) SetItem(itemType *DataType) {
 }
 
 func (d *DataType) CanConvertTo(b *DataType) bool {
-	if d.Kind.Kind == Nil || b.Kind.Kind == Object || d.Kind.Kind == Object {
+	if d.Kind.Kind == Nil || b.Kind.Kind == Any || d.Kind.Kind == Any {
 		return true
 	}
 	switch b.Kind.Kind {
@@ -144,7 +144,7 @@ func CanCompare(d *DataType, b *DataType) *DataType {
 }
 
 func CanEqual(d *DataType, b *DataType) *DataType {
-	if b.Kind.Kind == Nil || d.Kind.Kind == Nil || b.Kind.Kind == Object || d.Kind.Kind == Object {
+	if b.Kind.Kind == Nil || d.Kind.Kind == Nil || b.Kind.Kind == Any || d.Kind.Kind == Any {
 		return BasicTypeMap["bool"]
 	}
 	switch b.Kind.Kind {
@@ -375,11 +375,11 @@ var BasicTypeMap = map[string]*DataType{
 		Method: map[string]*FunctionMeta{},
 		Kind:   KindMap[ReflectType],
 	},
-	"object": { // like Object
-		Type:        "object",
-		Kind:        KindMap[Object],
+	"any": {
+		Type:        "any",
+		Kind:        KindMap[Any],
 		Method:      map[string]*FunctionMeta{},
-		Constructor: ConstructorMap[Object],
+		Constructor: ConstructorMap[Any],
 	},
 }
 
@@ -426,7 +426,7 @@ var ConstructorMap = map[int]Constructor{
 	Message: NewMessageValue,
 	Slice:   NewSliceValue,
 	Channel: NewChannelValue,
-	Object:  NewObjectValue,
+	Any:     NewAnyValue,
 }
 
 var MapConstructorMap = map[int]Constructor{
@@ -454,5 +454,5 @@ const ( // BasicTypeString
 	SliceType   = "slice"
 	MapType     = "map"
 	MessageType = "message"
-	ObjectType  = "object"
+	AnyType     = "any"
 )

@@ -470,7 +470,7 @@ var literalNames = []string{
 	"':'", "'oneof'", "';'", "'in'", "'@'", "'[?('", "')]'", "'pushBack'",
 	"'pushFront'", "'delete'", "'enumString'", "'len'", "'typeof'", "'new'",
 	"'uint32'", "'uint64'", "'int32'", "'int64'", "'float32'", "'float64'",
-	"'string'", "'bytes'", "'bool'", "'uint8'", "'chan'", "'object'", "'for'",
+	"'string'", "'bytes'", "'bool'", "'uint8'", "'chan'", "'any'", "'for'",
 	"'break'", "'continue'", "'if'", "'else'", "'switch'", "'case'", "'return'",
 	"'var'", "'local'", "'const'", "'func'", "", "'nil'", "'**'", "'*'", "'/'",
 	"'%'", "'+'", "'-'", "'++'", "'--'", "'=='", "'!='", "'>'", "'>='", "'<='",
@@ -480,13 +480,13 @@ var literalNames = []string{
 var symbolicNames = []string{
 	"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
 	"", "", "", "", "", "", "UINT32", "UINT64", "INT32", "INT64", "FLOAT32",
-	"FLOAT64", "STRING", "BYTES", "BOOL", "UINT8", "CHAN", "OBJECT", "FOR",
-	"BREAK", "CONTINUE", "IF", "ELSE", "SWITCH", "CASE", "RETURN", "VAR", "LOCAL",
-	"CONST", "FUNCTION", "BOOLLITERAL", "NULL", "POW", "MUL", "DIV", "MOD",
-	"ADD", "SUB", "UNARYADD", "UNARYSUB", "EQ", "INEQ", "GT", "GE", "LE", "LT",
-	"REGEX", "AND", "OR", "NOT", "CHANOP", "CHANOPNONBLOCK", "ASSIGN", "ADDEQUAL",
-	"SUBEQUAL", "MULEQUAL", "DIVEQUAL", "INT", "FLOAT", "STRINGLITERAL", "NAME",
-	"DOT", "TAILARRAY", "WHITESPACE", "COMMENT",
+	"FLOAT64", "STRING", "BYTES", "BOOL", "UINT8", "CHAN", "ANY", "FOR", "BREAK",
+	"CONTINUE", "IF", "ELSE", "SWITCH", "CASE", "RETURN", "VAR", "LOCAL", "CONST",
+	"FUNCTION", "BOOLLITERAL", "NULL", "POW", "MUL", "DIV", "MOD", "ADD", "SUB",
+	"UNARYADD", "UNARYSUB", "EQ", "INEQ", "GT", "GE", "LE", "LT", "REGEX",
+	"AND", "OR", "NOT", "CHANOP", "CHANOPNONBLOCK", "ASSIGN", "ADDEQUAL", "SUBEQUAL",
+	"MULEQUAL", "DIVEQUAL", "INT", "FLOAT", "STRINGLITERAL", "NAME", "DOT",
+	"TAILARRAY", "WHITESPACE", "COMMENT",
 }
 
 var ruleNames = []string{
@@ -561,7 +561,7 @@ const (
 	goscriptParserBOOL           = 32
 	goscriptParserUINT8          = 33
 	goscriptParserCHAN           = 34
-	goscriptParserOBJECT         = 35
+	goscriptParserANY            = 35
 	goscriptParserFOR            = 36
 	goscriptParserBREAK          = 37
 	goscriptParserCONTINUE       = 38
@@ -806,7 +806,7 @@ func (p *goscriptParser) Program() (localctx IProgramContext) {
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for ok := true; ok; ok = (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__6)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserOBJECT-32))|(1<<(goscriptParserFOR-32))|(1<<(goscriptParserBREAK-32))|(1<<(goscriptParserCONTINUE-32))|(1<<(goscriptParserIF-32))|(1<<(goscriptParserSWITCH-32))|(1<<(goscriptParserRETURN-32))|(1<<(goscriptParserVAR-32))|(1<<(goscriptParserLOCAL-32))|(1<<(goscriptParserCONST-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
+	for ok := true; ok; ok = (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__6)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserANY-32))|(1<<(goscriptParserFOR-32))|(1<<(goscriptParserBREAK-32))|(1<<(goscriptParserCONTINUE-32))|(1<<(goscriptParserIF-32))|(1<<(goscriptParserSWITCH-32))|(1<<(goscriptParserRETURN-32))|(1<<(goscriptParserVAR-32))|(1<<(goscriptParserLOCAL-32))|(1<<(goscriptParserCONST-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
 		p.SetState(79)
 		p.GetErrorHandler().Sync(p)
 		switch p.GetInterpreter().AdaptivePredict(p.GetTokenStream(), 0, p.GetParserRuleContext()) {
@@ -1096,7 +1096,7 @@ func (p *goscriptParser) Functiondef() (localctx IFunctiondefContext) {
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(100)
 				p.Returntypename()
@@ -1626,7 +1626,7 @@ func (p *goscriptParser) Lambda() (localctx ILambdaContext) {
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(201)
 				p.Returntypename()
@@ -2784,7 +2784,7 @@ func (p *goscriptParser) Typename() (localctx ITypenameContext) {
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT, goscriptParserNAME:
+	case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY, goscriptParserNAME:
 		localctx = NewSimpleTypeNameContext(p, localctx)
 		p.EnterOuterAlt(localctx, 1)
 		p.SetState(298)
@@ -2797,7 +2797,7 @@ func (p *goscriptParser) Typename() (localctx ITypenameContext) {
 				p.Match(goscriptParserNAME)
 			}
 
-		case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT:
+		case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY:
 			{
 				p.SetState(297)
 				p.BasicTypeName()
@@ -3024,7 +3024,7 @@ func (p *goscriptParser) FunctionTypeName() (localctx IFunctionTypeNameContext) 
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(317)
 				p.Intypename()
@@ -3068,7 +3068,7 @@ func (p *goscriptParser) FunctionTypeName() (localctx IFunctionTypeNameContext) 
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(331)
 				p.Returntypename()
@@ -3090,7 +3090,7 @@ func (p *goscriptParser) FunctionTypeName() (localctx IFunctionTypeNameContext) 
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(336)
 				p.Intypename()
@@ -4279,7 +4279,7 @@ func (p *goscriptParser) Typenameindef() (localctx ITypenameindefContext) {
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT, goscriptParserNAME:
+	case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY, goscriptParserNAME:
 		localctx = NewSimpleTypeNameInDefContext(p, localctx)
 		p.EnterOuterAlt(localctx, 1)
 		p.SetState(425)
@@ -4292,7 +4292,7 @@ func (p *goscriptParser) Typenameindef() (localctx ITypenameindefContext) {
 				p.Match(goscriptParserNAME)
 			}
 
-		case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT:
+		case goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY:
 			{
 				p.SetState(424)
 				p.BasicTypeName()
@@ -4519,7 +4519,7 @@ func (p *goscriptParser) FunctionTypeNameindef() (localctx IFunctionTypeNameinde
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(444)
 				p.Intypenameindef()
@@ -4584,7 +4584,7 @@ func (p *goscriptParser) FunctionTypeNameindef() (localctx IFunctionTypeNameinde
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserOBJECT-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
+		if (((_la-4)&-(0x1f+1)) == 0 && ((1<<uint((_la-4)))&((1<<(goscriptParserT__3-4))|(1<<(goscriptParserT__5-4))|(1<<(goscriptParserUINT32-4))|(1<<(goscriptParserUINT64-4))|(1<<(goscriptParserINT32-4))|(1<<(goscriptParserINT64-4))|(1<<(goscriptParserFLOAT32-4))|(1<<(goscriptParserFLOAT64-4))|(1<<(goscriptParserSTRING-4))|(1<<(goscriptParserBYTES-4))|(1<<(goscriptParserBOOL-4))|(1<<(goscriptParserUINT8-4))|(1<<(goscriptParserCHAN-4))|(1<<(goscriptParserANY-4)))) != 0) || _la == goscriptParserFUNCTION || _la == goscriptParserNAME {
 			{
 				p.SetState(463)
 				p.Intypenameindef()
@@ -5016,7 +5016,7 @@ func (p *goscriptParser) Execution() (localctx IExecutionContext) {
 			p.Control()
 		}
 
-	case goscriptParserT__0, goscriptParserT__13, goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserT__22, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT, goscriptParserVAR, goscriptParserLOCAL, goscriptParserCONST, goscriptParserFUNCTION, goscriptParserBOOLLITERAL, goscriptParserNULL, goscriptParserSUB, goscriptParserUNARYADD, goscriptParserUNARYSUB, goscriptParserNOT, goscriptParserCHANOP, goscriptParserCHANOPNONBLOCK, goscriptParserINT, goscriptParserFLOAT, goscriptParserSTRINGLITERAL, goscriptParserNAME:
+	case goscriptParserT__0, goscriptParserT__13, goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserT__22, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY, goscriptParserVAR, goscriptParserLOCAL, goscriptParserCONST, goscriptParserFUNCTION, goscriptParserBOOLLITERAL, goscriptParserNULL, goscriptParserSUB, goscriptParserUNARYADD, goscriptParserUNARYSUB, goscriptParserNOT, goscriptParserCHANOP, goscriptParserCHANOPNONBLOCK, goscriptParserINT, goscriptParserFLOAT, goscriptParserSTRINGLITERAL, goscriptParserNAME:
 		localctx = NewLineProgramContext(p, localctx)
 		p.EnterOuterAlt(localctx, 2)
 		{
@@ -6144,7 +6144,7 @@ func (p *goscriptParser) Block() (localctx IBlockContext) {
 	p.GetErrorHandler().Sync(p)
 	_la = p.GetTokenStream().LA(1)
 
-	for (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserOBJECT-32))|(1<<(goscriptParserFOR-32))|(1<<(goscriptParserBREAK-32))|(1<<(goscriptParserCONTINUE-32))|(1<<(goscriptParserIF-32))|(1<<(goscriptParserSWITCH-32))|(1<<(goscriptParserRETURN-32))|(1<<(goscriptParserVAR-32))|(1<<(goscriptParserLOCAL-32))|(1<<(goscriptParserCONST-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
+	for (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserANY-32))|(1<<(goscriptParserFOR-32))|(1<<(goscriptParserBREAK-32))|(1<<(goscriptParserCONTINUE-32))|(1<<(goscriptParserIF-32))|(1<<(goscriptParserSWITCH-32))|(1<<(goscriptParserRETURN-32))|(1<<(goscriptParserVAR-32))|(1<<(goscriptParserLOCAL-32))|(1<<(goscriptParserCONST-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
 		{
 			p.SetState(578)
 			p.Execution()
@@ -6356,7 +6356,7 @@ func (p *goscriptParser) Line() (localctx ILineContext) {
 	p.GetErrorHandler().Sync(p)
 
 	switch p.GetTokenStream().LA(1) {
-	case goscriptParserT__0, goscriptParserT__13, goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserT__22, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT, goscriptParserFUNCTION, goscriptParserBOOLLITERAL, goscriptParserNULL, goscriptParserSUB, goscriptParserUNARYADD, goscriptParserUNARYSUB, goscriptParserNOT, goscriptParserCHANOP, goscriptParserCHANOPNONBLOCK, goscriptParserINT, goscriptParserFLOAT, goscriptParserSTRINGLITERAL, goscriptParserNAME:
+	case goscriptParserT__0, goscriptParserT__13, goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserT__22, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY, goscriptParserFUNCTION, goscriptParserBOOLLITERAL, goscriptParserNULL, goscriptParserSUB, goscriptParserUNARYADD, goscriptParserUNARYSUB, goscriptParserNOT, goscriptParserCHANOP, goscriptParserCHANOPNONBLOCK, goscriptParserINT, goscriptParserFLOAT, goscriptParserSTRINGLITERAL, goscriptParserNAME:
 		localctx = NewRestoreStackSpContext(p, localctx)
 		p.EnterOuterAlt(localctx, 1)
 		{
@@ -8457,7 +8457,7 @@ func (p *goscriptParser) expr(_p int) (localctx IExprContext) {
 			p.Lambda()
 		}
 
-	case goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserOBJECT:
+	case goscriptParserT__16, goscriptParserT__17, goscriptParserT__18, goscriptParserT__19, goscriptParserT__20, goscriptParserT__21, goscriptParserUINT32, goscriptParserUINT64, goscriptParserINT32, goscriptParserINT64, goscriptParserFLOAT32, goscriptParserFLOAT64, goscriptParserSTRING, goscriptParserBYTES, goscriptParserBOOL, goscriptParserUINT8, goscriptParserANY:
 		localctx = NewPassContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
@@ -8933,7 +8933,7 @@ func (p *goscriptParser) expr(_p int) (localctx IExprContext) {
 				p.GetErrorHandler().Sync(p)
 				_la = p.GetTokenStream().LA(1)
 
-				if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserOBJECT-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
+				if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserANY-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
 					{
 						p.SetState(719)
 						p.expr(0)
@@ -9099,8 +9099,8 @@ func (s *BasicTypeNameContext) UINT8() antlr.TerminalNode {
 	return s.GetToken(goscriptParserUINT8, 0)
 }
 
-func (s *BasicTypeNameContext) OBJECT() antlr.TerminalNode {
-	return s.GetToken(goscriptParserOBJECT, 0)
+func (s *BasicTypeNameContext) ANY() antlr.TerminalNode {
+	return s.GetToken(goscriptParserANY, 0)
 }
 
 func (s *BasicTypeNameContext) GetRuleContext() antlr.RuleContext {
@@ -9149,7 +9149,7 @@ func (p *goscriptParser) BasicTypeName() (localctx IBasicTypeNameContext) {
 		p.SetState(740)
 		_la = p.GetTokenStream().LA(1)
 
-		if !(((_la-24)&-(0x1f+1)) == 0 && ((1<<uint((_la-24)))&((1<<(goscriptParserUINT32-24))|(1<<(goscriptParserUINT64-24))|(1<<(goscriptParserINT32-24))|(1<<(goscriptParserINT64-24))|(1<<(goscriptParserFLOAT32-24))|(1<<(goscriptParserFLOAT64-24))|(1<<(goscriptParserSTRING-24))|(1<<(goscriptParserBYTES-24))|(1<<(goscriptParserBOOL-24))|(1<<(goscriptParserUINT8-24))|(1<<(goscriptParserOBJECT-24)))) != 0) {
+		if !(((_la-24)&-(0x1f+1)) == 0 && ((1<<uint((_la-24)))&((1<<(goscriptParserUINT32-24))|(1<<(goscriptParserUINT64-24))|(1<<(goscriptParserINT32-24))|(1<<(goscriptParserINT64-24))|(1<<(goscriptParserFLOAT32-24))|(1<<(goscriptParserFLOAT64-24))|(1<<(goscriptParserSTRING-24))|(1<<(goscriptParserBYTES-24))|(1<<(goscriptParserBOOL-24))|(1<<(goscriptParserUINT8-24))|(1<<(goscriptParserANY-24)))) != 0) {
 			p.GetErrorHandler().RecoverInline(p)
 		} else {
 			p.GetErrorHandler().ReportMatch(p)
@@ -9261,8 +9261,8 @@ func (s *BuiltinContext) UINT8() antlr.TerminalNode {
 	return s.GetToken(goscriptParserUINT8, 0)
 }
 
-func (s *BuiltinContext) OBJECT() antlr.TerminalNode {
-	return s.GetToken(goscriptParserOBJECT, 0)
+func (s *BuiltinContext) ANY() antlr.TerminalNode {
+	return s.GetToken(goscriptParserANY, 0)
 }
 
 func (s *BuiltinContext) GetRuleContext() antlr.RuleContext {
@@ -9637,11 +9637,11 @@ func (p *goscriptParser) Builtin() (localctx IBuiltinContext) {
 			p.Match(goscriptParserT__2)
 		}
 
-	case goscriptParserOBJECT:
+	case goscriptParserANY:
 		p.EnterOuterAlt(localctx, 17)
 		{
 			p.SetState(828)
-			p.Match(goscriptParserOBJECT)
+			p.Match(goscriptParserANY)
 		}
 		{
 			p.SetState(829)
@@ -10052,7 +10052,7 @@ func (p *goscriptParser) InitializationList() (localctx IInitializationListConte
 		p.GetErrorHandler().Sync(p)
 		_la = p.GetTokenStream().LA(1)
 
-		if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__3)|(1<<goscriptParserT__7)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserOBJECT-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
+		if (((_la)&-(0x1f+1)) == 0 && ((1<<uint(_la))&((1<<goscriptParserT__0)|(1<<goscriptParserT__3)|(1<<goscriptParserT__7)|(1<<goscriptParserT__13)|(1<<goscriptParserT__16)|(1<<goscriptParserT__17)|(1<<goscriptParserT__18)|(1<<goscriptParserT__19)|(1<<goscriptParserT__20)|(1<<goscriptParserT__21)|(1<<goscriptParserT__22)|(1<<goscriptParserUINT32)|(1<<goscriptParserUINT64)|(1<<goscriptParserINT32)|(1<<goscriptParserINT64)|(1<<goscriptParserFLOAT32)|(1<<goscriptParserFLOAT64)|(1<<goscriptParserSTRING)|(1<<goscriptParserBYTES))) != 0) || (((_la-32)&-(0x1f+1)) == 0 && ((1<<uint((_la-32)))&((1<<(goscriptParserBOOL-32))|(1<<(goscriptParserUINT8-32))|(1<<(goscriptParserANY-32))|(1<<(goscriptParserFUNCTION-32))|(1<<(goscriptParserBOOLLITERAL-32))|(1<<(goscriptParserNULL-32))|(1<<(goscriptParserSUB-32))|(1<<(goscriptParserUNARYADD-32))|(1<<(goscriptParserUNARYSUB-32)))) != 0) || (((_la-67)&-(0x1f+1)) == 0 && ((1<<uint((_la-67)))&((1<<(goscriptParserNOT-67))|(1<<(goscriptParserCHANOP-67))|(1<<(goscriptParserCHANOPNONBLOCK-67))|(1<<(goscriptParserINT-67))|(1<<(goscriptParserFLOAT-67))|(1<<(goscriptParserSTRINGLITERAL-67))|(1<<(goscriptParserNAME-67)))) != 0) {
 			{
 				p.SetState(838)
 				p.InitializationList()

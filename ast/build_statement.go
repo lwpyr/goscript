@@ -12,8 +12,8 @@ import (
 func (s *ASTBuilder) ExitAsserted(ctx *parser.AssertedContext) {
 	typeNode := s.NodePop()
 	dType := s.NodeTop().GetDataType()
-	if dType.Type != "object" {
-		panic("type assertion can only be applied on 'object' data")
+	if dType.Type != "any" {
+		panic("type assertion can only be applied on 'any' data")
 	}
 	s.NodeTop().SetDataType(typeNode.GetDataType())
 }

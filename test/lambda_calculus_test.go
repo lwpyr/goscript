@@ -12,53 +12,53 @@ func TestLambdaCalculus(t *testing.T) {
 	mem = goscript.NewMemory(100)
 	var expr string
 	expr = `
-func Identity(x object) object {
+func Identity(x any) any {
 	return x;
 }
 
-func SelfApply(x object) object {
-	return x.(func(object)object)(x);
+func SelfApply(x any) any {
+	return x.(func(any)any)(x);
 }
 
-func Apply(x object) object {
-	return func(y object) object {
-		return x.(func(object)object)(y);
+func Apply(x any) any {
+	return func(y any) any {
+		return x.(func(any)any)(y);
 	};
 }
 
-func TRUE(x object) object {
-	return func(y object) object {
+func TRUE(x any) any {
+	return func(y any) any {
 		return x;
 	};
 }
 
-func FALSE(x object) object {
-	return func(y object) object {
+func FALSE(x any) any {
+	return func(y any) any {
 		return y;
 	};
 }
 
-func CONDITION(x object) object {
-	return func(y object) object {
-		return func(c object) object {
-			return c.(func(object)object)(x).(func(object)object)(y);
+func CONDITION(x any) any {
+	return func(y any) any {
+		return func(c any) any {
+			return c.(func(any)any)(x).(func(any)any)(y);
 		};
 	};
 }
 
-func NOT(x object) object {
-	return x.(func(object)object)(FALSE).(func(object)object)(TRUE);
+func NOT(x any) any {
+	return x.(func(any)any)(FALSE).(func(any)any)(TRUE);
 }
 
-func AND(x object) object {
-	return func(y object)object {
-		return x.(func(object)object)(y).(func(object)object)(FALSE);
+func AND(x any) any {
+	return func(y any)any {
+		return x.(func(any)any)(y).(func(any)any)(FALSE);
 	};
 }
 
-func OR(x object) object {
-	return func(y object)object {
-		return x.(func(object)object)(TRUE).(func(object)object)(y);
+func OR(x any) any {
+	return func(y any)any {
+		return x.(func(any)any)(TRUE).(func(any)any)(y);
 	};
 }
 
@@ -67,62 +67,62 @@ print(Identity == Identity(Identity)); // true
 print(Identity == SelfApply(Identity)); // true
 
 print('=== test APPLY ===');
-print(Apply(Identity).(func(object)object)(Identity) == Identity); // true
+print(Apply(Identity).(func(any)any)(Identity) == Identity); // true
 
 print('=== test BOOL ===');
-print(TRUE(Identity).(func(object)object)(Apply) == Identity); // true
-print(FALSE(Identity).(func(object)object)(Apply) == Apply); // true
+print(TRUE(Identity).(func(any)any)(Apply) == Identity); // true
+print(FALSE(Identity).(func(any)any)(Apply) == Apply); // true
 
 print('=== test COND ===');
-print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(TRUE) == Identity); // true
-print(CONDITION(Identity).(func(object)object)(Apply).(func(object)object)(FALSE) == Apply); // true
-print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(TRUE) == Apply); // true
-print(CONDITION(Apply).(func(object)object)(Identity).(func(object)object)(FALSE) == Identity); // true
+print(CONDITION(Identity).(func(any)any)(Apply).(func(any)any)(TRUE) == Identity); // true
+print(CONDITION(Identity).(func(any)any)(Apply).(func(any)any)(FALSE) == Apply); // true
+print(CONDITION(Apply).(func(any)any)(Identity).(func(any)any)(TRUE) == Apply); // true
+print(CONDITION(Apply).(func(any)any)(Identity).(func(any)any)(FALSE) == Identity); // true
 
 print('=== test NOT ===');
 print(NOT(TRUE) == FALSE); // true
 print(NOT(NOT(TRUE)) == TRUE); // true
 
 print('=== test AND ===');
-print(AND(TRUE).(func(object)object)(TRUE) == TRUE); // true
-print(AND(TRUE).(func(object)object)(FALSE) == FALSE); // true
-print(AND(FALSE).(func(object)object)(TRUE) == FALSE); // true
-print(AND(FALSE).(func(object)object)(FALSE) == FALSE); // true
+print(AND(TRUE).(func(any)any)(TRUE) == TRUE); // true
+print(AND(TRUE).(func(any)any)(FALSE) == FALSE); // true
+print(AND(FALSE).(func(any)any)(TRUE) == FALSE); // true
+print(AND(FALSE).(func(any)any)(FALSE) == FALSE); // true
 
 print('=== test OR ===');
-print(OR(TRUE).(func(object)object)(TRUE) == TRUE); // true
-print(OR(TRUE).(func(object)object)(FALSE) == TRUE); // true
-print(OR(FALSE).(func(object)object)(TRUE) == TRUE); // true
-print(OR(FALSE).(func(object)object)(FALSE) == FALSE); // true
+print(OR(TRUE).(func(any)any)(TRUE) == TRUE); // true
+print(OR(TRUE).(func(any)any)(FALSE) == TRUE); // true
+print(OR(FALSE).(func(any)any)(TRUE) == TRUE); // true
+print(OR(FALSE).(func(any)any)(FALSE) == FALSE); // true
 
 // Natural Number
-func Next(x object) func(object)object {
-	return func(y object) object {
-		return y.(func(object)object)(FALSE).(func(object)object)(x);
+func Next(x any) func(any)any {
+	return func(y any) any {
+		return y.(func(any)any)(FALSE).(func(any)any)(x);
 	};
 }
 
-func IsZero(x object) object {
-	return x.(func(object)object)(TRUE);
+func IsZero(x any) any {
+	return x.(func(any)any)(TRUE);
 }
 
-var zero  func(object)object = Identity;
-var one   func(object)object = Next(zero);
-var two   func(object)object = Next(one);
-var three func(object)object = Next(two);
-var four  func(object)object = Next(three);
-var five  func(object)object = Next(four);
-var six   func(object)object = Next(five);
-var seven func(object)object = Next(six);
-var eight func(object)object = Next(seven);
-var nine  func(object)object = Next(eight);
+var zero  func(any)any = Identity;
+var one   func(any)any = Next(zero);
+var two   func(any)any = Next(one);
+var three func(any)any = Next(two);
+var four  func(any)any = Next(three);
+var five  func(any)any = Next(four);
+var six   func(any)any = Next(five);
+var seven func(any)any = Next(six);
+var eight func(any)any = Next(seven);
+var nine  func(any)any = Next(eight);
 
 print('=== test IsZero ===');
 print(IsZero(zero) == TRUE); // true
 print(IsZero(one) == FALSE); // true
 
-func Prev(x object) object {
-	return IsZero(x).(func(object)object)(zero).(func(object)object)(x.(func(object)object)(FALSE));
+func Prev(x any) any {
+	return IsZero(x).(func(any)any)(zero).(func(any)any)(x.(func(any)any)(FALSE));
 }
 
 print('=== test Prev ===');

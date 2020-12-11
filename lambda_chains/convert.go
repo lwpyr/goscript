@@ -14,13 +14,13 @@ type EmptyFace struct {
 type TypeConvertFunc func(from interface{}) (to interface{})
 
 func GetConvertFunc(from *common.DataType, to *common.DataType) TypeConvertFunc {
-	if to.Kind.Kind == common.Object {
+	if to.Kind.Kind == common.Any {
 		return func(from interface{}) (to interface{}) {
 			return from
 		}
 	}
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) (to interface{}) {
 			return from
 		}
@@ -66,7 +66,7 @@ func GetConvertFunc(from *common.DataType, to *common.DataType) TypeConvertFunc 
 			return func(from interface{}) (to interface{}) {
 				return NilBytes
 			}
-		case common.Object:
+		case common.Any:
 			return func(from interface{}) (to interface{}) {
 				return NilArbitrary
 			}
@@ -779,7 +779,7 @@ type TypeConvertFuncObject func(from interface{}) interface{}
 
 func GetConvertFunc32u(from *common.DataType, to *common.DataType) TypeConvertFunc32u {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) uint32 {
 			return *(*uint32)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -836,7 +836,7 @@ func GetConvertFunc32u(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFunc32i(from *common.DataType, to *common.DataType) TypeConvertFunc32i {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) int32 {
 			return *(*int32)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -893,7 +893,7 @@ func GetConvertFunc32i(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFunc32f(from *common.DataType, to *common.DataType) TypeConvertFunc32f {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) float32 {
 			return *(*float32)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -950,7 +950,7 @@ func GetConvertFunc32f(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFunc64u(from *common.DataType, to *common.DataType) TypeConvertFunc64u {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) uint64 {
 			return *(*uint64)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1007,7 +1007,7 @@ func GetConvertFunc64u(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFunc64i(from *common.DataType, to *common.DataType) TypeConvertFunc64i {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) int64 {
 			return *(*int64)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1064,7 +1064,7 @@ func GetConvertFunc64i(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFunc64f(from *common.DataType, to *common.DataType) TypeConvertFunc64f {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) float64 {
 			return *(*float64)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1121,7 +1121,7 @@ func GetConvertFunc64f(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFuncBool(from *common.DataType, to *common.DataType) TypeConvertFuncBool {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) bool {
 			return *(*bool)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1180,7 +1180,7 @@ func GetConvertFuncBool(from *common.DataType, to *common.DataType) TypeConvertF
 
 func GetConvertFuncStr(from *common.DataType, to *common.DataType) TypeConvertFuncStr {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) string {
 			return *(*string)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1229,7 +1229,7 @@ func GetConvertFuncStr(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFuncBytes(from *common.DataType, to *common.DataType) TypeConvertFuncBytes {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) []byte {
 			return *(*[]byte)((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}
@@ -1276,7 +1276,7 @@ func GetConvertFuncBytes(from *common.DataType, to *common.DataType) TypeConvert
 
 func GetConvertFuncMap(from *common.DataType, to *common.DataType) TypeConvertFuncMap {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) interface{} {
 			return from
 		}
@@ -1457,7 +1457,7 @@ func GetConvertFuncMap(from *common.DataType, to *common.DataType) TypeConvertFu
 
 func GetConvertFuncSlice(from *common.DataType, to *common.DataType) TypeConvertFuncSlice {
 	switch from.Kind.Kind {
-	case common.Object:
+	case common.Any:
 		return func(from interface{}) []interface{} {
 			return *(*[]interface{})((*EmptyFace)(unsafe.Pointer(&from)).Data)
 		}

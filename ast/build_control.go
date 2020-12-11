@@ -179,7 +179,7 @@ func (s *ASTBuilder) ExitCollection(ctx *parser.CollectionContext) {
 		if node, ok := forNode.(*ForMapNode); ok {
 			s.Compiler.Scope.AddParameterVariable(&common.Variable{
 				Symbol:   "$",
-				DataType: common.BasicTypeMap[common.ObjectType],
+				DataType: common.BasicTypeMap[common.AnyType],
 				Scope:    s.Compiler.Scope,
 			})
 			node.Key = s.Compiler.Scope.GetVariable(node.KeyName)
