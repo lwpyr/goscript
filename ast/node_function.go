@@ -237,8 +237,8 @@ type BuiltinFunctionNode struct {
 // todo: process non-variadic
 func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 	switch b.BuiltinName {
-	case "object":
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {})
+	case "any":
+		b.Params[0].Compile(c)
 	case "uint8":
 		panic(common.NewCompileErr("uint8 is not opened"))
 		//b.Params[0].Compile(c)

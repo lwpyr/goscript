@@ -386,14 +386,14 @@ func TestFunction(t *testing.T) {
 	compile(expr).RunOnMemory(mem)
 
 	// jsonpath
-	expr = "testString = JsonPath(jsonObj, '$.1001.name')"
+	expr = "testString = any(JsonPath(jsonObj, '$.1001.name'))"
 	compile(expr).RunOnMemory(mem)
 	expr = "testString == 'Jackson'"
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
 	// jsonpath
-	expr = "testString = JsonPath(jsonObj, '$.1001.hobbies[ 3 ]')"
+	expr = "testString = any(JsonPath(jsonObj, '$.1001.hobbies[ 3 ]'))"
 	compile(expr).RunOnMemory(mem)
 	expr = "testString == 'happy'"
 	p = compile(expr)

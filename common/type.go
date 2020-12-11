@@ -95,8 +95,11 @@ func (d *DataTypeBuilder) SetItem(itemType *DataType) {
 }
 
 func (d *DataType) CanConvertTo(b *DataType) bool {
-	if d.Kind.Kind == Nil || b.Kind.Kind == Any || d.Kind.Kind == Any {
+	if d.Kind.Kind == Nil || b.Type == AnyType || d.Type == AnyType {
 		return true
+	}
+	if b.Kind.Kind == Any && d.Kind.Kind == Any {
+		return b.Type == d.Type
 	}
 	switch b.Kind.Kind {
 	case Message:
