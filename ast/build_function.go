@@ -292,15 +292,15 @@ func (s *ASTBuilder) ExitBuiltin(ctx *parser.BuiltinContext) {
 	var params []ASTNode
 	var dType *common.DataType
 	builtinName := ctx.GetChild(0).GetPayload().(antlr.Token).GetText()
-	if ctx.PUSHBACK() != nil || ctx.PUSHFRONT() != nil || ctx.DELETE() != nil {
+	if builtinName == "pushBack" || builtinName == "pushFront" || builtinName == "delete" {
 		val := s.NodePop()
 		data := s.NodePop()
 		params = []ASTNode{val, data}
 		dType = nil
-	} else if ctx.LEN() != nil {
+	} else if builtinName == "len" {
 		params = []ASTNode{s.NodePop()}
 		dType = common.BasicTypeMap["int64"]
-	} else if ctx.TYPEOF() != nil {
+	} else if builtinName == "typeof" {
 		dType = s.NodePop().GetDataType()
 		s.NodePush(&ValueNode{
 			Node: Node{
@@ -312,7 +312,7 @@ func (s *ASTBuilder) ExitBuiltin(ctx *parser.BuiltinContext) {
 			Val: dType,
 		})
 		return
-	} else if ctx.ENUMSTRING() != nil {
+	} else if builtinName == "enumString" {
 		params = []ASTNode{s.NodePop()}
 		val := params[0]
 		if val.GetDataType().Kind.Kind != common.Int32 || val.GetDataType().Type == "int32" {

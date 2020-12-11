@@ -106,7 +106,7 @@ func TestF(t *testing.T) {
 	setupParse()
 	var expr string
 	expr = `
-var fs slice<func()int64> = new slice<func()int64>(2);
+var fs []func()int64 = new []func()int64(2);
 func main(a int64, b int64) func()(int64) {
 	return func()int64{
 		return a+b;

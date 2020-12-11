@@ -13,7 +13,7 @@ func TestTypeDef_A(t *testing.T) {
 type Person message {
 	name    string
 	age     int32
-	hobbies slice<string>
+	hobbies []string
 }
 
 var Tom Person = {name('Tommy'), age(12), hobbies(['play_games', 'sports'])};
@@ -21,15 +21,15 @@ print(Tom);
 var testMap StringMap = {1:'abc', 2:'def'};
 print(testMap);
 
-type StringMap map<int32, string>
+type StringMap map[int32]string
 
-type PersonArray slice<Person>
+type PersonArray []Person
 
 var testArr PersonArray = [{name('aaa'),age(1)},{name('bbb'),age(2)}];
 print(testArr[0]);
 print(testArr[1]);
 
-var testArr2 slice<Person> = [{name('ccc'),age(3)},{name('ddd'),age(4)}];
+var testArr2 []Person = [{name('ccc'),age(3)},{name('ddd'),age(4)}];
 
 testArr[1] = testArr2[0];
 print(testArr);

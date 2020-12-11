@@ -609,6 +609,9 @@ func (m *MapMultiIndexNode) Compile(c *Compiler) {
 }
 
 func (n *BinaryNode) Compile(c *Compiler) {
+	if n.LhsFlag {
+		panic("cannot use binary op on the left hand side")
+	}
 	switch n.Op {
 	case "=", "+=", "-=", "*=", "/=":
 		n.Lhs.SetLhs()
@@ -726,6 +729,9 @@ func (f *FunctionAssignNode) Compile(c *Compiler) {
 }
 
 func (n *ConstructorNode) Compile(c *Compiler) {
+	if n.LhsFlag {
+		panic("constructor cannot be on the left hand side")
+	}
 	num := len(n.Params)
 	constructor := n.DataType.Constructor
 	if num == 0 {
@@ -753,6 +759,9 @@ func (n *ConstructorNode) Compile(c *Compiler) {
 }
 
 func (a *AssignNode) Compile(c *Compiler) {
+	if a.LhsFlag {
+		panic("assign op cannot be on the left hand side")
+	}
 	num := len(a.Lhs)
 
 	lhsInstructions := make([]common.Instruction, 0, num)
@@ -808,6 +817,9 @@ func (v *ValueNode) GetConstantValue() interface{} {
 }
 
 func (v *ChanSend) Compile(c *Compiler) {
+	if v.LhsFlag {
+		panic("chan send cannot be on the left hand side")
+	}
 	v.Chan.Compile(c)
 	chanInstruction := c.InstructionPop()
 	v.ToSend.Compile(c)
@@ -838,6 +850,9 @@ func (v *ChanSend) Compile(c *Compiler) {
 }
 
 func (v *ChanRecv) Compile(c *Compiler) {
+	if v.LhsFlag {
+		panic("chan recv cannot be on the left hand side")
+	}
 	v.Chan.Compile(c)
 	chanInstruction := c.InstructionPop()
 	if v.NonBlock {

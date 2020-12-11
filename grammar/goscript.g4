@@ -1,19 +1,5 @@
 grammar goscript;
 
-// built-in
-PUSHBACK: 'pushBack';
-PUSHFRONT: 'pushFront';
-DELETE: 'delete';
-ENUMSTRING: 'enumString';
-LEN: 'len';
-TYPEOF: 'typeof';
-
-// kind
-MAP: 'map';
-SLICE: 'slice';
-MESSAGE: 'message';
-ENUM: 'enum';
-
 // basic type name
 UINT32: 'uint32';
 UINT64: 'uint64';
@@ -27,8 +13,6 @@ BOOL: 'bool';
 UINT8: 'uint8';
 CHAN: 'chan';
 OBJECT: 'object';
-
-NEW: 'new';
 
 FOR: 'for';
 BREAK: 'break';
@@ -45,11 +29,8 @@ RETURN: 'return';
 VAR: 'var';
 LOCAL: 'local';
 CONST: 'const';
-ONEOF: 'oneof';
 
 FUNCTION: 'func';
-
-TYPEDEF: 'type';
 
 BOOLLITERAL
    : 'true'
@@ -146,8 +127,8 @@ param
 typename
     : (NAME|basicTypeName) # SimpleTypeName
     | functionTypeName # FunctionType
-    | MAP '<' basicTypeName ',' typename '>' # MapTypeName
-    | SLICE '<' typename '>' # SliceTypeName
+    | 'map' '[' basicTypeName ']' typename # MapTypeName
+    | '[]' typename # SliceTypeName
     | CHAN '<' typename '>' # ChanTypeName
     ;
 
@@ -157,16 +138,16 @@ functionTypeName
     ;
 
 typedef
-    : TYPEDEF NAME MAP '<'  basicTypeName ',' typenameindef '>'# TypeDefMap
-    | TYPEDEF NAME SLICE '<' typenameindef '>'# TypeDefSlice
-    | TYPEDEF NAME MESSAGE '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
-    | TYPEDEF NAME ENUM '{' (NAME ':' INT)* '}' # TypeDefEnum
-    | TYPEDEF NAME functionTypeNameindef # TypeDefFunction
+    : 'type' NAME 'map' '['  basicTypeName ']' typenameindef # TypeDefMap
+    | 'type' NAME '[]' typenameindef # TypeDefSlice
+    | 'type' NAME 'message' '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
+    | 'type' NAME 'enum' '{' (NAME ':' INT)* '}' # TypeDefEnum
+    | 'type' NAME functionTypeNameindef # TypeDefFunction
     ;
 
 messagefield
     : NAME typenameindef # FieldDef
-    | ONEOF NAME '{' oneoffield (oneoffield)* '}' # OneofDef
+    | 'oneof' NAME '{' oneoffield (oneoffield)* '}' # OneofDef
     ;
 
 oneoffield
@@ -175,8 +156,8 @@ oneoffield
 typenameindef
     : (NAME|basicTypeName) # SimpleTypeNameInDef
     | functionTypeNameindef # FunctionTypeInDef
-    | MAP '<' basicTypeName ',' typenameindef '>' # MapTypeNameInDef
-    | SLICE '<' typenameindef '>' # SliceTypeNameInDef
+    | 'map' '[' basicTypeName ']' typenameindef # MapTypeNameInDef
+    | '[]' typenameindef # SliceTypeNameInDef
     | CHAN '<' typenameindef '>' # ChanTypeNameInDef
     ;
 
@@ -277,12 +258,12 @@ basicTypeName
     : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|OBJECT);
 
 builtin
-    : PUSHBACK '(' expr',' expr ')'
-    | PUSHFRONT '(' expr',' expr ')'
-    | DELETE '(' expr',' expr ')'
-    | ENUMSTRING '(' expr ')'
-    | LEN '(' expr ')'
-    | TYPEOF '(' expr ')'
+    : 'pushBack' '(' expr',' expr ')'
+    | 'pushFront' '(' expr',' expr ')'
+    | 'delete' '(' expr',' expr ')'
+    | 'enumString' '(' expr ')'
+    | 'len' '(' expr ')'
+    | 'typeof' '(' expr ')'
     | UINT32 '(' expr ')'
     | UINT64 '(' expr ')'
     | INT32 '(' expr ')'
@@ -315,8 +296,8 @@ constant
     ;
 
 constructor
-    : NEW typename '(' ')'
-    | NEW typename '('expr (',' expr)*')'
+    : 'new' typename '(' ')'
+    | 'new' typename '('expr (',' expr)*')'
     ;
 
 vardef
