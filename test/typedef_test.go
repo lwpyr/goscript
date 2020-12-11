@@ -10,7 +10,7 @@ func TestTypeDef_A(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-type Person {
+type Person message {
 	name    string
 	age     int32
 	type    string
@@ -43,7 +43,7 @@ func TestTypeDef_B(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-type SelfRef {
+type SelfRef message {
 	name string
 	ref  SelfRef
 }
@@ -67,7 +67,7 @@ func TestTypeDef_C(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-type Fruit {
+type Fruit enum {
 	apple: 0
 	banana: 1
 	orange: 2
@@ -75,7 +75,7 @@ type Fruit {
 	grape: 5
 }
 
-type Person {
+type Person message {
 	name    string
 	like    Fruit
 }
@@ -94,19 +94,19 @@ func TestTypeDef_D(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-type MessageType1 {
+type MessageType1 message {
 	str string
 } 
 
-type MessageType2 {
+type MessageType2 message {
 	str string
 } 
 
-type MessageType3 {
+type MessageType3 message {
 	str string
 } 
 
-type OneOfTest {
+type OneOfTest message {
 	oneof Type1AndType2 {
 		msg1 MessageType1
 		msg2 MessageType2

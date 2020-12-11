@@ -6,7 +6,7 @@ func TestChannel_A(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-type Person {
+type Person message {
 	name    string
 	age     int32
 }

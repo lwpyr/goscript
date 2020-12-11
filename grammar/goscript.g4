@@ -1,6 +1,8 @@
 grammar goscript;
 
 TYPEDEF: 'type';
+MESSAGE: 'message';
+ENUM: 'enum';
 MAP: 'map';
 ONEOF: 'oneof';
 
@@ -96,9 +98,9 @@ COMMENT :  '//' ~( '\r' | '\n' )* ( '\r' | '\n' ) -> skip;
 program
     : (functiondef|typedef|execution)+;
 
-name:NAME|TYPEDEF|MAP|ONEOF|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST;
+name:NAME|TYPEDEF|MAP|ONEOF|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST|MESSAGE|ENUM;
 
-fieldname:NAME|TYPEDEF|MAP|ONEOF|UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|CHAN|ANY|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST;
+fieldname:NAME|TYPEDEF|MAP|ONEOF|UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|CHAN|ANY|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST|MESSAGE|ENUM;
 
 
 functiondef
@@ -149,8 +151,8 @@ functionTypeName
 typedef
     : TYPEDEF name MAP '['  basicTypeName ']' typenameindef # TypeDefMap
     | TYPEDEF name '[]' typenameindef # TypeDefSlice
-    | TYPEDEF name '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
-    | TYPEDEF name '{' (name ':' INT)* '}' # TypeDefEnum
+    | TYPEDEF name MESSAGE '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
+    | TYPEDEF name ENUM '{' (name ':' INT)* '}' # TypeDefEnum
     | TYPEDEF name functionTypeNameindef # TypeDefFunction
     ;
 
