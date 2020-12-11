@@ -127,7 +127,7 @@ param
 typename
     : (NAME|basicTypeName) # SimpleTypeName
     | functionTypeName # FunctionType
-    | 'map' '[' basicTypeName ']' typename # MapTypeName
+    | '[' basicTypeName ']' typename # MapTypeName
     | '[]' typename # SliceTypeName
     | CHAN '<' typename '>' # ChanTypeName
     ;
@@ -138,11 +138,11 @@ functionTypeName
     ;
 
 typedef
-    : 'type' NAME 'map' '['  basicTypeName ']' typenameindef # TypeDefMap
-    | 'type' NAME '[]' typenameindef # TypeDefSlice
-    | 'type' NAME 'message' '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
-    | 'type' NAME 'enum' '{' (NAME ':' INT)* '}' # TypeDefEnum
-    | 'type' NAME functionTypeNameindef # TypeDefFunction
+    : 'typedef' NAME '['  basicTypeName ']' typenameindef # TypeDefMap
+    | 'typedef' NAME '[]' typenameindef # TypeDefSlice
+    | 'typedef' NAME '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
+    | 'typedef' NAME '{' (NAME ':' INT)* '}' # TypeDefEnum
+    | 'typedef' NAME functionTypeNameindef # TypeDefFunction
     ;
 
 messagefield
@@ -156,7 +156,7 @@ oneoffield
 typenameindef
     : (NAME|basicTypeName) # SimpleTypeNameInDef
     | functionTypeNameindef # FunctionTypeInDef
-    | 'map' '[' basicTypeName ']' typenameindef # MapTypeNameInDef
+    | '[' basicTypeName ']' typenameindef # MapTypeNameInDef
     | '[]' typenameindef # SliceTypeNameInDef
     | CHAN '<' typenameindef '>' # ChanTypeNameInDef
     ;
