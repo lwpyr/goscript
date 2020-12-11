@@ -11,6 +11,12 @@ type goscriptListener interface {
 	// EnterProgram is called when entering the program production.
 	EnterProgram(c *ProgramContext)
 
+	// EnterName is called when entering the name production.
+	EnterName(c *NameContext)
+
+	// EnterFieldname is called when entering the fieldname production.
+	EnterFieldname(c *FieldnameContext)
+
 	// EnterFunctionDef is called when entering the FunctionDef production.
 	EnterFunctionDef(c *FunctionDefContext)
 
@@ -274,6 +280,12 @@ type goscriptListener interface {
 
 	// ExitProgram is called when exiting the program production.
 	ExitProgram(c *ProgramContext)
+
+	// ExitName is called when exiting the name production.
+	ExitName(c *NameContext)
+
+	// ExitFieldname is called when exiting the fieldname production.
+	ExitFieldname(c *FieldnameContext)
 
 	// ExitFunctionDef is called when exiting the FunctionDef production.
 	ExitFunctionDef(c *FunctionDefContext)

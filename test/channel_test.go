@@ -6,12 +6,12 @@ func TestChannel_A(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-typedef Person {
+type Person {
 	name    string
 	age     int32
 }
 
-var personChan chan<Person> = new chan<Person>(1);
+var personChan chan[Person] = new chan[Person](1);
 
 var Tom Person = {name('Tommy'), age(12)};
 

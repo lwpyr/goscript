@@ -82,7 +82,7 @@ func (s *ASTBuilder) EnterSelect(ctx *parser.SelectContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 		},
-		FieldName: ctx.NAME().GetText(),
+		FieldName: ctx.Name().GetText(),
 	}
 	s.VisitPush(cur)
 }
@@ -211,7 +211,7 @@ func (s *ASTBuilder) ExitIndex(ctx *parser.IndexContext) {
 
 // EnterVariableName is called when production VariableName is entered.
 func (s *ASTBuilder) EnterVariableName(ctx *parser.VariableNameContext) {
-	if ctx.NAME() == nil {
+	if ctx.Name() == nil {
 		cur := &VarNode{
 			Node: Node{
 				Parent:   s.VisitTop(),
@@ -222,7 +222,7 @@ func (s *ASTBuilder) EnterVariableName(ctx *parser.VariableNameContext) {
 		}
 		s.VisitPush(cur)
 	} else {
-		varName := ctx.NAME().GetText()
+		varName := ctx.Name().GetText()
 		enum := s.Compiler.TypeRegistry.GetEnums(varName)
 		if enum != nil {
 			cur := &ValueNode{
@@ -234,7 +234,7 @@ func (s *ASTBuilder) EnterVariableName(ctx *parser.VariableNameContext) {
 				Val: enum,
 			}
 			s.VisitPush(cur)
-		} else if ctx.NAME() != nil {
+		} else if ctx.Name() != nil {
 			if constVal := s.Compiler.Scope.GetConstant(varName); constVal != nil {
 				cur := &ValueNode{
 					Node: Node{
@@ -783,12 +783,12 @@ func (s *ASTBuilder) EnterInitMessage(ctx *parser.InitMessageContext) {
 			NodeType: "InitializationMessageNode",
 		},
 	}
-	for i := 0; i < len(ctx.AllNAME()); i++ {
-		if _, ok := curType.FieldType[ctx.NAME(i).GetText()]; !ok {
+	for i := 0; i < len(ctx.AllName()); i++ {
+		if _, ok := curType.FieldType[ctx.Name(i).GetText()]; !ok {
 			panic(common.NewInitializationErr("message does not have the field"))
 		}
-		cur.Keys = append(cur.Keys, ctx.NAME(i).GetText())
-		s.TypePush(curType.FieldType[ctx.NAME(len(ctx.AllNAME())-1-i).GetText()])
+		cur.Keys = append(cur.Keys, ctx.Name(i).GetText())
+		s.TypePush(curType.FieldType[ctx.Name(len(ctx.AllName())-1-i).GetText()])
 	}
 	s.VisitPush(cur)
 }
@@ -796,7 +796,7 @@ func (s *ASTBuilder) EnterInitMessage(ctx *parser.InitMessageContext) {
 // ExitInitMessage is called when production InitMessage is exited.
 func (s *ASTBuilder) ExitInitMessage(ctx *parser.InitMessageContext) {
 	cur := s.VisitPop().(*InitializationMessageNode)
-	num := len(ctx.AllNAME())
+	num := len(ctx.AllName())
 	for i := 0; i < num; i++ {
 		cur.Values = append(cur.Values, s.NodePop())
 	}

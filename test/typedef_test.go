@@ -10,7 +10,7 @@ func TestTypeDef_A(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-typedef Person {
+type Person {
 	name    string
 	age     int32
 	type    string
@@ -22,9 +22,9 @@ print(Tom);
 var testMap StringMap = {1:'abc', 2:'def'};
 print(testMap);
 
-typedef StringMap [int32]string
+type StringMap map[int32]string
 
-typedef PersonArray []Person
+type PersonArray []Person
 
 var testArr PersonArray = [{name('aaa'),age(1)},{name('bbb'),age(2)}];
 print(testArr[0]);
@@ -43,7 +43,7 @@ func TestTypeDef_B(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-typedef SelfRef {
+type SelfRef {
 	name string
 	ref  SelfRef
 }
@@ -67,7 +67,7 @@ func TestTypeDef_C(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-typedef Fruit {
+type Fruit {
 	apple: 0
 	banana: 1
 	orange: 2
@@ -75,7 +75,7 @@ typedef Fruit {
 	grape: 5
 }
 
-typedef Person {
+type Person {
 	name    string
 	like    Fruit
 }
@@ -94,19 +94,19 @@ func TestTypeDef_D(t *testing.T) {
 	setupClean()
 	var expr string
 	expr = `
-typedef MessageType1 {
+type MessageType1 {
 	str string
 } 
 
-typedef MessageType2 {
+type MessageType2 {
 	str string
 } 
 
-typedef MessageType3 {
+type MessageType3 {
 	str string
 } 
 
-typedef OneOfTest {
+type OneOfTest {
 	oneof Type1AndType2 {
 		msg1 MessageType1
 		msg2 MessageType2

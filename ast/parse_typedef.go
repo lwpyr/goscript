@@ -8,35 +8,35 @@ import (
 
 // EnterTypeDefMap is called when production TypeDefMap is entered.
 func (s *TypeRegister) EnterTypeDefMap(ctx *parser.TypeDefMapContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(typeName)
 }
 
 // EnterTypeDefSlice is called when production TypeDefSlice is entered.
 func (s *TypeRegister) EnterTypeDefSlice(ctx *parser.TypeDefSliceContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(typeName)
 }
 
 // EnterTypeDefMessage is called when production TypeDefMessage is entered.
 func (s *TypeRegister) EnterTypeDefMessage(ctx *parser.TypeDefMessageContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(typeName)
 }
 
 // EnterTypeDefEnum is called when production TypeDefEnum is entered.
 func (s *TypeRegister) EnterTypeDefEnum(ctx *parser.TypeDefEnumContext) {
-	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(ctx.NAME(0).GetText())
+	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(ctx.Name(0).GetText())
 }
 
 // EnterTypeDefFunction is called when production TypeDefFunction is entered.
 func (s *TypeRegister) EnterTypeDefFunction(ctx *parser.TypeDefFunctionContext) {
-	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(ctx.NAME().GetText())
+	s.Compiler.TypeRegistry.AddTypePlaceHolderInBuild(ctx.Name().GetText())
 }
 
 // EnterTypeDefMap is called when production TypeDefMap is entered.
 func (s *TypeParser) EnterTypeDefMap(ctx *parser.TypeDefMapContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.VisitPush(&MapTypeDef{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -58,7 +58,7 @@ func (s *TypeParser) ExitTypeDefMap(ctx *parser.TypeDefMapContext) {
 
 // EnterTypeDefSlice is called when production TypeDefSlice is entered.
 func (s *TypeParser) EnterTypeDefSlice(ctx *parser.TypeDefSliceContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.VisitPush(&SliceTypeDef{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -79,7 +79,7 @@ func (s *TypeParser) ExitTypeDefSlice(ctx *parser.TypeDefSliceContext) {
 
 // EnterTypeDefMessage is called when production TypeDefMessage is entered.
 func (s *TypeParser) EnterTypeDefMessage(ctx *parser.TypeDefMessageContext) {
-	typeName := ctx.NAME().GetText()
+	typeName := ctx.Name().GetText()
 	s.VisitPush(&MessageTypeDef{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -87,7 +87,7 @@ func (s *TypeParser) EnterTypeDefMessage(ctx *parser.TypeDefMessageContext) {
 			DataType: s.Compiler.FindType(typeName),
 			Variadic: false,
 		},
-		TypeDefName: TypeDefName{Name: ctx.NAME().GetText()},
+		TypeDefName: TypeDefName{Name: ctx.Name().GetText()},
 		Field:       map[string]ITypeDefNode{},
 		OneOfGroup:  map[string][]string{},
 	})
@@ -127,12 +127,12 @@ func (s *TypeParser) ExitTypeDefMessage(ctx *parser.TypeDefMessageContext) {
 
 // EnterTypeDefEnum is called when production TypeDefEnum is entered.
 func (s *TypeParser) EnterTypeDefEnum(ctx *parser.TypeDefEnumContext) {
-	enumName := ctx.NAME(0).GetText()
+	enumName := ctx.Name(0).GetText()
 	enum := map[string]int32{}
 	num := len(ctx.AllINT())
 	for i := 0; i < num; i++ {
 		v, _ := strconv.ParseInt(ctx.INT(i).GetText(), 10, 32)
-		enum[ctx.NAME(i+1).GetText()] = int32(v)
+		enum[ctx.Name(i+1).GetText()] = int32(v)
 	}
 
 	s.NodePush(&EnumNode{
@@ -147,10 +147,10 @@ func (s *TypeParser) EnterTypeDefFunction(ctx *parser.TypeDefFunctionContext) {
 		Node: Node{
 			Parent:   s.VisitTop(),
 			NodeType: "FunctionTypeDef",
-			DataType: s.Compiler.FindType(ctx.NAME().GetText()),
+			DataType: s.Compiler.FindType(ctx.Name().GetText()),
 			Variadic: false,
 		},
-		TypeDefName: TypeDefName{Name: ctx.NAME().GetText()},
+		TypeDefName: TypeDefName{Name: ctx.Name().GetText()},
 	})
 }
 
@@ -167,7 +167,7 @@ func (s *TypeParser) EnterFieldDef(ctx *parser.FieldDefContext) {
 			NodeType: "MessageFieldDef",
 			Variadic: false,
 		},
-		Name: ctx.NAME().GetText(),
+		Name: ctx.Fieldname().GetText(),
 	})
 }
 
@@ -186,7 +186,7 @@ func (s *TypeParser) EnterOneofDef(ctx *parser.OneofDefContext) {
 			NodeType: "OneofFieldDef",
 			Variadic: false,
 		},
-		Name: ctx.NAME().GetText(),
+		Name: ctx.Fieldname().GetText(),
 	})
 }
 
@@ -208,7 +208,7 @@ func (s *TypeParser) EnterOneoffield(ctx *parser.OneoffieldContext) {
 			NodeType: "OneofField",
 			Variadic: false,
 		},
-		Name: ctx.NAME().GetText(),
+		Name: ctx.Fieldname().GetText(),
 	})
 }
 

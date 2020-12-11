@@ -27,7 +27,7 @@ func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
 		node.Assign = s.NodePop()
 		typeNode := node.Assign.(*BinaryNode).Lhs
 		node.Variable = &common.Variable{
-			Symbol:       ctx.NAME().GetText(),
+			Symbol:       ctx.Name().GetText(),
 			VariableType: varType,
 			Scope:        s.Compiler.Scope,
 			DataType:     typeNode.GetDataType(),
@@ -42,7 +42,7 @@ func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
 		valNode := s.NodePop()
 		typeNode := s.NodePop()
 		node.Variable = &common.Variable{
-			Symbol:       ctx.NAME().GetText(),
+			Symbol:       ctx.Name().GetText(),
 			VariableType: varType,
 			Scope:        s.Compiler.Scope,
 			DataType:     typeNode.GetDataType(),
@@ -66,7 +66,7 @@ func (s *ASTBuilder) ExitVardef(ctx *parser.VardefContext) {
 
 // ExitConstdef is called when production constdef is exited.
 func (s *ASTBuilder) ExitConstdef(ctx *parser.ConstdefContext) {
-	constName := ctx.NAME().GetText()
+	constName := ctx.Name().GetText()
 	constType := common.BasicTypeMap[ctx.BasicTypeName().GetText()]
 	ValNode := s.NodePop().(IConstantNode)
 	convert := lambda_chains.GetConvertFunc(ValNode.GetDataType(), constType)

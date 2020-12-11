@@ -1,5 +1,9 @@
 grammar goscript;
 
+TYPEDEF: 'type';
+MAP: 'map';
+ONEOF: 'oneof';
+
 // basic type name
 UINT32: 'uint32';
 UINT64: 'uint64';
@@ -92,11 +96,16 @@ COMMENT :  '//' ~( '\r' | '\n' )* ( '\r' | '\n' ) -> skip;
 program
     : (functiondef|typedef|execution)+;
 
+name:NAME|TYPEDEF|MAP|ONEOF|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST;
+
+fieldname:NAME|TYPEDEF|MAP|ONEOF|UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|CHAN|ANY|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST;
+
+
 functiondef
-    : FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # FunctionDef
-    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
-    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # FunctionDef
-    | FUNCTION NAME '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # FunctionDef
+    : FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # FunctionDef
     ;
 
 lambda
@@ -122,14 +131,14 @@ returntypename
     : typename;
 
 param
-    : NAME typename;
+    : name typename;
 
 typename
-    : (NAME|basicTypeName) # SimpleTypeName
+    : (name|basicTypeName) # SimpleTypeName
     | functionTypeName # FunctionType
-    | '[' basicTypeName ']' typename # MapTypeName
+    | MAP '[' basicTypeName ']' typename # MapTypeName
     | '[]' typename # SliceTypeName
-    | CHAN '<' typename '>' # ChanTypeName
+    | CHAN '[' typename ']' # ChanTypeName
     ;
 
 functionTypeName
@@ -138,27 +147,27 @@ functionTypeName
     ;
 
 typedef
-    : 'typedef' NAME '['  basicTypeName ']' typenameindef # TypeDefMap
-    | 'typedef' NAME '[]' typenameindef # TypeDefSlice
-    | 'typedef' NAME '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
-    | 'typedef' NAME '{' (NAME ':' INT)* '}' # TypeDefEnum
-    | 'typedef' NAME functionTypeNameindef # TypeDefFunction
+    : TYPEDEF name MAP '['  basicTypeName ']' typenameindef # TypeDefMap
+    | TYPEDEF name '[]' typenameindef # TypeDefSlice
+    | TYPEDEF name '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
+    | TYPEDEF name '{' (name ':' INT)* '}' # TypeDefEnum
+    | TYPEDEF name functionTypeNameindef # TypeDefFunction
     ;
 
 messagefield
-    : NAME typenameindef # FieldDef
-    | 'oneof' NAME '{' oneoffield (oneoffield)* '}' # OneofDef
+    : fieldname typenameindef # FieldDef
+    | ONEOF fieldname '{' oneoffield (oneoffield)* '}' # OneofDef
     ;
 
 oneoffield
-    : NAME typenameindef;
+    : fieldname typenameindef;
 
 typenameindef
-    : (NAME|basicTypeName) # SimpleTypeNameInDef
+    : (name|basicTypeName) # SimpleTypeNameInDef
     | functionTypeNameindef # FunctionTypeInDef
-    | '[' basicTypeName ']' typenameindef # MapTypeNameInDef
+    | MAP '[' basicTypeName ']' typenameindef # MapTypeNameInDef
     | '[]' typenameindef # SliceTypeNameInDef
-    | CHAN '<' typenameindef '>' # ChanTypeNameInDef
+    | CHAN '[' typenameindef ']' # ChanTypeNameInDef
     ;
 
 functionTypeNameindef
@@ -180,8 +189,8 @@ execution
 control
     : IF '(' expr ')' block (ELSE (block|control))? # If
     | SWITCH '(' expr ')' '{' (CASE constant ':' block)+ '}' # Switch
-    | FOR '(' NAME 'in' collection ')' block # ForInSlice
-    | FOR '(' NAME ',' NAME 'in' collection ')' block  # ForInMap
+    | FOR '(' name 'in' collection ')' block # ForInSlice
+    | FOR '(' name ',' name 'in' collection ')' block  # ForInMap
     | FOR '(' line ';' expr ';' restoreStack ')' block  # For
     | BREAK ';' # Break
     | CONTINUE ';' # Continue
@@ -210,7 +219,7 @@ keepStack
     ;
 
 variable
-    : NAME # VariableName
+    : name # VariableName
     | '@' # VariableName
     ;
 
@@ -232,7 +241,7 @@ expr
     | variable # Pass
     | lambda # Pass
     | builtin # Pass
-    | expr DOT NAME # Select
+    | expr DOT name # Select
     | expr DOT '(' asserted ')' # TypeAssert
     | expr '[?(' filter ')]' # SliceFilter
     | expr '[' expr ']' # Index
@@ -282,7 +291,7 @@ initializationListBegin
 
 initializationList
     : '[' (initializationList (',' initializationList)*)? ']' # InitSlice
-    | '{'  NAME '('initializationList')' (',' NAME '(' initializationList ')' )* '}' # InitMessage
+    | '{'  name '('initializationList')' (',' name '(' initializationList ')' )* '}' # InitMessage
     | '{'  initializationList ':' initializationList (',' initializationList ':' initializationList )* '}' # InitMap
     | expr # InitConstant
     ;
@@ -301,14 +310,14 @@ constructor
     ;
 
 vardef
-    : VAR NAME typename
-    | VAR NAME typename '=' expr
-    | VAR NAME typename '=' initializationListBegin
-    | LOCAL NAME typename
-    | LOCAL NAME typename '=' expr
-    | LOCAL NAME typename '=' initializationListBegin
+    : VAR name typename
+    | VAR name typename '=' expr
+    | VAR name typename '=' initializationListBegin
+    | LOCAL name typename
+    | LOCAL name typename '=' expr
+    | LOCAL name typename '=' initializationListBegin
     ;
 
 constdef
-    : CONST NAME basicTypeName '=' constant
+    : CONST name basicTypeName '=' constant
     ;

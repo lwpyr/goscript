@@ -27,6 +27,18 @@ func (s *BasegoscriptListener) EnterProgram(ctx *ProgramContext) {}
 // ExitProgram is called when production program is exited.
 func (s *BasegoscriptListener) ExitProgram(ctx *ProgramContext) {}
 
+// EnterName is called when production name is entered.
+func (s *BasegoscriptListener) EnterName(ctx *NameContext) {}
+
+// ExitName is called when production name is exited.
+func (s *BasegoscriptListener) ExitName(ctx *NameContext) {}
+
+// EnterFieldname is called when production fieldname is entered.
+func (s *BasegoscriptListener) EnterFieldname(ctx *FieldnameContext) {}
+
+// ExitFieldname is called when production fieldname is exited.
+func (s *BasegoscriptListener) ExitFieldname(ctx *FieldnameContext) {}
+
 // EnterFunctionDef is called when production FunctionDef is entered.
 func (s *BasegoscriptListener) EnterFunctionDef(ctx *FunctionDefContext) {}
 

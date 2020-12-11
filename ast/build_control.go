@@ -213,7 +213,7 @@ func (s *ASTBuilder) EnterForInSlice(ctx *parser.ForInSliceContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 		},
-		ItemName: ctx.NAME().GetText(),
+		ItemName: ctx.Name().GetText(),
 	}
 	s.VisitPush(cur)
 }
@@ -238,8 +238,8 @@ func (s *ASTBuilder) EnterForInMap(ctx *parser.ForInMapContext) {
 			Parent:   s.VisitTop(),
 			Variadic: true,
 		},
-		KeyName: ctx.NAME(0).GetText(),
-		ValName: ctx.NAME(1).GetText(),
+		KeyName: ctx.Name(0).GetText(),
+		ValName: ctx.Name(1).GetText(),
 	}
 	s.VisitPush(cur)
 }

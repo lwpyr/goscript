@@ -12,7 +12,7 @@ import (
 func (s *ASTBuilder) EnterFunctionDef(ctx *parser.FunctionDefContext) {
 	s.Compiler.Scope = common.NewScope(s.Compiler.Scope)
 	s.Compiler.Scope.LocalIndex = 0
-	funcName := ctx.NAME().GetText()
+	funcName := ctx.Name().GetText()
 	funcPlaceHolder := common.Instruction(nil)
 	cur := &FunctionDefNode{
 		Node: Node{
@@ -112,7 +112,7 @@ func (s *ASTBuilder) ExitOutparam(ctx *parser.OutparamContext) {
 
 // EnterParam is called when production param is entered.
 func (s *ASTBuilder) ExitParam(ctx *parser.ParamContext) {
-	name := ctx.NAME().GetText()
+	name := ctx.Name().GetText()
 	s.NodePush(&ParamNode{
 		Node: Node{
 			DataType: s.NodePop().GetDataType(),
