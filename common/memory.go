@@ -14,6 +14,10 @@ func (m *Memory) Get(v *Variable) interface{} {
 	return m.Data[v.Offset]
 }
 
+func (m *Memory) Set(v *Variable, data interface{}) {
+	m.Data[v.Offset] = data
+}
+
 func (m *Memory) MustGet(v *Variable) *interface{} {
 	return &m.Data[v.Offset]
 }
