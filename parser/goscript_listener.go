@@ -68,8 +68,14 @@ type goscriptListener interface {
 	// EnterTypeDefFunction is called when entering the TypeDefFunction production.
 	EnterTypeDefFunction(c *TypeDefFunctionContext)
 
-	// EnterMessagefield is called when entering the messagefield production.
-	EnterMessagefield(c *MessagefieldContext)
+	// EnterFieldDef is called when entering the FieldDef production.
+	EnterFieldDef(c *FieldDefContext)
+
+	// EnterOneofDef is called when entering the OneofDef production.
+	EnterOneofDef(c *OneofDefContext)
+
+	// EnterOneoffield is called when entering the oneoffield production.
+	EnterOneoffield(c *OneoffieldContext)
 
 	// EnterSimpleTypeNameInDef is called when entering the SimpleTypeNameInDef production.
 	EnterSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)
@@ -332,8 +338,14 @@ type goscriptListener interface {
 	// ExitTypeDefFunction is called when exiting the TypeDefFunction production.
 	ExitTypeDefFunction(c *TypeDefFunctionContext)
 
-	// ExitMessagefield is called when exiting the messagefield production.
-	ExitMessagefield(c *MessagefieldContext)
+	// ExitFieldDef is called when exiting the FieldDef production.
+	ExitFieldDef(c *FieldDefContext)
+
+	// ExitOneofDef is called when exiting the OneofDef production.
+	ExitOneofDef(c *OneofDefContext)
+
+	// ExitOneoffield is called when exiting the oneoffield production.
+	ExitOneoffield(c *OneoffieldContext)
 
 	// ExitSimpleTypeNameInDef is called when exiting the SimpleTypeNameInDef production.
 	ExitSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)

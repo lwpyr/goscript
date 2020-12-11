@@ -141,11 +141,23 @@ func (s *BasegoscriptListener) EnterTypeDefFunction(ctx *TypeDefFunctionContext)
 // ExitTypeDefFunction is called when production TypeDefFunction is exited.
 func (s *BasegoscriptListener) ExitTypeDefFunction(ctx *TypeDefFunctionContext) {}
 
-// EnterMessagefield is called when production messagefield is entered.
-func (s *BasegoscriptListener) EnterMessagefield(ctx *MessagefieldContext) {}
+// EnterFieldDef is called when production FieldDef is entered.
+func (s *BasegoscriptListener) EnterFieldDef(ctx *FieldDefContext) {}
 
-// ExitMessagefield is called when production messagefield is exited.
-func (s *BasegoscriptListener) ExitMessagefield(ctx *MessagefieldContext) {}
+// ExitFieldDef is called when production FieldDef is exited.
+func (s *BasegoscriptListener) ExitFieldDef(ctx *FieldDefContext) {}
+
+// EnterOneofDef is called when production OneofDef is entered.
+func (s *BasegoscriptListener) EnterOneofDef(ctx *OneofDefContext) {}
+
+// ExitOneofDef is called when production OneofDef is exited.
+func (s *BasegoscriptListener) ExitOneofDef(ctx *OneofDefContext) {}
+
+// EnterOneoffield is called when production oneoffield is entered.
+func (s *BasegoscriptListener) EnterOneoffield(ctx *OneoffieldContext) {}
+
+// ExitOneoffield is called when production oneoffield is exited.
+func (s *BasegoscriptListener) ExitOneoffield(ctx *OneoffieldContext) {}
 
 // EnterSimpleTypeNameInDef is called when production SimpleTypeNameInDef is entered.
 func (s *BasegoscriptListener) EnterSimpleTypeNameInDef(ctx *SimpleTypeNameInDefContext) {}

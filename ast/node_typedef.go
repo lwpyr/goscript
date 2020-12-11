@@ -120,7 +120,8 @@ func (t *SliceTypeDef) Compile(c *Compiler) {
 type MessageTypeDef struct {
 	Node
 	TypeDefName
-	Field map[string]ITypeDefNode
+	Field      map[string]ITypeDefNode
+	OneOfGroup map[string][]string
 }
 
 func (t *MessageTypeDef) Compile(c *Compiler) {
@@ -129,6 +130,15 @@ func (t *MessageTypeDef) Compile(c *Compiler) {
 	for fieldName, field := range t.Field {
 		field.Compile(c)
 		dt.FieldType[fieldName] = field.GetDataType()
+	}
+	dt.OneOfGroup = t.OneOfGroup
+	for oneOfName, group := range dt.OneOfGroup {
+		if dt.OneOf == nil {
+			dt.OneOf = map[string]string{}
+		}
+		for _, choice := range group {
+			dt.OneOf[choice] = oneOfName
+		}
 	}
 	dt.Kind = common.KindMap[common.Message]
 	dt.Constructor = common.ConstructorMap[common.Message]
@@ -153,6 +163,16 @@ type MessageFieldDef struct {
 }
 
 func (t *MessageFieldDef) Compile(c *Compiler) {
+	panic("this won't compile")
+}
+
+type OneofFieldDef struct {
+	Node
+	Name    string
+	Choices []*MessageFieldDef
+}
+
+func (t *OneofFieldDef) Compile(c *Compiler) {
 	panic("this won't compile")
 }
 

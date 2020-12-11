@@ -89,6 +89,42 @@ print(Dave.name, ' likes ', enumString(Dave.like));
 	p.RunOnMemory(mem)
 }
 
+func TestTypeDef_D(t *testing.T) {
+	setupClean()
+	var expr string
+	expr = `
+type MessageType1 message {
+	str string
+} 
+
+type MessageType2 message {
+	str string
+} 
+
+type MessageType3 message {
+	str string
+} 
+
+type OneOfTest message {
+	oneof Type1AndType2 {
+		msg1 MessageType1
+		msg2 MessageType2
+	}
+	msg3 MessageType3
+}
+
+var obj OneOfTest = new OneOfTest();
+obj.msg1 = {str('I\'m msg1')};
+print(obj);
+obj.msg3 = {str('I\'m msg3')};
+print(obj);
+obj.msg2 = {str('I\'m msg2')};
+print(obj);
+`
+	p := compileScript(expr)
+	p.RunOnMemory(mem)
+}
+
 func setupClean() {
 	c = goscript.NewCompiler()
 	mem = &common.Memory{

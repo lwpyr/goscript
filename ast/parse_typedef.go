@@ -89,6 +89,7 @@ func (s *TypeParser) EnterTypeDefMessage(ctx *parser.TypeDefMessageContext) {
 		},
 		TypeDefName: TypeDefName{Name: ctx.NAME().GetText()},
 		Field:       map[string]ITypeDefNode{},
+		OneOfGroup:  map[string][]string{},
 	})
 }
 
@@ -96,11 +97,30 @@ func (s *TypeParser) EnterTypeDefMessage(ctx *parser.TypeDefMessageContext) {
 func (s *TypeParser) ExitTypeDefMessage(ctx *parser.TypeDefMessageContext) {
 	node := s.VisitPop().(*MessageTypeDef)
 	for i := 0; i < len(ctx.AllMessagefield()); i++ {
-		fieldNode := s.NodePop().(*MessageFieldDef)
-		if node.Field[fieldNode.Name] != nil {
-			panic(common.NewCompileErr("duplicate field name in message definition " + node.GetTypeDefName()))
+		fieldNode := s.NodePop()
+		switch fieldNode.(type) {
+		case *MessageFieldDef:
+			messageFieldNode := fieldNode.(*MessageFieldDef)
+			if node.Field[messageFieldNode.Name] != nil {
+				panic(common.NewCompileErr("duplicate field name in message definition " + node.GetTypeDefName()))
+			}
+			node.Field[messageFieldNode.Name] = messageFieldNode.Type
+		case *OneofFieldDef:
+			oneofFieldNode := fieldNode.(*OneofFieldDef)
+			oneofName := oneofFieldNode.Name
+			if _, ok := node.OneOfGroup[oneofName]; ok {
+				panic(common.NewCompileErr("duplicate oneof group name in message definition " + node.GetTypeDefName()))
+			}
+			node.OneOfGroup[oneofName] = []string{}
+			for _, choice := range oneofFieldNode.Choices {
+				if node.Field[choice.Name] != nil {
+					panic(common.NewCompileErr("duplicate field name in message definition " + node.GetTypeDefName()))
+				}
+				node.Field[choice.Name] = choice.Type
+				node.OneOfGroup[oneofName] = append(node.OneOfGroup[oneofName], choice.Name)
+			}
 		}
-		node.Field[fieldNode.Name] = fieldNode.Type
+
 	}
 	s.NodePush(node)
 }
@@ -140,7 +160,7 @@ func (s *TypeParser) ExitTypeDefFunction(ctx *parser.TypeDefFunctionContext) {
 }
 
 // EnterMessagefield is called when production messagefield is entered.
-func (s *TypeParser) EnterMessagefield(ctx *parser.MessagefieldContext) {
+func (s *TypeParser) EnterFieldDef(ctx *parser.FieldDefContext) {
 	s.VisitPush(&MessageFieldDef{
 		Node: Node{
 			Parent:   s.VisitTop(),
@@ -152,7 +172,48 @@ func (s *TypeParser) EnterMessagefield(ctx *parser.MessagefieldContext) {
 }
 
 // ExitMessagefield is called when production messagefield is exited.
-func (s *TypeParser) ExitMessagefield(ctx *parser.MessagefieldContext) {
+func (s *TypeParser) ExitFieldDef(ctx *parser.FieldDefContext) {
+	node := s.VisitPop().(*MessageFieldDef)
+	node.Type = s.NodePop().(ITypeDefNode)
+	s.NodePush(node)
+}
+
+// EnterOneofDef is called when production OneofDef is entered.
+func (s *TypeParser) EnterOneofDef(ctx *parser.OneofDefContext) {
+	s.VisitPush(&OneofFieldDef{
+		Node: Node{
+			Parent:   s.VisitTop(),
+			NodeType: "OneofFieldDef",
+			Variadic: false,
+		},
+		Name: ctx.NAME().GetText(),
+	})
+}
+
+// ExitOneofDef is called when production OneofDef is exited.
+func (s *TypeParser) ExitOneofDef(ctx *parser.OneofDefContext) {
+	node := s.VisitPop().(*OneofFieldDef)
+	numChoice := len(ctx.AllOneoffield())
+	for i := 0; i < numChoice; i++ {
+		node.Choices = append(node.Choices, s.NodePop().(*MessageFieldDef))
+	}
+	s.NodePush(node)
+}
+
+// EnterOneoffield is called when production oneoffield is entered.
+func (s *TypeParser) EnterOneoffield(ctx *parser.OneoffieldContext) {
+	s.VisitPush(&MessageFieldDef{
+		Node: Node{
+			Parent:   s.VisitTop(),
+			NodeType: "OneofField",
+			Variadic: false,
+		},
+		Name: ctx.NAME().GetText(),
+	})
+}
+
+// ExitOneoffield is called when production oneoffield is exited.
+func (s *TypeParser) ExitOneoffield(ctx *parser.OneoffieldContext) {
 	node := s.VisitPop().(*MessageFieldDef)
 	node.Type = s.NodePop().(ITypeDefNode)
 	s.NodePush(node)
@@ -164,7 +225,7 @@ func (s *TypeParser) EnterSimpleTypeNameInDef(ctx *parser.SimpleTypeNameInDefCon
 	cur := &TerminalTypeDef{
 		Node: Node{
 			Parent:   s.VisitTop(),
-			NodeType: "TerminalTypeDef",
+			NodeType: "OneofField",
 			Variadic: false,
 		},
 		TypeDefName: TypeDefName{Name: typeName},

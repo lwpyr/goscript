@@ -45,6 +45,7 @@ RETURN: 'return';
 VAR: 'var';
 LOCAL: 'local';
 CONST: 'const';
+ONEOF: 'oneof';
 
 FUNCTION: 'func';
 
@@ -164,6 +165,11 @@ typedef
     ;
 
 messagefield
+    : NAME typenameindef # FieldDef
+    | ONEOF NAME '{' oneoffield (oneoffield)* '}' # OneofDef
+    ;
+
+oneoffield
     : NAME typenameindef;
 
 typenameindef
