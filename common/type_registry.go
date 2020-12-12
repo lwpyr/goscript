@@ -68,32 +68,39 @@ func (t *TypeRegistry) GetREnums(name string) map[int32]string {
 	}
 	return nil
 }
+
 func (t *TypeRegistry) FindFuncType(meta *FunctionMeta) *DataType {
 	typeName := meta.GenerateTypeName()
-	if _, ok := t.Types[typeName]; !ok {
-		dType := &DataType{
-			Type:       typeName,
-			Kind:       KindMap[Func],
-			LambdaMeta: meta,
-		}
-		t.Types[typeName] = dType
+	if dt := t.FindType(typeName); dt != nil {
+		return dt
 	}
+	t.Types[typeName] = t.MakeFuncType(meta)
 	return t.Types[typeName]
+}
+
+func (t *TypeRegistry) MakeFuncType(meta *FunctionMeta) *DataType {
+	typeName := meta.GenerateTypeName()
+	return &DataType{
+		Type:       typeName,
+		Kind:       KindMap[Func],
+		LambdaMeta: meta,
+	}
 }
 
 func (t *TypeRegistry) FindChanType(name string) *DataType {
 	if t.FindType(name) == nil {
 		return nil
 	}
-	chanTypeName := "chan<" + name + ">"
-	if _, ok := t.Types[chanTypeName]; !ok {
-		t.Types[chanTypeName] = t.MakeChanType(name)
+	chanTypeName := "chan[" + name + "]"
+	if dt := t.FindType(chanTypeName); dt != nil {
+		return dt
 	}
+	t.Types[chanTypeName] = t.MakeChanType(name)
 	return t.Types[chanTypeName]
 }
 
 func (t *TypeRegistry) MakeChanType(name string) *DataType {
-	chanTypeName := "chan<" + name + ">"
+	chanTypeName := "chan[" + name + "]"
 	itemType := t.FindType(name)
 	dType := &DataType{
 		Type:        chanTypeName,
@@ -111,15 +118,16 @@ func (t *TypeRegistry) FindSliceType(name string) *DataType {
 	if t.FindType(name) == nil {
 		return nil
 	}
-	sliceTypeName := "slice<" + name + ">"
-	if _, ok := t.Types[sliceTypeName]; !ok {
-		t.Types[sliceTypeName] = t.MakeSliceType(name)
+	sliceTypeName := "[]" + name
+	if dt := t.FindType(sliceTypeName); dt != nil {
+		return dt
 	}
+	t.Types[sliceTypeName] = t.MakeSliceType(name)
 	return t.Types[sliceTypeName]
 }
 
 func (t *TypeRegistry) MakeSliceType(name string) *DataType {
-	sliceTypeName := "slice<" + name + ">"
+	sliceTypeName := "[]" + name
 	itemType := t.FindType(name)
 	dType := &DataType{
 		Type:        sliceTypeName,
@@ -138,18 +146,19 @@ func (t *TypeRegistry) MakeSliceType(name string) *DataType {
 }
 
 func (t *TypeRegistry) FindMapType(key, val string) *DataType {
-	mapTypeName := "map<" + key + "," + val + ">"
+	mapTypeName := "map[" + key + "]" + val
 	if t.FindType(key) == nil || t.FindType(val) == nil {
 		return nil
 	}
-	if _, ok := t.Types[mapTypeName]; !ok {
-		t.Types[mapTypeName] = t.MakeMapType(key, val)
+	if dt := t.FindType(mapTypeName); dt != nil {
+		return dt
 	}
+	t.Types[mapTypeName] = t.MakeMapType(key, val)
 	return t.Types[mapTypeName]
 }
 
 func (t *TypeRegistry) MakeMapType(key, val string) *DataType {
-	mapTypeName := "map<" + key + "," + val + ">"
+	mapTypeName := "map[" + key + "]" + val
 	keyType := t.FindType(key)
 	valType := t.FindType(val)
 	var constructor Constructor

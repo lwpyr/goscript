@@ -31,7 +31,7 @@ type ReturnNode struct {
 
 type ProgramRoot struct {
 	Node
-	TypeDefNode     []ITypeDefNode
+	TypeDefNode     []ASTNode
 	FunctionDefNode []ASTNode
 	StatementNode   []ASTNode
 }

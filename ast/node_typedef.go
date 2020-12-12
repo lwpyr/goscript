@@ -5,43 +5,58 @@ import (
 	"github.com/lwpyr/goscript/common"
 )
 
-type ITypeDefNode interface {
-	GetDataType() *common.DataType
-	SetDataType(*common.DataType)
-	Compile(c *Compiler)
-	GetTypeDefName() string
-}
-
-type TypeDefName struct {
-	Name string
-}
-
-func (b *TypeDefName) GetTypeDefName() string {
-	return b.Name
-}
-
-type TerminalTypeDef struct {
+type ChanTypeDef struct {
 	Node
-	TypeDefName
+	Item ASTNode
 }
 
-func (t *TerminalTypeDef) Compile(c *Compiler) {
-	if t.DataType == nil {
-		t.DataType = c.TypeRegistry.FindType(t.GetTypeDefName())
-	}
-	if t.DataType == nil {
-		panic(common.NewCompileErr("unknown type name " + t.GetTypeDefName()))
-	}
+type MapTypeDef struct {
+	Node
+	KeyType *common.DataType
+	Value   ASTNode
+}
+
+type SliceTypeDef struct {
+	Node
+	Item ASTNode
+}
+
+type FunctionTypeDef struct {
+	Node
+	InType    []ASTNode
+	OutType   []ASTNode
+	TailArray bool
+}
+
+type MessageTypeDef struct {
+	Node
+	Name       string
+	Field      map[string]ASTNode
+	OneOfGroup map[string][]string
 }
 
 type EnumNode struct {
 	Node
-	TypeDefName
+	Name string
 	Enum map[string]int32
 }
 
+type TerminalTypeDef struct {
+	Node
+	Name string
+}
+
+func (t *TerminalTypeDef) Compile(c *Compiler) {
+	if t.DataType == nil {
+		t.DataType = c.TypeRegistry.FindType(t.Name)
+	}
+	if t.DataType == nil {
+		panic(common.NewCompileErr("unknown type name " + t.Name))
+	}
+}
+
 func (e *EnumNode) Compile(c *Compiler) {
-	enumName := e.GetTypeDefName()
+	enumName := e.Name
 	dt := c.TypeRegistry.FindType(enumName)
 	dt.Kind = common.KindMap[common.Int32]
 	dt.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
@@ -56,57 +71,32 @@ func (e *EnumNode) Compile(c *Compiler) {
 	c.TypeRegistry.REnums[enumName] = re
 }
 
-type ChanTypeDef struct {
-	Node
-	TypeDefName
-	Item ITypeDefNode
-}
-
 func (t *ChanTypeDef) Compile(c *Compiler) {
 	t.Item.Compile(c)
 	ItemType := t.Item.GetDataType()
-	dt := c.TypeRegistry.MakeChanType(ItemType.Type)
-	if c.TypeRegistry.FindType(dt.Type) == nil {
-		c.TypeRegistry.AddType(dt.Type, dt)
-	}
+	dt := c.TypeRegistry.FindChanType(ItemType.Type)
 	if t.DataType != nil {
 		*t.DataType = *dt
 	} else {
 		t.DataType = dt
 	}
-}
-
-type MapTypeDef struct {
-	Node
-	TypeDefName
-	KeyType *common.DataType
-	Value   ITypeDefNode
 }
 
 func (t *MapTypeDef) Compile(c *Compiler) {
 	t.Value.Compile(c)
 	ValType := t.Value.GetDataType()
-	dt := c.TypeRegistry.MakeMapType(t.KeyType.Type, ValType.Type)
-	if c.TypeRegistry.FindType(dt.Type) == nil {
-		c.TypeRegistry.AddType(dt.Type, dt)
-	}
+	dt := c.TypeRegistry.FindMapType(t.KeyType.Type, ValType.Type)
 	if t.DataType != nil {
 		*t.DataType = *dt
 	} else {
 		t.DataType = dt
 	}
-}
-
-type SliceTypeDef struct {
-	Node
-	TypeDefName
-	Item ITypeDefNode
 }
 
 func (t *SliceTypeDef) Compile(c *Compiler) {
 	t.Item.Compile(c)
 	ItemType := t.Item.GetDataType()
-	dt := c.TypeRegistry.MakeSliceType(ItemType.Type)
+	dt := c.TypeRegistry.FindSliceType(ItemType.Type)
 	if c.TypeRegistry.FindType(dt.Type) == nil {
 		c.TypeRegistry.AddType(dt.Type, dt)
 	}
@@ -117,15 +107,8 @@ func (t *SliceTypeDef) Compile(c *Compiler) {
 	}
 }
 
-type MessageTypeDef struct {
-	Node
-	TypeDefName
-	Field      map[string]ITypeDefNode
-	OneOfGroup map[string][]string
-}
-
 func (t *MessageTypeDef) Compile(c *Compiler) {
-	dt := c.FindType(t.GetTypeDefName())
+	dt := t.DataType
 	dt.FieldType = map[string]*common.DataType{}
 	for fieldName, field := range t.Field {
 		field.Compile(c)
@@ -159,7 +142,7 @@ func (t *MessageTypeDef) Compile(c *Compiler) {
 type MessageFieldDef struct {
 	Node
 	Name string
-	Type ITypeDefNode
+	Type ASTNode
 }
 
 func (t *MessageFieldDef) Compile(c *Compiler) {
@@ -176,14 +159,6 @@ func (t *OneofFieldDef) Compile(c *Compiler) {
 	panic("this won't compile")
 }
 
-type FunctionTypeDef struct {
-	Node
-	TypeDefName
-	InType    []ITypeDefNode
-	OutType   []ITypeDefNode
-	TailArray bool
-}
-
 func (t *FunctionTypeDef) Compile(c *Compiler) {
 	meta := &common.FunctionMeta{
 		TailArray: t.TailArray,
@@ -193,15 +168,12 @@ func (t *FunctionTypeDef) Compile(c *Compiler) {
 		meta.In = append(meta.In, in.GetDataType())
 	}
 	for _, out := range t.OutType {
-		meta.In = append(meta.In, out.GetDataType())
+		meta.Out = append(meta.Out, out.GetDataType())
 	}
-	dt := c.FindFuncType(meta)
+	dt := c.TypeRegistry.FindFuncType(meta)
 	if t.DataType != nil {
 		*t.DataType = *dt
 	} else {
 		t.DataType = dt
-	}
-	if t.GetTypeDefName() != "" {
-		c.AddType(t.GetTypeDefName(), dt)
 	}
 }

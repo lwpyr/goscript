@@ -123,17 +123,11 @@ func (s *BasegoscriptListener) EnterFunctionTypeName(ctx *FunctionTypeNameContex
 // ExitFunctionTypeName is called when production functionTypeName is exited.
 func (s *BasegoscriptListener) ExitFunctionTypeName(ctx *FunctionTypeNameContext) {}
 
-// EnterTypeDefMap is called when production TypeDefMap is entered.
-func (s *BasegoscriptListener) EnterTypeDefMap(ctx *TypeDefMapContext) {}
+// EnterTypeDefAlias is called when production TypeDefAlias is entered.
+func (s *BasegoscriptListener) EnterTypeDefAlias(ctx *TypeDefAliasContext) {}
 
-// ExitTypeDefMap is called when production TypeDefMap is exited.
-func (s *BasegoscriptListener) ExitTypeDefMap(ctx *TypeDefMapContext) {}
-
-// EnterTypeDefSlice is called when production TypeDefSlice is entered.
-func (s *BasegoscriptListener) EnterTypeDefSlice(ctx *TypeDefSliceContext) {}
-
-// ExitTypeDefSlice is called when production TypeDefSlice is exited.
-func (s *BasegoscriptListener) ExitTypeDefSlice(ctx *TypeDefSliceContext) {}
+// ExitTypeDefAlias is called when production TypeDefAlias is exited.
+func (s *BasegoscriptListener) ExitTypeDefAlias(ctx *TypeDefAliasContext) {}
 
 // EnterTypeDefMessage is called when production TypeDefMessage is entered.
 func (s *BasegoscriptListener) EnterTypeDefMessage(ctx *TypeDefMessageContext) {}
@@ -146,12 +140,6 @@ func (s *BasegoscriptListener) EnterTypeDefEnum(ctx *TypeDefEnumContext) {}
 
 // ExitTypeDefEnum is called when production TypeDefEnum is exited.
 func (s *BasegoscriptListener) ExitTypeDefEnum(ctx *TypeDefEnumContext) {}
-
-// EnterTypeDefFunction is called when production TypeDefFunction is entered.
-func (s *BasegoscriptListener) EnterTypeDefFunction(ctx *TypeDefFunctionContext) {}
-
-// ExitTypeDefFunction is called when production TypeDefFunction is exited.
-func (s *BasegoscriptListener) ExitTypeDefFunction(ctx *TypeDefFunctionContext) {}
 
 // EnterFieldDef is called when production FieldDef is entered.
 func (s *BasegoscriptListener) EnterFieldDef(ctx *FieldDefContext) {}
@@ -171,35 +159,35 @@ func (s *BasegoscriptListener) EnterOneoffield(ctx *OneoffieldContext) {}
 // ExitOneoffield is called when production oneoffield is exited.
 func (s *BasegoscriptListener) ExitOneoffield(ctx *OneoffieldContext) {}
 
-// EnterSimpleTypeNameInDef is called when production SimpleTypeNameInDef is entered.
-func (s *BasegoscriptListener) EnterSimpleTypeNameInDef(ctx *SimpleTypeNameInDefContext) {}
+// EnterTypenameindef is called when production typenameindef is entered.
+func (s *BasegoscriptListener) EnterTypenameindef(ctx *TypenameindefContext) {}
 
-// ExitSimpleTypeNameInDef is called when production SimpleTypeNameInDef is exited.
-func (s *BasegoscriptListener) ExitSimpleTypeNameInDef(ctx *SimpleTypeNameInDefContext) {}
+// ExitTypenameindef is called when production typenameindef is exited.
+func (s *BasegoscriptListener) ExitTypenameindef(ctx *TypenameindefContext) {}
 
-// EnterFunctionTypeInDef is called when production FunctionTypeInDef is entered.
-func (s *BasegoscriptListener) EnterFunctionTypeInDef(ctx *FunctionTypeInDefContext) {}
+// EnterSimpleTypeNameindef is called when production simpleTypeNameindef is entered.
+func (s *BasegoscriptListener) EnterSimpleTypeNameindef(ctx *SimpleTypeNameindefContext) {}
 
-// ExitFunctionTypeInDef is called when production FunctionTypeInDef is exited.
-func (s *BasegoscriptListener) ExitFunctionTypeInDef(ctx *FunctionTypeInDefContext) {}
+// ExitSimpleTypeNameindef is called when production simpleTypeNameindef is exited.
+func (s *BasegoscriptListener) ExitSimpleTypeNameindef(ctx *SimpleTypeNameindefContext) {}
 
-// EnterMapTypeNameInDef is called when production MapTypeNameInDef is entered.
-func (s *BasegoscriptListener) EnterMapTypeNameInDef(ctx *MapTypeNameInDefContext) {}
+// EnterChanTypeNameindef is called when production chanTypeNameindef is entered.
+func (s *BasegoscriptListener) EnterChanTypeNameindef(ctx *ChanTypeNameindefContext) {}
 
-// ExitMapTypeNameInDef is called when production MapTypeNameInDef is exited.
-func (s *BasegoscriptListener) ExitMapTypeNameInDef(ctx *MapTypeNameInDefContext) {}
+// ExitChanTypeNameindef is called when production chanTypeNameindef is exited.
+func (s *BasegoscriptListener) ExitChanTypeNameindef(ctx *ChanTypeNameindefContext) {}
 
-// EnterSliceTypeNameInDef is called when production SliceTypeNameInDef is entered.
-func (s *BasegoscriptListener) EnterSliceTypeNameInDef(ctx *SliceTypeNameInDefContext) {}
+// EnterSliceTypeNameindef is called when production sliceTypeNameindef is entered.
+func (s *BasegoscriptListener) EnterSliceTypeNameindef(ctx *SliceTypeNameindefContext) {}
 
-// ExitSliceTypeNameInDef is called when production SliceTypeNameInDef is exited.
-func (s *BasegoscriptListener) ExitSliceTypeNameInDef(ctx *SliceTypeNameInDefContext) {}
+// ExitSliceTypeNameindef is called when production sliceTypeNameindef is exited.
+func (s *BasegoscriptListener) ExitSliceTypeNameindef(ctx *SliceTypeNameindefContext) {}
 
-// EnterChanTypeNameInDef is called when production ChanTypeNameInDef is entered.
-func (s *BasegoscriptListener) EnterChanTypeNameInDef(ctx *ChanTypeNameInDefContext) {}
+// EnterMapTypeNameindef is called when production mapTypeNameindef is entered.
+func (s *BasegoscriptListener) EnterMapTypeNameindef(ctx *MapTypeNameindefContext) {}
 
-// ExitChanTypeNameInDef is called when production ChanTypeNameInDef is exited.
-func (s *BasegoscriptListener) ExitChanTypeNameInDef(ctx *ChanTypeNameInDefContext) {}
+// ExitMapTypeNameindef is called when production mapTypeNameindef is exited.
+func (s *BasegoscriptListener) ExitMapTypeNameindef(ctx *MapTypeNameindefContext) {}
 
 // EnterFunctionTypeNameindef is called when production functionTypeNameindef is entered.
 func (s *BasegoscriptListener) EnterFunctionTypeNameindef(ctx *FunctionTypeNameindefContext) {}

@@ -149,11 +149,9 @@ functionTypeName
     ;
 
 typedef
-    : TYPEDEF name MAP '['  basicTypeName ']' typenameindef # TypeDefMap
-    | TYPEDEF name '[]' typenameindef # TypeDefSlice
+    : TYPEDEF name typenameindef # TypeDefAlias
     | TYPEDEF name MESSAGE '{' (messagefield (messagefield)*)? '}' # TypeDefMessage
     | TYPEDEF name ENUM '{' (name ':' INT)* '}' # TypeDefEnum
-    | TYPEDEF name functionTypeNameindef # TypeDefFunction
     ;
 
 messagefield
@@ -165,13 +163,21 @@ oneoffield
     : fieldname typenameindef;
 
 typenameindef
-    : (name|basicTypeName) # SimpleTypeNameInDef
-    | functionTypeNameindef # FunctionTypeInDef
-    | MAP '[' basicTypeName ']' typenameindef # MapTypeNameInDef
-    | '[]' typenameindef # SliceTypeNameInDef
-    | CHAN '[' typenameindef ']' # ChanTypeNameInDef
+    : simpleTypeNameindef
+    | chanTypeNameindef
+    | sliceTypeNameindef
+    | mapTypeNameindef
+    | functionTypeNameindef
     ;
 
+simpleTypeNameindef
+    :(name|basicTypeName);
+chanTypeNameindef
+    : CHAN '[' typenameindef ']';
+sliceTypeNameindef
+    : '[]' typenameindef;
+mapTypeNameindef
+    : MAP '[' basicTypeName ']' typenameindef;
 functionTypeNameindef
     : FUNCTION  '(' (intypenameindef (',' intypenameindef)* (TAILARRAY)?)?  ')' returntypenameindef?
     | FUNCTION  '(' (intypenameindef (',' intypenameindef)* (TAILARRAY)?)?  ')' '('returntypenameindef (',' returntypenameindef) *')'

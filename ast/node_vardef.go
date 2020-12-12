@@ -4,6 +4,10 @@ import (
 	"github.com/lwpyr/goscript/common"
 )
 
+type A []B
+
+type B []A
+
 type VariableDefNode struct {
 	Node
 	IsGlobal bool

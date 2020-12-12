@@ -368,11 +368,6 @@ var BasicTypeMap = map[string]*DataType{
 		Type: "nil",
 		Kind: KindMap[Nil],
 	},
-	"lambda": {
-		Type:   "lambda",
-		Method: map[string]*FunctionMeta{},
-		Kind:   KindMap[Func],
-	},
 	"reflect": { // only for reflect type
 		Type:   "reflect",
 		Method: map[string]*FunctionMeta{},

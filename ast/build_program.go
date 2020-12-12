@@ -20,17 +20,17 @@ func (s *ASTBuilder) EnterProgram(ctx *parser.ProgramContext) {
 	// register all types declared
 	for _, child := range ctx.GetChildren() {
 		switch child.(type) {
-		case *parser.TypeDefEnumContext, *parser.TypeDefFunctionContext, *parser.TypeDefMapContext, *parser.TypeDefMessageContext, *parser.TypeDefSliceContext:
+		case *parser.TypeDefEnumContext, *parser.TypeDefMessageContext, *parser.TypeDefAliasContext:
 			antlr.ParseTreeWalkerDefault.Walk(tr, child)
 		}
 	}
 	// parse all types declared
-	var typeDefNodes []ITypeDefNode
+	var typeDefNodes []ASTNode
 	for _, child := range ctx.GetChildren() {
 		switch child.(type) {
-		case *parser.TypeDefEnumContext, *parser.TypeDefFunctionContext, *parser.TypeDefMapContext, *parser.TypeDefMessageContext, *parser.TypeDefSliceContext:
+		case *parser.TypeDefEnumContext, *parser.TypeDefAliasContext, *parser.TypeDefMessageContext:
 			antlr.ParseTreeWalkerDefault.Walk(tb, child)
-			typeDefNodes = append(typeDefNodes, tb.NodePop().(ITypeDefNode))
+			typeDefNodes = append(typeDefNodes, tb.NodePop())
 		}
 	}
 	for _, node := range typeDefNodes {

@@ -59,20 +59,14 @@ type goscriptListener interface {
 	// EnterFunctionTypeName is called when entering the functionTypeName production.
 	EnterFunctionTypeName(c *FunctionTypeNameContext)
 
-	// EnterTypeDefMap is called when entering the TypeDefMap production.
-	EnterTypeDefMap(c *TypeDefMapContext)
-
-	// EnterTypeDefSlice is called when entering the TypeDefSlice production.
-	EnterTypeDefSlice(c *TypeDefSliceContext)
+	// EnterTypeDefAlias is called when entering the TypeDefAlias production.
+	EnterTypeDefAlias(c *TypeDefAliasContext)
 
 	// EnterTypeDefMessage is called when entering the TypeDefMessage production.
 	EnterTypeDefMessage(c *TypeDefMessageContext)
 
 	// EnterTypeDefEnum is called when entering the TypeDefEnum production.
 	EnterTypeDefEnum(c *TypeDefEnumContext)
-
-	// EnterTypeDefFunction is called when entering the TypeDefFunction production.
-	EnterTypeDefFunction(c *TypeDefFunctionContext)
 
 	// EnterFieldDef is called when entering the FieldDef production.
 	EnterFieldDef(c *FieldDefContext)
@@ -83,20 +77,20 @@ type goscriptListener interface {
 	// EnterOneoffield is called when entering the oneoffield production.
 	EnterOneoffield(c *OneoffieldContext)
 
-	// EnterSimpleTypeNameInDef is called when entering the SimpleTypeNameInDef production.
-	EnterSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)
+	// EnterTypenameindef is called when entering the typenameindef production.
+	EnterTypenameindef(c *TypenameindefContext)
 
-	// EnterFunctionTypeInDef is called when entering the FunctionTypeInDef production.
-	EnterFunctionTypeInDef(c *FunctionTypeInDefContext)
+	// EnterSimpleTypeNameindef is called when entering the simpleTypeNameindef production.
+	EnterSimpleTypeNameindef(c *SimpleTypeNameindefContext)
 
-	// EnterMapTypeNameInDef is called when entering the MapTypeNameInDef production.
-	EnterMapTypeNameInDef(c *MapTypeNameInDefContext)
+	// EnterChanTypeNameindef is called when entering the chanTypeNameindef production.
+	EnterChanTypeNameindef(c *ChanTypeNameindefContext)
 
-	// EnterSliceTypeNameInDef is called when entering the SliceTypeNameInDef production.
-	EnterSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+	// EnterSliceTypeNameindef is called when entering the sliceTypeNameindef production.
+	EnterSliceTypeNameindef(c *SliceTypeNameindefContext)
 
-	// EnterChanTypeNameInDef is called when entering the ChanTypeNameInDef production.
-	EnterChanTypeNameInDef(c *ChanTypeNameInDefContext)
+	// EnterMapTypeNameindef is called when entering the mapTypeNameindef production.
+	EnterMapTypeNameindef(c *MapTypeNameindefContext)
 
 	// EnterFunctionTypeNameindef is called when entering the functionTypeNameindef production.
 	EnterFunctionTypeNameindef(c *FunctionTypeNameindefContext)
@@ -329,20 +323,14 @@ type goscriptListener interface {
 	// ExitFunctionTypeName is called when exiting the functionTypeName production.
 	ExitFunctionTypeName(c *FunctionTypeNameContext)
 
-	// ExitTypeDefMap is called when exiting the TypeDefMap production.
-	ExitTypeDefMap(c *TypeDefMapContext)
-
-	// ExitTypeDefSlice is called when exiting the TypeDefSlice production.
-	ExitTypeDefSlice(c *TypeDefSliceContext)
+	// ExitTypeDefAlias is called when exiting the TypeDefAlias production.
+	ExitTypeDefAlias(c *TypeDefAliasContext)
 
 	// ExitTypeDefMessage is called when exiting the TypeDefMessage production.
 	ExitTypeDefMessage(c *TypeDefMessageContext)
 
 	// ExitTypeDefEnum is called when exiting the TypeDefEnum production.
 	ExitTypeDefEnum(c *TypeDefEnumContext)
-
-	// ExitTypeDefFunction is called when exiting the TypeDefFunction production.
-	ExitTypeDefFunction(c *TypeDefFunctionContext)
 
 	// ExitFieldDef is called when exiting the FieldDef production.
 	ExitFieldDef(c *FieldDefContext)
@@ -353,20 +341,20 @@ type goscriptListener interface {
 	// ExitOneoffield is called when exiting the oneoffield production.
 	ExitOneoffield(c *OneoffieldContext)
 
-	// ExitSimpleTypeNameInDef is called when exiting the SimpleTypeNameInDef production.
-	ExitSimpleTypeNameInDef(c *SimpleTypeNameInDefContext)
+	// ExitTypenameindef is called when exiting the typenameindef production.
+	ExitTypenameindef(c *TypenameindefContext)
 
-	// ExitFunctionTypeInDef is called when exiting the FunctionTypeInDef production.
-	ExitFunctionTypeInDef(c *FunctionTypeInDefContext)
+	// ExitSimpleTypeNameindef is called when exiting the simpleTypeNameindef production.
+	ExitSimpleTypeNameindef(c *SimpleTypeNameindefContext)
 
-	// ExitMapTypeNameInDef is called when exiting the MapTypeNameInDef production.
-	ExitMapTypeNameInDef(c *MapTypeNameInDefContext)
+	// ExitChanTypeNameindef is called when exiting the chanTypeNameindef production.
+	ExitChanTypeNameindef(c *ChanTypeNameindefContext)
 
-	// ExitSliceTypeNameInDef is called when exiting the SliceTypeNameInDef production.
-	ExitSliceTypeNameInDef(c *SliceTypeNameInDefContext)
+	// ExitSliceTypeNameindef is called when exiting the sliceTypeNameindef production.
+	ExitSliceTypeNameindef(c *SliceTypeNameindefContext)
 
-	// ExitChanTypeNameInDef is called when exiting the ChanTypeNameInDef production.
-	ExitChanTypeNameInDef(c *ChanTypeNameInDefContext)
+	// ExitMapTypeNameindef is called when exiting the mapTypeNameindef production.
+	ExitMapTypeNameindef(c *MapTypeNameindefContext)
 
 	// ExitFunctionTypeNameindef is called when exiting the functionTypeNameindef production.
 	ExitFunctionTypeNameindef(c *FunctionTypeNameindefContext)
