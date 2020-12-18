@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-func GetMapDelFunc(keyType *common.DataType) (mapSet func(m interface{}, k interface{})) {
+func MapDelete(keyType *common.DataType) (mapSet func(m interface{}, k interface{})) {
 	switch keyType.Kind.Kind {
 	case common.Int32, common.UInt32, common.Float32:
 		mapSet = DelMap32Field
@@ -22,7 +22,7 @@ func GetMapDelFunc(keyType *common.DataType) (mapSet func(m interface{}, k inter
 	return
 }
 
-func GetMapMustGetFunc(keyType *common.DataType) (mapSet func(m interface{}, k interface{}) (v *interface{})) {
+func MapGetPtr(keyType *common.DataType) (mapSet func(m interface{}, k interface{}) (v *interface{})) {
 	switch keyType.Kind.Kind {
 	case common.Int32, common.UInt32, common.Float32:
 		mapSet = MustGetMap32Field
@@ -38,7 +38,7 @@ func GetMapMustGetFunc(keyType *common.DataType) (mapSet func(m interface{}, k i
 	return
 }
 
-func GetMapSetFunc(keyType *common.DataType) (mapSet func(m interface{}, k interface{}, v interface{})) {
+func MapSet(keyType *common.DataType) (mapSet func(m interface{}, k interface{}, v interface{})) {
 	switch keyType.Kind.Kind {
 	case common.Int32, common.UInt32, common.Float32:
 		mapSet = SetMap32Field
@@ -54,7 +54,7 @@ func GetMapSetFunc(keyType *common.DataType) (mapSet func(m interface{}, k inter
 	return
 }
 
-func GetMapGetFunc(keyType *common.DataType) (mapGet func(m interface{}, k interface{}) (v interface{})) {
+func MapGet(keyType *common.DataType) (mapGet func(m interface{}, k interface{}) (v interface{})) {
 	switch keyType.Kind.Kind {
 	case common.Int32, common.UInt32, common.Float32:
 		mapGet = GetMap32Field
@@ -70,19 +70,19 @@ func GetMapGetFunc(keyType *common.DataType) (mapGet func(m interface{}, k inter
 	return
 }
 
-func MessageGetField(m interface{}, k string) interface{} {
+func MessageGet(m interface{}, k string) interface{} {
 	return *(*interface{})(hack.MapStrGet(m, k))
 }
 
-func MessageMustGetField(m interface{}, k string) *interface{} {
+func MessageGetPtr(m interface{}, k string) *interface{} {
 	return (*interface{})(hack.MapStrGetOrCreate(m, k))
 }
 
-func MessageSetField(m interface{}, k string, v interface{}) {
+func MessageSet(m interface{}, k string, v interface{}) {
 	*(*interface{})(hack.MapStrGetOrCreate(m, k)) = v
 }
 
-func MessageResetField(m interface{}, k string) {
+func MessageReset(m interface{}, k string) {
 	hack.MapStrDelete(m, k)
 }
 

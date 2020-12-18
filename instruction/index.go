@@ -2,8 +2,8 @@ package instruction
 
 import "github.com/lwpyr/goscript/common"
 
-func GetSliceFilterFunc(filter common.Instruction, boolConvertFunc TypeConvertFuncBool) common.Instruction {
-	lengthFunc := GetSliceLenFunc()
+func SliceFilter(filter common.Instruction, boolConvertFunc TypeConvertFuncBool) common.Instruction {
+	lengthFunc := SliceLen()
 	return func(m *common.Memory, stk *common.Stack) {
 		lenSlice := lengthFunc(stk.Top())
 		val := make([]interface{}, 0, lenSlice)
@@ -35,8 +35,8 @@ func GetSliceFilterFunc(filter common.Instruction, boolConvertFunc TypeConvertFu
 	}
 }
 
-func GetStringMultiIndexFunc() common.Instruction {
-	lengthFunc := GetStringLenFunc()
+func StringArrIndex() common.Instruction {
+	lengthFunc := StringLen()
 	return func(m *common.Memory, stk *common.Stack) {
 		slice := stk.Top()
 		stk.Pop()
@@ -55,8 +55,8 @@ func GetStringMultiIndexFunc() common.Instruction {
 	}
 }
 
-func GetSliceMultiIndexFunc(numIndex int) common.Instruction {
-	lengthFunc := GetSliceLenFunc()
+func SliceArrIndex(numIndex int) common.Instruction {
+	lengthFunc := SliceLen()
 	return func(m *common.Memory, stk *common.Stack) {
 		slice := stk.Top()
 		stk.Pop()
@@ -93,7 +93,7 @@ func GetSliceMultiIndexFunc(numIndex int) common.Instruction {
 	}
 }
 
-func GetSliceIndexFuncLhs() common.Instruction {
+func SliceIndexLhs() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		stk.Set(1, GetSliceField(*stk.Top().(*interface{}), stk.TopIndex(1).(int64)))
 		stk.Pop()
@@ -101,7 +101,7 @@ func GetSliceIndexFuncLhs() common.Instruction {
 	}
 }
 
-func GetSliceIndexFunc() common.Instruction {
+func SliceIndex() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		if stk.Top() != nil {
 			stk.Set(1, *GetSliceField(stk.Top(), stk.TopIndex(1).(int64)))
@@ -114,7 +114,7 @@ func GetSliceIndexFunc() common.Instruction {
 	}
 }
 
-func GetStringIndexFunc() common.Instruction {
+func StringIndex() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		if stk.Top() != nil {
 			stk.Set(1, string((stk.Top().(string))[stk.TopIndex(1).(int64)]))
@@ -124,7 +124,7 @@ func GetStringIndexFunc() common.Instruction {
 	}
 }
 
-func GetMapIndexFuncLhs(constructor common.Constructor, mapMustGet func(m interface{}, k interface{}) (v *interface{})) common.Instruction {
+func MapIndexLhs(constructor common.Constructor, mapMustGet func(m interface{}, k interface{}) (v *interface{})) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		ptr := stk.Top().(*interface{})
 		stk.Pop()
@@ -136,7 +136,7 @@ func GetMapIndexFuncLhs(constructor common.Constructor, mapMustGet func(m interf
 	}
 }
 
-func GetMapIndexFunc(mapGet func(m interface{}, k interface{}) (v interface{})) common.Instruction {
+func MapIndex(mapGet func(m interface{}, k interface{}) (v interface{})) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		if stk.Top() != nil {
 			stk.Set(1, mapGet(stk.Top(), stk.TopIndex(1)))
@@ -146,7 +146,7 @@ func GetMapIndexFunc(mapGet func(m interface{}, k interface{}) (v interface{})) 
 	}
 }
 
-func GetMapMultiIndexFunc(mapGet func(m interface{}, k interface{}) (v interface{}), numFields int) common.Instruction {
+func MapArrIndex(mapGet func(m interface{}, k interface{}) (v interface{}), numFields int) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		mapValue := stk.Top()
 		stk.Pop()
@@ -169,7 +169,7 @@ func GetMapMultiIndexFunc(mapGet func(m interface{}, k interface{}) (v interface
 	}
 }
 
-func GetIndicesFunc() common.Instruction {
+func ArrIndex() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		step := stk.Top()
 		stk.Pop()

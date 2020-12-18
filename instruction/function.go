@@ -32,7 +32,7 @@ func PushLambda(lambda common.Instruction) common.Instruction {
 	}
 }
 
-func GetConstructFunc(constructor common.Constructor, numParam int) common.Instruction {
+func Construct(constructor common.Constructor, numParam int) common.Instruction {
 	if numParam == 0 {
 		return func(m *common.Memory, stk *common.Stack) {
 			stk.Push(constructor())

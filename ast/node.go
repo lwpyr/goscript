@@ -66,7 +66,7 @@ func (n *Node) CheckIsConstant() {
 
 func (n *Node) PostProcess() {
 	if n.RequiredType != nil {
-		covertInstruction := instruction.GetConvertInstruction(n.DataType, n.RequiredType)
+		covertInstruction := instruction.TypeConvert(n.DataType, n.RequiredType)
 		if common.IsError(covertInstruction) {
 			panic(common.NewTypeErr(n.ErrorWithSource("type convert cannot be implemented")))
 		}
@@ -78,7 +78,7 @@ func (n *Node) PostProcess() {
 	if !n.Variadic {
 		val := common.EvalConstInstructions(n.Instructions)
 		n.ConstantValue = val
-		n.Instructions = []common.Instruction{instruction.GetPushConstantFunc(val)}
+		n.Instructions = []common.Instruction{instruction.PushConstantToStack(val)}
 	}
 }
 

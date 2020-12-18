@@ -6,7 +6,7 @@ import (
 	"unsafe"
 )
 
-func GetMultiAssignFunc(convert []common.Instruction) []common.Instruction {
+func FunctionAssign(convert []common.Instruction) []common.Instruction {
 	num := len(convert)
 	var ret []common.Instruction
 	for i := 0; i < num; i++ {
@@ -22,7 +22,7 @@ func GetMultiAssignFunc(convert []common.Instruction) []common.Instruction {
 	return ret
 }
 
-func GetAssignFunc(op string, lhs *common.DataType) common.Instruction {
+func Assign(op string, lhs *common.DataType) common.Instruction {
 	switch op {
 	case "=":
 		return func(m *common.Memory, stk *common.Stack) {
@@ -1551,7 +1551,7 @@ func IPow64(a, b int64) int64 {
 	return result
 }
 
-func GetLeftUnaryOpFunc(op string, opType *common.DataType) common.Instruction {
+func LeftUnaryOp(op string, opType *common.DataType) common.Instruction {
 	switch op {
 	case "!":
 		if opType.Kind.Kind != common.Bool {
@@ -1660,7 +1660,7 @@ func GetLeftUnaryOpFunc(op string, opType *common.DataType) common.Instruction {
 	return common.ErrorInstruction
 }
 
-func GetRightUnaryOpFunc(op string, opType *common.DataType) common.Instruction {
+func RightUnaryOp(op string, opType *common.DataType) common.Instruction {
 	switch op {
 	case "++":
 		switch opType.Kind.Kind {

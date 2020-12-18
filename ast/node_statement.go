@@ -136,9 +136,9 @@ func (v *FetchSymbolNode) Compile(c *Compiler) {
 	v.Symbol = symbol
 	var inst common.Instruction
 	if v.LhsFlag {
-		inst = instruction.GetFetchSymbolFuncLhs(symbol, c.Scope)
+		inst = instruction.FetchSymbolLhs(symbol, c.Scope)
 	} else {
-		inst = instruction.GetFetchSymbolFunc(symbol, c.Scope)
+		inst = instruction.FetchSymbol(symbol, c.Scope)
 	}
 	if common.IsError(inst) {
 		panic(common.NewCompileErr(v.ErrorWithSource("unknown symbol type")))
@@ -172,7 +172,7 @@ func (a *AssertNode) Compile(c *Compiler) {
 	}
 
 	a.AppendInstruction(a.Value.GetInstructions()...)
-	convertInstruction := instruction.GetConvertInstruction(a.Value.GetDataType(), a.DataType)
+	convertInstruction := instruction.TypeConvert(a.Value.GetDataType(), a.DataType)
 	if common.IsError(convertInstruction) {
 		panic(common.NewTypeErr(a.ErrorWithSource("cannot convert")))
 	}
@@ -216,18 +216,18 @@ func (s *SelectorNode) Compile(c *Compiler) {
 		}
 		var selectInstruction common.Instruction
 		if s.LhsFlag {
-			selectInstruction = instruction.GetSelectFuncLhs(constructor, fieldName, oneOfs)
+			selectInstruction = instruction.SelectorLhs(constructor, fieldName, oneOfs)
 		} else {
-			selectInstruction = instruction.GetSelectFunc(fieldName)
+			selectInstruction = instruction.Selector(fieldName)
 		}
 		if s.Data.IsStackPtr() {
-			s.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+			s.AppendInstruction(instruction.StackOffsetToStackPtr(0))
 		}
 		s.AppendInstruction(selectInstruction)
 
 		s.DataType = fieldType
 	} else if s.Data.GetDataType().Kind.Kind == common.Enum {
-		s.AppendInstruction(instruction.GetSelectEnumFunc(s.FieldName))
+		s.AppendInstruction(instruction.SelectorEnum(s.FieldName))
 		s.DataType = c.FindType(s.Data.GetDataType().Type)
 	} else {
 		panic(common.NewTypeErr(s.ErrorWithSource("selector follow a non message type")))
@@ -275,7 +275,7 @@ func (s *SliceFilterNode) Compile(c *Compiler) {
 	if err != nil {
 		panic(common.NewTypeErr(s.ErrorWithSource("filter cannot return a bool-convertible value")))
 	}
-	s.AppendInstruction(instruction.GetSliceFilterFunc(filter, boolConvertFunc))
+	s.AppendInstruction(instruction.SliceFilter(filter, boolConvertFunc))
 
 	s.DataType = s.Slice.GetDataType()
 	s.CheckIsConstant()
@@ -314,12 +314,12 @@ func (s *SliceMultiIndexNode) Compile(c *Compiler) {
 	s.AppendInstruction(s.Slice.GetInstructions()...)
 
 	if s.Slice.GetDataType().Kind.Kind == common.Slice {
-		s.AppendInstruction(instruction.GetSliceMultiIndexFunc(numIndex))
+		s.AppendInstruction(instruction.SliceArrIndex(numIndex))
 	} else if s.Slice.GetDataType().Kind.Kind == common.String {
 		if numIndex > 1 {
 			panic(common.NewIndexErr(s.ErrorWithSource("illegal string index")))
 		}
-		s.AppendInstruction(instruction.GetStringMultiIndexFunc())
+		s.AppendInstruction(instruction.StringArrIndex())
 	} else {
 		panic(common.NewTypeErr(s.ErrorWithSource("try to index a value which cannot be indexed")))
 	}
@@ -364,8 +364,8 @@ func (m *MapMultiIndexNode) Compile(c *Compiler) {
 
 	m.AppendInstruction(m.Map.GetInstructions()...)
 
-	mapGet := instruction.GetMapGetFunc(m.Map.GetDataType().KeyType)
-	m.AppendInstruction(instruction.GetMapMultiIndexFunc(mapGet, numFields))
+	mapGet := instruction.MapGet(m.Map.GetDataType().KeyType)
+	m.AppendInstruction(instruction.MapArrIndex(mapGet, numFields))
 
 	m.DataType = c.FindSliceType(m.Map.GetDataType().ValueType.Type)
 	m.CheckIsConstant()
@@ -394,9 +394,9 @@ func (i *IndexNode) Compile(c *Compiler) {
 		i.Index.Compile(c)
 
 		if i.LhsFlag {
-			indexInstruction = instruction.GetSliceIndexFuncLhs()
+			indexInstruction = instruction.SliceIndexLhs()
 		} else {
-			indexInstruction = instruction.GetSliceIndexFunc()
+			indexInstruction = instruction.SliceIndex()
 		}
 		i.DataType = i.ToIndex.GetDataType().ItemType
 	case common.String:
@@ -405,7 +405,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 		if i.LhsFlag {
 			panic(common.NewCompileErr(i.ErrorWithSource("string is immutable")))
 		}
-		indexInstruction = instruction.GetStringIndexFunc()
+		indexInstruction = instruction.StringIndex()
 		i.DataType = i.ToIndex.GetDataType()
 	case common.Map:
 		i.Index.SetRequiredType(i.ToIndex.GetDataType().KeyType)
@@ -413,11 +413,11 @@ func (i *IndexNode) Compile(c *Compiler) {
 		constructor := i.ToIndex.GetDataType().Constructor
 
 		if i.LhsFlag {
-			mapMustGet := instruction.GetMapMustGetFunc(i.ToIndex.GetDataType().KeyType)
-			indexInstruction = instruction.GetMapIndexFuncLhs(constructor, mapMustGet)
+			mapMustGet := instruction.MapGetPtr(i.ToIndex.GetDataType().KeyType)
+			indexInstruction = instruction.MapIndexLhs(constructor, mapMustGet)
 		} else {
-			mapGet := instruction.GetMapGetFunc(i.ToIndex.GetDataType().KeyType)
-			indexInstruction = instruction.GetMapIndexFunc(mapGet)
+			mapGet := instruction.MapGet(i.ToIndex.GetDataType().KeyType)
+			indexInstruction = instruction.MapIndex(mapGet)
 		}
 		i.DataType = i.ToIndex.GetDataType().ValueType
 	default:
@@ -427,7 +427,7 @@ func (i *IndexNode) Compile(c *Compiler) {
 	i.AppendInstruction(i.Index.GetInstructions()...)
 	i.AppendInstruction(i.ToIndex.GetInstructions()...)
 	if i.ToIndex.IsStackPtr() {
-		i.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+		i.AppendInstruction(instruction.StackOffsetToStackPtr(0))
 	}
 	i.AppendInstruction(indexInstruction)
 
@@ -450,26 +450,26 @@ func (i *IndicesNode) Compile(c *Compiler) {
 		i.From.Compile(c)
 		from = i.From.GetInstructions()
 	} else {
-		from = []common.Instruction{instruction.GetPushConstantFunc(int64(-1))}
+		from = []common.Instruction{instruction.PushConstantToStack(int64(-1))}
 	}
 	if i.To != nil {
 		i.To.SetRequiredType(common.BasicTypeMap[common.Int64Type])
 		i.To.Compile(c)
 		to = i.To.GetInstructions()
 	} else {
-		to = []common.Instruction{instruction.GetPushConstantFunc(int64(-1))}
+		to = []common.Instruction{instruction.PushConstantToStack(int64(-1))}
 	}
 	if i.Step != nil {
 		i.Step.SetRequiredType(common.BasicTypeMap[common.Int64Type])
 		i.Step.Compile(c)
 		step = i.Step.GetInstructions()
 	} else {
-		step = []common.Instruction{instruction.GetPushConstantFunc(int64(1))}
+		step = []common.Instruction{instruction.PushConstantToStack(int64(1))}
 	}
 	i.AppendInstruction(from...)
 	i.AppendInstruction(to...)
 	i.AppendInstruction(step...)
-	i.AppendInstruction(instruction.GetIndicesFunc())
+	i.AppendInstruction(instruction.ArrIndex())
 
 	// no need to set data type
 	i.CheckIsConstant()
@@ -559,14 +559,14 @@ func (u *LeftUnaryNode) Compile(c *Compiler) {
 	}
 	u.Operand.Compile(c)
 
-	opFunc := instruction.GetLeftUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	opFunc := instruction.LeftUnaryOp(u.Op, u.Operand.GetDataType())
 	if common.IsError(opFunc) {
 		panic(common.NewCompileErr(u.ErrorWithSource("invalid op")))
 	}
 
 	u.AppendInstruction(u.Operand.GetInstructions()...)
 	if u.Operand.IsStackPtr() {
-		u.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+		u.AppendInstruction(instruction.StackOffsetToStackPtr(0))
 	}
 	u.AppendInstruction(opFunc)
 
@@ -585,14 +585,14 @@ func (u *RightUnaryNode) Compile(c *Compiler) {
 	}
 	u.Operand.Compile(c)
 
-	opFunc := instruction.GetRightUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	opFunc := instruction.RightUnaryOp(u.Op, u.Operand.GetDataType())
 	if common.IsError(opFunc) {
 		panic(common.NewCompileErr(u.ErrorWithSource("invalid op")))
 	}
 
 	u.AppendInstruction(u.Operand.GetInstructions()...)
 	if u.Operand.IsStackPtr() {
-		u.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+		u.AppendInstruction(instruction.StackOffsetToStackPtr(0))
 	}
 	u.AppendInstruction(opFunc)
 
@@ -613,7 +613,7 @@ func (n *ConstructorNode) Compile(c *Compiler) {
 		p.Compile(c)
 		n.AppendInstruction(p.GetInstructions()...)
 	}
-	n.AppendInstruction(instruction.GetConstructFunc(n.Type.GetDataType().Constructor, num))
+	n.AppendInstruction(instruction.Construct(n.Type.GetDataType().Constructor, num))
 
 	n.DataType = n.Type.GetDataType()
 	n.PostProcess()
@@ -624,7 +624,7 @@ func (v *ValueNode) Compile(_ *Compiler) {
 	if v.LhsFlag {
 		panic(common.NewCompileErr(v.ErrorWithSource("constant value cannot be on the left hand side")))
 	}
-	v.AppendInstruction(instruction.GetPushConstantFunc(v.ConstantValue))
+	v.AppendInstruction(instruction.PushConstantToStack(v.ConstantValue))
 	v.PostProcess()
 }
 
@@ -643,7 +643,7 @@ func (v *ChanSend) Compile(c *Compiler) {
 	v.ToSend.SetRequiredType(v.Chan.GetDataType().ItemType)
 	v.ToSend.Compile(c)
 	v.AppendInstruction(v.ToSend.GetInstructions()...)
-	v.AppendInstruction(instruction.GetChanSend(v.NonBlock))
+	v.AppendInstruction(instruction.ChanSend(v.NonBlock))
 
 	v.PostProcess()
 	v.StackIncrement = 1
@@ -658,7 +658,7 @@ func (v *ChanRecv) Compile(c *Compiler) {
 		panic(common.NewCompileErr(v.ErrorWithSource("chan op must be on a chan type value")))
 	}
 	v.AppendInstruction(v.Chan.GetInstructions()...)
-	v.AppendInstruction(instruction.GetChanRecv(v.NonBlock))
+	v.AppendInstruction(instruction.ChanRecv(v.NonBlock))
 	v.DataType = v.Chan.GetDataType().ItemType
 
 	v.PostProcess()
@@ -683,7 +683,7 @@ func (i *InitializationSliceNode) Compile(c *Compiler) {
 		item.Compile(c)
 		i.AppendInstruction(item.GetInstructions()...)
 	}
-	i.AppendInstruction(instruction.GetInitializeSliceFunc(num))
+	i.AppendInstruction(instruction.InitializeSlice(num))
 	i.StackIncrement = 1
 }
 
@@ -713,8 +713,8 @@ func (i *InitializationKVNode) Compile(c *Compiler) {
 			i.AppendInstruction(val.GetInstructions()...)
 		}
 		constructor := common.MapConstructorMap[i.DataType.KeyType.Kind.Kind]
-		mapSet := instruction.GetMapSetFunc(i.DataType.KeyType)
-		i.AppendInstruction(instruction.GetInitializeMapFunc(constructor, mapSet, num))
+		mapSet := instruction.MapSet(i.DataType.KeyType)
+		i.AppendInstruction(instruction.InitializeMap(constructor, mapSet, num))
 	case common.Message:
 		num := len(i.Keys)
 		keyStrings := make([]string, num)
@@ -727,7 +727,7 @@ func (i *InitializationKVNode) Compile(c *Compiler) {
 			val.Compile(c)
 			i.AppendInstruction(val.GetInstructions()...)
 		}
-		i.AppendInstruction(instruction.GetInitializeMessageFunc(keyStrings, num))
+		i.AppendInstruction(instruction.InitializeMessage(keyStrings, num))
 	default:
 		panic(common.NewTypeErr(i.ErrorWithSource("initialization type should be message or map")))
 	}
@@ -752,7 +752,7 @@ func (f *FunctionAssignNode) Compile(c *Compiler) {
 
 		convertFunctions := make([]common.Instruction, 0, num)
 		for i := 0; i < num; i++ {
-			temp := instruction.GetConvertInstruction(f.Lhs[num-1-i].GetDataType(), funcCallNode.Meta.Out[i])
+			temp := instruction.TypeConvert(f.Lhs[num-1-i].GetDataType(), funcCallNode.Meta.Out[i])
 			if common.IsError(temp) {
 				panic(common.NewCompileErr(f.ErrorWithSource("function return value cannot be implicit convert to lhs")))
 			}
@@ -760,10 +760,10 @@ func (f *FunctionAssignNode) Compile(c *Compiler) {
 		}
 		for i, lhs := range f.Lhs {
 			if lhs.IsStackPtr() {
-				f.AppendInstruction(instruction.GetStackOffsetToStackPtr(num - 1 - i))
+				f.AppendInstruction(instruction.StackOffsetToStackPtr(num - 1 - i))
 			}
 		}
-		f.AppendInstruction(instruction.GetMultiAssignFunc(convertFunctions)...)
+		f.AppendInstruction(instruction.FunctionAssign(convertFunctions)...)
 	} else {
 		panic(common.NewCompileErr(f.ErrorWithSource("multi-assign RHS is not a function call")))
 	}
@@ -779,9 +779,9 @@ func (n *AssignNode) Compile(c *Compiler) {
 	n.AppendInstruction(n.Rhs.GetInstructions()...)
 	n.AppendInstruction(n.Lhs.GetInstructions()...)
 	if n.Lhs.IsStackPtr() {
-		n.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+		n.AppendInstruction(instruction.StackOffsetToStackPtr(0))
 	}
-	opFunc := instruction.GetAssignFunc(n.Op, n.Lhs.GetDataType())
+	opFunc := instruction.Assign(n.Op, n.Lhs.GetDataType())
 	if common.IsError(opFunc) {
 		panic(common.NewCompileErr(n.ErrorWithSource("invalid op")))
 	}

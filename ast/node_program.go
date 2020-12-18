@@ -17,7 +17,7 @@ func (p *ProgramRoot) Compile(c *Compiler) {
 		p.StatementNode[i].Compile(c)
 		runnableInstructions = append(runnableInstructions, p.StatementNode[i].GetInstructions()...)
 	}
-	runnableInstructions = append(runnableInstructions, instruction.GetProgramEnding())
+	runnableInstructions = append(runnableInstructions, instruction.ProgramEnding())
 	p.Instructions = []common.Instruction{
 		// to make sure the program end
 		func(m *common.Memory, stk *common.Stack) {

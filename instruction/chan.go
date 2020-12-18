@@ -2,7 +2,7 @@ package instruction
 
 import "github.com/lwpyr/goscript/common"
 
-func GetChanSend(nonBlock bool) common.Instruction {
+func ChanSend(nonBlock bool) common.Instruction {
 	if nonBlock {
 		return func(m *common.Memory, stk *common.Stack) {
 			select {
@@ -25,7 +25,7 @@ func GetChanSend(nonBlock bool) common.Instruction {
 	}
 }
 
-func GetChanRecv(nonBlock bool) common.Instruction {
+func ChanRecv(nonBlock bool) common.Instruction {
 	if nonBlock {
 		return func(m *common.Memory, stk *common.Stack) {
 			select {

@@ -60,7 +60,7 @@ func (b *ConvertNode) Compile(c *Compiler) {
 	b.Type.Compile(c)
 	b.DataType = b.Type.GetDataType()
 	b.Value.Compile(c)
-	convertInstruction := instruction.GetConvertInstruction(b.Value.GetDataType(), b.DataType)
+	convertInstruction := instruction.TypeConvert(b.Value.GetDataType(), b.DataType)
 	if common.IsError(convertInstruction) {
 		panic(common.NewCompileErr(b.ErrorWithSource("type convert error")))
 	}
@@ -296,7 +296,7 @@ func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 		b.Params[1].SetRequiredType(sliceType.ItemType)
 		b.Params[1].Compile(c)
 		if b.Params[0].IsStackPtr() {
-			b.AppendInstruction(instruction.GetStackOffsetToStackPtr(1))
+			b.AppendInstruction(instruction.StackOffsetToStackPtr(1))
 		}
 		b.AppendInstruction(b.Params[1].GetInstructions()...)
 		if b.BuiltinName == "pushBack" {
@@ -326,7 +326,7 @@ func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 			key.SetDataType(mType.KeyType)
 			key.Compile(c)
 			b.AppendInstruction(key.GetInstructions()...)
-			mapDelFunc := instruction.GetMapDelFunc(key.GetDataType())
+			mapDelFunc := instruction.MapDelete(key.GetDataType())
 			b.AppendInstruction(instruction.DeleteMapKey(mapDelFunc))
 		default:
 			panic(common.NewCompileErr(b.ErrorWithSource("delete not allowed on " + m.GetDataType().Type)))
@@ -367,7 +367,7 @@ func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 		}
 		val := b.Params[0]
 		val.Compile(c)
-		b.AppendInstruction(instruction.GetPushConstantFunc(val.GetDataType()))
+		b.AppendInstruction(instruction.PushConstantToStack(val.GetDataType()))
 	default:
 		panic(common.NewCompileErr(b.ErrorWithSource("unknown builtin function")))
 	}

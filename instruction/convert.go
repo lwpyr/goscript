@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-func GetConvertInstruction(from *common.DataType, to *common.DataType) common.Instruction {
+func TypeConvert(from *common.DataType, to *common.DataType) common.Instruction {
 	if to.Kind.Kind == common.Any {
 		return nil
 	}

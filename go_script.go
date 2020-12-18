@@ -67,7 +67,7 @@ func CompileExpression(c *ast.Compiler, expr string) (common.Instruction, error)
 	}
 	node.Compile(c)
 	instructions := node.GetInstructions()
-	instructions = append(instructions, instruction.GetProgramEnding())
+	instructions = append(instructions, instruction.ProgramEnding())
 	ret := func(m *common.Memory, stk *common.Stack) {
 		for stk.Pc != -1 {
 			instructions[stk.Pc](m, stk)

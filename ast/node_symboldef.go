@@ -35,7 +35,7 @@ func (t *SymbolNode) Compile(c *Compiler) {
 				DataType: t.DataType,
 			}
 			c.Scope.AddGlobalVariable(sym)
-			t.AppendInstruction(instruction.GetGlobalSymbolAssign(sym))
+			t.AppendInstruction(instruction.GlobalSymbolAssign(sym))
 		} else {
 			c.Scope.AddGlobalVariable(&common.Symbol{
 				Symbol:   t.SymbolName,
@@ -53,7 +53,7 @@ func (t *SymbolNode) Compile(c *Compiler) {
 			}
 			t.AppendInstruction(t.ValueToAssign.GetInstructions()...)
 		} else {
-			t.AppendInstruction(instruction.GetLocalSymbolNil())
+			t.AppendInstruction(instruction.LocalSymbolNil())
 		}
 		c.Scope.AddLocalVariable(&common.Symbol{
 			Symbol:   t.SymbolName,

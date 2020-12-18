@@ -11,37 +11,37 @@ type LengthFunc func(from interface{}) int64
 func GetLengthFunc(from *common.DataType) LengthFunc {
 	switch from.Kind.Kind {
 	case common.String:
-		return GetStringLenFunc()
+		return StringLen()
 	case common.Bytes:
-		return GetBytesLenFunc()
+		return BytesLen()
 	case common.Slice:
-		return GetSliceLenFunc()
+		return SliceLen()
 	case common.Map:
-		return GetMapLenFunc()
+		return MapLen()
 	default:
 		panic("cannot take length " + from.Type)
 	}
 }
 
-func GetStringLenFunc() LengthFunc {
+func StringLen() LengthFunc {
 	return func(from interface{}) int64 {
 		return int64(len(*(*string)((*EmptyFace)(unsafe.Pointer(&from)).Data)))
 	}
 }
 
-func GetBytesLenFunc() LengthFunc {
+func BytesLen() LengthFunc {
 	return func(from interface{}) int64 {
 		return int64(len(*(*[]byte)((*EmptyFace)(unsafe.Pointer(&from)).Data)))
 	}
 }
 
-func GetSliceLenFunc() LengthFunc {
+func SliceLen() LengthFunc {
 	return func(from interface{}) int64 {
 		return int64(len(*(*[]interface{})((*EmptyFace)(unsafe.Pointer(&from)).Data)))
 	}
 }
 
-func GetMapLenFunc() LengthFunc {
+func MapLen() LengthFunc {
 	return func(from interface{}) int64 {
 		return hack.MLen(from)
 	}

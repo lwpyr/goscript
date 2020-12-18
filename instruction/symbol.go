@@ -5,21 +5,21 @@ import (
 	"github.com/lwpyr/goscript/hack"
 )
 
-func GetStackOffsetToStackPtr(spOffset int) common.Instruction {
+func StackOffsetToStackPtr(spOffset int) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		stk.Set(0, &stk.Data[stk.TopIndex(spOffset).(int)+stk.Bp])
 		stk.Pc++
 	}
 }
 
-func GetIndirect() common.Instruction {
+func Indirect() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		stk.Set(0, *stk.Top().(*interface{}))
 		stk.Pc++
 	}
 }
 
-func GetTakePtr() common.Instruction {
+func TakePtr() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		temp := stk.Top()
 		stk.Set(0, &temp)
@@ -27,14 +27,14 @@ func GetTakePtr() common.Instruction {
 	}
 }
 
-func GetLocalSymbolNil() common.Instruction {
+func LocalSymbolNil() common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		stk.Push(nil)
 		stk.Pc++
 	}
 }
 
-func GetGlobalSymbolAssign(sym *common.Symbol) common.Instruction {
+func GlobalSymbolAssign(sym *common.Symbol) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		*m.MustGet(sym) = stk.Top()
 		stk.Pop()
@@ -42,7 +42,7 @@ func GetGlobalSymbolAssign(sym *common.Symbol) common.Instruction {
 	}
 }
 
-func GetFetchSymbolFuncLhs(symbol *common.Symbol, scope *common.Scope) common.Instruction {
+func FetchSymbolLhs(symbol *common.Symbol, scope *common.Scope) common.Instruction {
 	switch symbol.SymbolType {
 	case common.Global:
 		return func(m *common.Memory, stk *common.Stack) {
@@ -65,7 +65,7 @@ func GetFetchSymbolFuncLhs(symbol *common.Symbol, scope *common.Scope) common.In
 	}
 }
 
-func GetFetchSymbolFunc(symbol *common.Symbol, scope *common.Scope) common.Instruction {
+func FetchSymbol(symbol *common.Symbol, scope *common.Scope) common.Instruction {
 	switch symbol.SymbolType {
 	case common.Global:
 		return func(m *common.Memory, stk *common.Stack) {
