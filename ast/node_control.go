@@ -2,26 +2,16 @@ package ast
 
 import (
 	"github.com/lwpyr/goscript/common"
+	"github.com/lwpyr/goscript/instruction"
 	"reflect"
 )
 
 var BreakPlaceHolder = func(m *common.Memory, stk *common.Stack) {}
 var ContinuePlaceHolder = func(m *common.Memory, stk *common.Stack) {}
 
-type LineNode struct {
-	Node
-	Line ASTNode
-}
-
-type RestoreStackNode struct {
-	Node
-	Line ASTNode
-}
-
 type BlockNode struct {
 	Node
 	Executions []ASTNode
-	Scope      *common.Scope
 }
 
 type ReturnNode struct {
@@ -31,9 +21,8 @@ type ReturnNode struct {
 
 type ProgramRoot struct {
 	Node
-	TypeDefNode     []ASTNode
-	FunctionDefNode []ASTNode
-	StatementNode   []ASTNode
+	TypeDefNode   []ASTNode
+	StatementNode []ASTNode
 }
 
 type BreakNode struct {
@@ -56,8 +45,6 @@ type ForMapNode struct {
 	KeyName string
 	ValName string
 	Map     ASTNode
-	Key     *common.Variable
-	Val     *common.Variable
 	Serial  ASTNode
 }
 
@@ -65,7 +52,6 @@ type ForSliceNode struct {
 	Node
 	ItemName string
 	Slice    ASTNode
-	Item     *common.Variable
 	Serial   ASTNode
 }
 
@@ -76,7 +62,6 @@ type SliceIterator struct {
 
 type ForNode struct {
 	Node
-	Scope     *common.Scope
 	Init      ASTNode
 	Condition ASTNode
 	Step      ASTNode
@@ -90,69 +75,49 @@ type SwitchNode struct {
 	Blocks     []ASTNode
 }
 
-func (b *LineNode) Compile(c *Compiler) {
-	b.Line.Compile(c)
-	b.Instructions = b.Line.GetInstructions()
-	b.Instructions = append(b.Instructions,
-		func(m *common.Memory, stk *common.Stack) {
-			stk.Pc++
-		},
-	)
+type RestoreStackNode struct {
+	Node
+	Line ASTNode
 }
 
 func (b *RestoreStackNode) Compile(c *Compiler) {
 	b.Line.Compile(c)
-	lineInst := c.InstructionPop()
-	b.Instructions = []common.Instruction{
-		func(m *common.Memory, stk *common.Stack) {
-			sp := stk.Sp
-			lineInst(m, stk)
-			stk.Data = stk.Data[:sp+1]
-			stk.Sp = sp
-			stk.Pc++
-		},
+	b.AppendInstruction(b.Line.GetInstructions()...)
+	n := b.Line.GetStackIncrement()
+	if n > 0 {
+		b.AppendInstruction(instruction.StackPopN(n))
 	}
 }
 
 func (b *BlockNode) Compile(c *Compiler) {
+	c.MakeChildScope()
+	defer c.ReturnParentScope()
+
 	for _, r := range b.Executions {
 		r.Compile(c)
 	}
 	for i := 0; i < len(b.Executions); i++ {
-		b.Instructions = append(b.Instructions, b.Executions[i].GetInstructions()...)
+		b.AppendInstruction(b.Executions[i].GetInstructions()...)
 	}
-	num := len(b.Scope.Parameters)
-	b.Instructions = append(b.Instructions, func(m *common.Memory, stk *common.Stack) {
-		stk.PopN(num)
-		stk.Pc++
-	})
+	num := len(c.Scope.Parameters)
+	if num > 0 {
+		b.AppendInstruction(instruction.StackPopN(num))
+	}
 }
 
 func (r *ReturnNode) Compile(c *Compiler) {
+	// todo check validity
 	lenRet := len(r.Expr)
 	for _, expr := range r.Expr {
 		expr.Compile(c)
+		r.AppendInstruction(expr.GetInstructions()...)
 	}
-	var exprInstructions []common.Instruction
-	for i := 0; i < lenRet; i++ {
-		exprInstructions = append(exprInstructions, c.InstructionPop())
+	if lenRet == 1 {
+		r.AppendInstruction(instruction.StackReturn())
+	} else if lenRet > 1 {
+		r.AppendInstruction(instruction.StackReturnN(lenRet))
 	}
-	if r.Expr == nil {
-		r.Instructions = []common.Instruction{
-			func(m *common.Memory, stk *common.Stack) {
-				stk.Pc = -1
-			},
-		}
-	} else {
-		r.Instructions = []common.Instruction{
-			func(m *common.Memory, stk *common.Stack) {
-				for _, exprInstruction := range exprInstructions {
-					exprInstruction(m, stk)
-				}
-				stk.ReturnN(lenRet)
-			},
-		}
-	}
+	r.AppendInstruction(instruction.StackReturnVoid())
 }
 
 func (b *BreakNode) Compile(_ *Compiler) {
@@ -165,14 +130,13 @@ func (c *ContinueNode) Compile(_ *Compiler) {
 
 func (n *IfNode) Compile(c *Compiler) {
 	n.Condition.Compile(c)
-	conditionInstruction := c.InstructionPop()
+	n.AppendInstruction(n.Condition.GetInstructions()...)
 	n.Block.Compile(c)
 	blockInstructions := n.Block.GetInstructions()
 	if n.ElseBlock == nil {
 		skip := len(blockInstructions) + 1
-		n.Instructions = []common.Instruction{
+		n.AppendInstruction(
 			func(m *common.Memory, stk *common.Stack) {
-				conditionInstruction(m, stk)
 				if stk.Top().(bool) {
 					stk.Pop()
 					stk.Pc++
@@ -181,16 +145,15 @@ func (n *IfNode) Compile(c *Compiler) {
 					stk.Pc += skip
 				}
 			},
-		}
-		n.Instructions = append(n.Instructions, blockInstructions...)
+		)
+		n.AppendInstruction(blockInstructions...)
 	} else {
 		n.ElseBlock.Compile(c)
 		elseBlockInstructions := n.ElseBlock.GetInstructions()
 		skip1 := len(blockInstructions) + 2
 		skip2 := len(elseBlockInstructions) + 1
-		n.Instructions = []common.Instruction{
+		n.AppendInstruction(
 			func(m *common.Memory, stk *common.Stack) {
-				conditionInstruction(m, stk)
 				if stk.Top().(bool) {
 					stk.Pop()
 					stk.Pc++
@@ -199,12 +162,12 @@ func (n *IfNode) Compile(c *Compiler) {
 					stk.Pc += skip1
 				}
 			},
-		}
-		n.Instructions = append(n.Instructions, blockInstructions...)
-		n.Instructions = append(n.Instructions, func(m *common.Memory, stk *common.Stack) {
+		)
+		n.AppendInstruction(blockInstructions...)
+		n.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 			stk.Pc += skip2
 		})
-		n.Instructions = append(n.Instructions, elseBlockInstructions...)
+		n.AppendInstruction(elseBlockInstructions...)
 	}
 }
 
@@ -225,21 +188,40 @@ func relocateBreakAndContinue(instructions []common.Instruction) {
 
 func (f *ForMapNode) Compile(c *Compiler) {
 	f.Map.Compile(c)
-	mapInstruction := c.InstructionPop()
+	if f.Map.GetDataType().Kind.Kind != common.Map {
+		panic(common.NewTypeErr(f.ErrorWithSource("for loop with slice doesn't get a slice")))
+	}
+	f.AppendInstruction(f.Map.GetInstructions()...)
+
+	c.MakeChildScope()
+	defer c.ReturnParentScope()
+
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   "$",
+		DataType: common.BasicTypeMap[common.AnyType],
+	})
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   f.KeyName,
+		DataType: f.Map.GetDataType().KeyType,
+	})
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   f.ValName,
+		DataType: f.Map.GetDataType().ValueType,
+	})
+
 	f.Serial.Compile(c)
 	serialInstructions := f.Serial.GetInstructions()
 	relocateBreakAndContinue(serialInstructions)
 	lenSerialInstructions := len(serialInstructions)
-	f.Instructions = []common.Instruction{
+	f.AppendInstruction(
 		// initialization
 		func(m *common.Memory, stk *common.Stack) {
-			mapInstruction(m, stk)
 			iter := reflect.ValueOf(stk.Top()).MapRange()
 			stk.Set(0, iter)
 			stk.Pc++
 		},
-	}
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	)
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// condition
 		iter := stk.Top().(*reflect.MapIter)
 		if iter.Next() {
@@ -251,8 +233,8 @@ func (f *ForMapNode) Compile(c *Compiler) {
 			stk.Pc += lenSerialInstructions + 2
 		}
 	})
-	f.Instructions = append(f.Instructions, serialInstructions...)
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	f.AppendInstruction(serialInstructions...)
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// step
 		stk.PopN(2)
 		stk.Pc -= lenSerialInstructions + 1
@@ -280,21 +262,36 @@ func (i *SliceIterator) Item() interface{} {
 
 func (f *ForSliceNode) Compile(c *Compiler) {
 	f.Slice.Compile(c)
-	arrInstruction := c.InstructionPop()
+	if f.Slice.GetDataType().Kind.Kind != common.Slice {
+		panic(common.NewTypeErr(f.ErrorWithSource("for loop with slice doesn't get a slice")))
+	}
+	f.AppendInstruction(f.Slice.GetInstructions()...)
+
+	c.MakeChildScope()
+	defer c.ReturnParentScope()
+
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   "$",
+		DataType: common.BasicTypeMap[common.Int64Type],
+	})
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   f.ItemName,
+		DataType: f.Slice.GetDataType().ItemType,
+	})
+
 	f.Serial.Compile(c)
 	serialInstructions := f.Serial.GetInstructions()
 	relocateBreakAndContinue(serialInstructions)
 	lenSerialInstructions := len(serialInstructions)
-	f.Instructions = []common.Instruction{
+	f.AppendInstruction(
 		// initialization
 		func(m *common.Memory, stk *common.Stack) {
-			arrInstruction(m, stk)
 			iter := InitSliceIterator(stk.Top().([]interface{}))
 			stk.Set(0, iter)
 			stk.Pc++
 		},
-	}
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	)
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// condition
 		iter := stk.Top().(*SliceIterator)
 		if iter.Next() {
@@ -305,48 +302,56 @@ func (f *ForSliceNode) Compile(c *Compiler) {
 			stk.Pc += lenSerialInstructions + 2
 		}
 	})
-	f.Instructions = append(f.Instructions, serialInstructions...)
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	f.AppendInstruction(serialInstructions...)
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// step
 		stk.Pop()
 		stk.Pc -= lenSerialInstructions + 1
 	})
+
+	c.Scope = c.Scope.Outer
 }
 
 func (f *ForNode) Compile(c *Compiler) {
+	c.MakeChildScope()
+	defer c.ReturnParentScope()
+
 	f.Init.Compile(c)
-	initInstruction := f.Init.GetInstructions()
+	f.AppendInstruction(f.Init.GetInstructions()...)
 	f.Condition.Compile(c)
-	conditionInstruction := c.InstructionPop()
+	conditionInstructions := f.Condition.GetInstructions()
+	lenConditionInstructions := len(conditionInstructions)
+	f.AppendInstruction(conditionInstructions...)
 	f.Step.Compile(c)
-	stepInstruction := f.Step.GetInstructions()[0]
+	stepInstructions := f.Step.GetInstructions()
+	lenStepInstructions := len(stepInstructions)
 	f.Block.Compile(c)
 	serialInstructions := f.Block.GetInstructions()
 	lenSerialInstructions := len(serialInstructions)
-	num := len(f.Scope.Parameters)
-	f.Instructions = initInstruction
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	num := len(c.Scope.Parameters)
+	skip := lenSerialInstructions + lenStepInstructions + 2
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// condition
-		conditionInstruction(m, stk)
 		if stk.Top().(bool) {
 			stk.Pop()
 			stk.Pc++
 		} else {
 			stk.PopN(num + 1)
-			stk.Pc += lenSerialInstructions + 2
+			stk.Pc += skip
 		}
 	})
-	f.Instructions = append(f.Instructions, serialInstructions...)
-	f.Instructions = append(f.Instructions, func(m *common.Memory, stk *common.Stack) {
+	f.AppendInstruction(serialInstructions...)
+	f.AppendInstruction(stepInstructions...)
+	back := lenSerialInstructions + lenStepInstructions + lenConditionInstructions + 1
+	f.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		// step
-		stepInstruction(m, stk)
-		stk.Pc -= lenSerialInstructions + 2
+		stk.Pc -= back
 	})
 }
 
 func (s *SwitchNode) Compile(c *Compiler) {
 	s.Expr.Compile(c)
-	exprInst := c.InstructionPop()
+	s.AppendInstruction(s.Expr.GetInstructions()...)
 	num := len(s.Conditions)
 	var blockInstructions []common.Instruction
 	var skip []int
@@ -358,8 +363,7 @@ func (s *SwitchNode) Compile(c *Compiler) {
 		last += len(s.Blocks[i].GetInstructions())
 	}
 	conditions := s.Conditions
-	s.Instructions = append(s.Instructions, func(m *common.Memory, stk *common.Stack) {
-		exprInst(m, stk)
+	s.AppendInstruction(func(m *common.Memory, stk *common.Stack) {
 		val := stk.Top()
 		stk.Pop()
 		for i := 0; i < num; i++ {
@@ -370,5 +374,5 @@ func (s *SwitchNode) Compile(c *Compiler) {
 		}
 		stk.Pc += last
 	})
-	s.Instructions = append(s.Instructions, blockInstructions...)
+	s.AppendInstruction(blockInstructions...)
 }

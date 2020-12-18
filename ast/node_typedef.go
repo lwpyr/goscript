@@ -5,27 +5,15 @@ import (
 	"github.com/lwpyr/goscript/common"
 )
 
-type ChanTypeDef struct {
+type TypeDefNode struct {
 	Node
-	Item ASTNode
-}
-
-type MapTypeDef struct {
-	Node
-	KeyType *common.DataType
-	Value   ASTNode
-}
-
-type SliceTypeDef struct {
-	Node
-	Item ASTNode
-}
-
-type FunctionTypeDef struct {
-	Node
-	InType    []ASTNode
-	OutType   []ASTNode
-	TailArray bool
+	SimpleTypeName string
+	TypeNodeType   TypeNodeType
+	Key            *common.DataType // map
+	Value          ASTNode          // map slice chan
+	InParam        []ASTNode        // func
+	OutParam       []ASTNode        // func
+	TailArray      bool
 }
 
 type MessageTypeDef struct {
@@ -41,70 +29,54 @@ type EnumNode struct {
 	Enum map[string]int32
 }
 
-type TerminalTypeDef struct {
-	Node
-	Name string
-}
-
-func (t *TerminalTypeDef) Compile(c *Compiler) {
-	if t.DataType == nil {
-		t.DataType = c.TypeRegistry.FindType(t.Name)
+func (t *TypeDefNode) Compile(c *Compiler) {
+	var dType *common.DataType
+	switch t.TypeNodeType {
+	case SimpleType:
+		dType = c.FindType(t.SimpleTypeName)
+	case SliceType:
+		t.Value.Compile(c)
+		ItemType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindSliceType(ItemType.Type)
+	case ChanType:
+		t.Value.Compile(c)
+		ItemType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindChanType(ItemType.Type)
+	case MapType:
+		t.Value.Compile(c)
+		ValType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindMapType(t.Key.Type, ValType.Type)
+	case FuncType:
+		meta := &common.FunctionMeta{
+			TailArray: t.TailArray,
+			ConstExpr: false,
+		}
+		for _, in := range t.InParam {
+			in.Compile(c)
+			meta.In = append(meta.In, in.GetDataType())
+		}
+		for _, out := range t.OutParam {
+			out.Compile(c)
+			meta.Out = append(meta.Out, out.GetDataType())
+		}
+		dType = c.TypeRegistry.FindFuncType(meta)
+	default:
+		panic(common.NewCompileErr("bad node type, this should never happened because of the enum limitation"))
 	}
 	if t.DataType == nil {
-		panic(common.NewCompileErr("unknown type name " + t.Name))
+		t.DataType = dType // not a definition, directly set
+	} else {
+		*t.DataType = *dType // make a alias
 	}
 }
 
 func (e *EnumNode) Compile(c *Compiler) {
-	enumName := e.Name
-	dt := c.TypeRegistry.FindType(enumName)
+	dt := e.DataType
 	dt.Kind = common.KindMap[common.Int32]
 	dt.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
 		return iter.ReadInt32()
 	}
 	dt.Constructor = common.ConstructorMap[common.Int32]
-	c.TypeRegistry.Enums[enumName] = e.Enum
-	re := map[int32]string{}
-	for k, v := range e.Enum {
-		re[v] = k
-	}
-	c.TypeRegistry.REnums[enumName] = re
-}
-
-func (t *ChanTypeDef) Compile(c *Compiler) {
-	t.Item.Compile(c)
-	ItemType := t.Item.GetDataType()
-	dt := c.TypeRegistry.FindChanType(ItemType.Type)
-	if t.DataType != nil {
-		*t.DataType = *dt
-	} else {
-		t.DataType = dt
-	}
-}
-
-func (t *MapTypeDef) Compile(c *Compiler) {
-	t.Value.Compile(c)
-	ValType := t.Value.GetDataType()
-	dt := c.TypeRegistry.FindMapType(t.KeyType.Type, ValType.Type)
-	if t.DataType != nil {
-		*t.DataType = *dt
-	} else {
-		t.DataType = dt
-	}
-}
-
-func (t *SliceTypeDef) Compile(c *Compiler) {
-	t.Item.Compile(c)
-	ItemType := t.Item.GetDataType()
-	dt := c.TypeRegistry.FindSliceType(ItemType.Type)
-	if c.TypeRegistry.FindType(dt.Type) == nil {
-		c.TypeRegistry.AddType(dt.Type, dt)
-	}
-	if t.DataType != nil {
-		*t.DataType = *dt
-	} else {
-		t.DataType = dt
-	}
 }
 
 func (t *MessageTypeDef) Compile(c *Compiler) {
@@ -145,35 +117,8 @@ type MessageFieldDef struct {
 	Type ASTNode
 }
 
-func (t *MessageFieldDef) Compile(c *Compiler) {
-	panic("this won't compile")
-}
-
 type OneofFieldDef struct {
 	Node
 	Name    string
 	Choices []*MessageFieldDef
-}
-
-func (t *OneofFieldDef) Compile(c *Compiler) {
-	panic("this won't compile")
-}
-
-func (t *FunctionTypeDef) Compile(c *Compiler) {
-	meta := &common.FunctionMeta{
-		TailArray: t.TailArray,
-		ConstExpr: false,
-	}
-	for _, in := range t.InType {
-		meta.In = append(meta.In, in.GetDataType())
-	}
-	for _, out := range t.OutType {
-		meta.Out = append(meta.Out, out.GetDataType())
-	}
-	dt := c.TypeRegistry.FindFuncType(meta)
-	if t.DataType != nil {
-		*t.DataType = *dt
-	} else {
-		t.DataType = dt
-	}
 }

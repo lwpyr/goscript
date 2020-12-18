@@ -17,7 +17,7 @@ type Person message {
 	hobbies []string
 }
 
-var Tom Person = {name('Tommy'), age(12), hobbies(['play_games', 'sports'])};
+var Tom = Person{name:'Tommy', age:12, hobbies:{'play_games', 'sports'}};
 print(Tom);
 var testMap StringMap = {1:'abc', 2:'def'};
 print(testMap);
@@ -26,11 +26,11 @@ type StringMap map[int32]string
 
 type PersonArray []Person
 
-var testArr PersonArray = [{name('aaa'),age(1)},{name('bbb'),age(2)}];
+var testArr PersonArray = {{name:'aaa',age:1},{name:'bbb',age:2}};
 print(testArr[0]);
 print(testArr[1]);
 
-var testArr2 []Person = [{name('ccc'),age(3)},{name('ddd'),age(4)}];
+var testArr2 []Person = {{name:'ccc',age:3},{name:'ddd',age:4}};
 
 testArr[1] = testArr2[0];
 print(testArr);
@@ -48,8 +48,8 @@ type SelfRef message {
 	ref  SelfRef
 }
 
-var objA SelfRef = {name('objA')};
-var objB SelfRef = {name('objB'), ref(objA)};
+var objA SelfRef = {name:'objA'};
+var objB SelfRef = {name:'objB', ref:objA};
 objA.ref = objB;
 
 // you cannot directly call print(objA), this will cause stack overflow
@@ -80,8 +80,8 @@ type Person message {
 	like    Fruit
 }
 
-var Tom Person = {name('Tommy'), like(1)};
-var Dave Person = {name('David'), like(Fruit.grape)};
+var Tom Person = {name:'Tommy', like:1};
+var Dave Person = {name:'David', like:Fruit.grape};
 
 print(Tom.name, ' likes ', enumString(Tom.like));
 print(Dave.name, ' likes ', enumString(Dave.like));
@@ -115,11 +115,11 @@ type OneOfTest message {
 }
 
 var obj OneOfTest = new OneOfTest();
-obj.msg1 = {str('I\'m msg1')};
+obj.msg1 = {str: 'I\'m msg1'};
 print(obj);
-obj.msg3 = {str('I\'m msg3')};
+obj.msg3 = {str: 'I\'m msg3'};
 print(obj);
-obj.msg2 = {str('I\'m msg2')};
+obj.msg2 = {str: 'I\'m msg2'};
 print(obj);
 `
 	p := compileScript(expr)

@@ -1,4 +1,4 @@
-package lambda_chains
+package instruction
 
 var NilUInt32 interface{} = uint32(0)
 var NilUInt64 interface{} = uint64(0)

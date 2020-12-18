@@ -7,71 +7,74 @@ type Stack struct {
 	Data []interface{}
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) Top() interface{} { // equals to TopIndex(0)
 	return s.Data[s.Sp]
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) TopIndex(i int) interface{} {
 	return s.Data[s.Sp-i]
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) Pop() { // equals to PopN(1)
 	s.Data = s.Data[:s.Sp]
 	s.Sp--
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) Set(spOffset int, i interface{}) {
 	s.Data[s.Sp-spOffset] = i
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) PopN(i int) {
 	s.Data = s.Data[:s.Sp-i+1]
 	s.Sp -= i
 }
 
-func (s *Stack) Bottom() interface{} {
-	return s.Data[s.Bp]
-}
-
-func (s *Stack) Return() {
-	s.Data[s.Bp-1] = s.Data[s.Sp]
-	s.Pc = -1
-}
-
-func (s *Stack) ReturnN(n int) {
-	for i := 0; i < n; i++ {
-		s.Data[s.Bp-i-1] = s.Data[s.Sp-i]
-	}
-	s.Pc = -1
-}
-
+//go:norace
+//go:nosplit
 func (s *Stack) ReturnValue(val interface{}) {
 	s.Data[s.Bp-1] = val
 	s.Pc = -1
 }
 
+//go:norace
 func (s *Stack) ReturnValues(values ...interface{}) {
-	num := len(values)
-	for _, val := range values {
-		s.Data[s.Bp-num] = val
-		num--
+	for i, val := range values {
+		s.Data[s.Bp-i-1] = val
 	}
 	s.Pc = -1
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) Push(i interface{}) {
 	s.Data = append(s.Data, i)
 	s.Sp++
 }
 
-func (s *Stack) Get(v *Variable) interface{} {
+//go:norace
+//go:nosplit
+func (s *Stack) Get(v *Symbol) interface{} {
 	return s.Data[s.Bp+v.Offset]
 }
 
-func (s *Stack) MustGet(v *Variable) *interface{} {
+//go:norace
+//go:nosplit
+func (s *Stack) MustGet(v *Symbol) *interface{} {
 	return &s.Data[s.Bp+v.Offset]
 }
 
+//go:norace
+//go:nosplit
 func (s *Stack) Call(inst Instruction, mem *Memory, stk *Stack, params int) {
 	bp := s.Bp
 	pc := s.Pc

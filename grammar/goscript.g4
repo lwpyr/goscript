@@ -5,6 +5,7 @@ MESSAGE: 'message';
 ENUM: 'enum';
 MAP: 'map';
 ONEOF: 'oneof';
+NEW: 'new';
 
 // basic type name
 UINT32: 'uint32';
@@ -63,6 +64,7 @@ GE: '>=';
 LE: '<=';
 LT: '<';
 REGEX: '=~';
+LOCALASSIGN: ':=';
 
 AND: '&&';
 OR: '||';
@@ -96,29 +98,25 @@ COMMENT :  '//' ~( '\r' | '\n' )* ( '\r' | '\n' ) -> skip;
 
 // 1
 program
-    : (functiondef|typedef|execution)+;
+    : (typedef|execution)+;
 
 name:NAME|TYPEDEF|MAP|ONEOF|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST|MESSAGE|ENUM;
-
 fieldname:NAME|TYPEDEF|MAP|ONEOF|UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|CHAN|ANY|FOR|BREAK|CONTINUE|IF|ELSE|SWITCH|CASE|RETURN|VAR|LOCAL|CONST|MESSAGE|ENUM;
 
 
 functiondef
-    : FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # FunctionDef
-    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # FunctionDef
-    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # FunctionDef
-    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # FunctionDef
+    : FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  block # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' block # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  block # FunctionDef
+    | FUNCTION name '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' block # FunctionDef
     ;
 
 lambda
-    : FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  closure # LambdaDef
-    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' closure # LambdaDef
-    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  closure # LambdaDef
-    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' closure # LambdaDef
+    : FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' returntypename?  block # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('returntypename (',' returntypename) *')' block # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' outparam?  block # LambdaDef
+    | FUNCTION  '(' (inparam (',' inparam)* (TAILARRAY)?)?  ')' '('outparam (',' outparam) *')' block # LambdaDef
     ;
-
-closure
-    : block;
 
 inparam
     : param;
@@ -192,13 +190,14 @@ returntypenameindef
 execution
     : control # Ctrl
     | line ';' # LineProgram
+    | functiondef # FunctionDefine
     ;
 
 control
     : IF '(' expr ')' block (ELSE (block|control))? # If
     | SWITCH '(' expr ')' '{' (CASE constant ':' block)+ '}' # Switch
-    | FOR '(' name 'in' collection ')' block # ForInSlice
-    | FOR '(' name ',' name 'in' collection ')' block  # ForInMap
+    | FOR '(' name 'in' expr ')' block # ForInSlice
+    | FOR '(' name ',' name 'in' expr ')' block  # ForInMap
     | FOR '(' line ';' expr ';' restoreStack ')' block  # For
     | BREAK ';' # Break
     | CONTINUE ';' # Continue
@@ -206,16 +205,12 @@ control
     | RETURN expr (',' expr)*';' # ReturnVal
     ;
 
-collection
-    : expr;
-
 block
     : '{' (execution)* '}';
 
 line
     : restoreStack # RestoreStackSp
-    | vardef # VarDef
-    | constdef # ConstDef
+    | symbolDef # SymbolDefine
     ;
 
 restoreStack
@@ -224,16 +219,11 @@ restoreStack
 keepStack
     : expr # ExprEntry
     | expr (',' expr)+ op=ASSIGN expr # FunctionAssign
+    | expr op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Assign
     ;
 
-variable
-    : name # VariableName
-    | '@' # VariableName
-    ;
-
-asserted: typename;
-
-filter: expr;
+symbol
+    : name| '@';
 
 indexs
     : expr ':' expr ':' expr # IndexType1
@@ -246,16 +236,19 @@ indexs
 expr
     : '(' expr ')' # Pass
     | constant # Pass
-    | variable # Pass
+    | symbol # Pass
     | lambda # Pass
-    | builtin # Pass
-    | expr DOT name # Select
-    | expr DOT '(' asserted ')' # TypeAssert
-    | expr '[?(' filter ')]' # SliceFilter
+    | constructor # Pass
+    | (typename)? '{' (expr (',' expr)*)? '}' # InitSlice
+    | (typename)? '{'  (expr ':' expr (',' expr ':' expr )*)? '}' # InitKV
+    | expr DOT fieldname # Select
+    | expr DOT '(' typename ')' # TypeAssert
+    | expr '[?(' expr ')]' # SliceFilter
     | expr '[' expr ']' # Index
     | expr '[' indexs (',' indexs)* ']' # SliceMultiIndex
-    | expr '[' '[' expr (',' expr)* ']' ']' # MapMultiIndex
-    | expr '(' (expr (',' expr)*)? ')' # DirectCall
+    | expr '[' '[' (expr (',' expr)*)? ']' ']' # MapMultiIndex
+    | expr '(' (expr (',' expr)*)? ')' # Call
+    | typename '(' expr ')' # TypeConvert
     | op=(UNARYADD|UNARYSUB|NOT|SUB) expr # LeftUnary
     | expr op=(UNARYADD|UNARYSUB) # RightUnary
     | <assoc=right> expr op=POW  expr # Binary
@@ -266,43 +259,10 @@ expr
     | expr op=OR expr # Binary
     | expr (CHANOP|CHANOPNONBLOCK) expr # Send
     | (CHANOP|CHANOPNONBLOCK) expr # Recv
-    | <assoc=right> expr op=(ASSIGN|ADDEQUAL|SUBEQUAL|MULEQUAL|DIVEQUAL) expr # Binary
-    | <assoc=right> expr op=ASSIGN initializationListBegin # AssignInitializationlist
-    | constructor # Construct
     ;
 
 basicTypeName
     : (UINT32|UINT64|INT32|INT64|FLOAT32|FLOAT64|STRING|BYTES|BOOL|UINT8|ANY);
-
-builtin
-    : 'pushBack' '(' expr',' expr ')'
-    | 'pushFront' '(' expr',' expr ')'
-    | 'delete' '(' expr',' expr ')'
-    | 'enumString' '(' expr ')'
-    | 'len' '(' expr ')'
-    | 'typeof' '(' expr ')'
-    | UINT32 '(' expr ')'
-    | UINT64 '(' expr ')'
-    | INT32 '(' expr ')'
-    | INT64 '(' expr ')'
-    | FLOAT32 '(' expr ')'
-    | FLOAT64 '(' expr ')'
-    | STRING '(' expr ')'
-    | BYTES '(' expr ')'
-    | BOOL '(' expr ')'
-    | UINT8 '(' expr ')'
-    | ANY '(' expr ')'
-    ;
-
-initializationListBegin
-    : initializationList;
-
-initializationList
-    : '[' (initializationList (',' initializationList)*)? ']' # InitSlice
-    | '{'  name '('initializationList')' (',' name '(' initializationList ')' )* '}' # InitMessage
-    | '{'  initializationList ':' initializationList (',' initializationList ':' initializationList )* '}' # InitMap
-    | expr # InitConstant
-    ;
 
 constant
     : INT # ConstantInt
@@ -313,19 +273,17 @@ constant
     ;
 
 constructor
-    : 'new' typename '(' ')'
-    | 'new' typename '('expr (',' expr)*')'
+    : NEW typename '(' (expr (',' expr)*)? ')'
     ;
 
-vardef
+symbolDef
     : VAR name typename
     | VAR name typename '=' expr
-    | VAR name typename '=' initializationListBegin
+    | VAR name '=' expr
     | LOCAL name typename
     | LOCAL name typename '=' expr
-    | LOCAL name typename '=' initializationListBegin
-    ;
-
-constdef
-    : CONST name basicTypeName '=' constant
+    | LOCAL name '=' expr
+    | name LOCALASSIGN expr
+    | CONST name typename '=' expr
+    | CONST name '=' expr
     ;

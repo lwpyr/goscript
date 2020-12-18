@@ -130,7 +130,7 @@ func Prev(x any) any {
 print('=== test Prev ===');
 print(Prev(one) == zero); // true
 print(Prev(nine) == eight); // true
-print(Prev(nine) == seven); // false
+print(Prev(nine) != seven); // true
 `
 	p := compileScript(expr)
 	p.RunOnMemory(mem)

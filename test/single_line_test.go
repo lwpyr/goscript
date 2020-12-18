@@ -11,7 +11,7 @@ import (
 )
 
 func compile(expr string) *program.SingleLineProgram {
-	ret, err := c.CompileExpression(expr)
+	ret, err := goscript.CompileExpression(c, expr)
 	if err != nil {
 		panic(err)
 	}
@@ -63,9 +63,9 @@ func TestExpression(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, int32(180), p.RunOnMemory(mem))
 
-	expr = "Friends[0,0,0][2].age * Tom.age" // slice index of slice
+	expr = "Friends[0,0,1][2].age * Tom.age" // slice index of slice
 	p = compile(expr)
-	assert.Equal(t, int32(156), p.RunOnMemory(mem))
+	assert.Equal(t, int32(180), p.RunOnMemory(mem))
 
 	expr = "Class[1001].name"
 	p = compile(expr)
@@ -146,9 +146,6 @@ func TestAssign(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	expr = "newPerson.name = nil"
-	assert.Panics(t, func() { compile(expr) })
-
 	expr = "newPerson.name == ''"
 	p = compile(expr)
 	assert.Equal(t, false, p.RunOnMemory(mem))
@@ -187,7 +184,7 @@ func TestInitializationList(t *testing.T) {
 	var expr string
 	var p *program.SingleLineProgram
 
-	expr = "newPerson = {name(nil), age(nil)}"
+	expr = "newPerson = {name:nil, age:nil}"
 	p1 := compile(expr)
 	p1.RunOnMemory(mem)
 
@@ -195,7 +192,7 @@ func TestInitializationList(t *testing.T) {
 	p1 = compile(expr)
 	assert.Equal(t, map[string]interface{}{"age": int32(0), "name": ""}, p1.RunOnMemory(mem))
 
-	expr = "newPerson = {name(Tom.name), age(12)}"
+	expr = "newPerson = {name:Tom.name, age:12}"
 	p1 = compile(expr)
 	p1.RunOnMemory(mem)
 
@@ -224,7 +221,7 @@ func TestInitializationList(t *testing.T) {
 		"age":  int32(12),
 	}, p1.RunOnMemory(mem))
 
-	expr = "Friends = [{name('alpha'), age(100)}, {name('beta'), age(200)}, {name('gamma'), age(300)}]"
+	expr = "Friends = {{name:'alpha', age:100}, {name:'beta', age:200}, {name:'gamma', age:300}}"
 	p = compile(expr)
 	p.RunOnMemory(mem)
 
@@ -240,7 +237,7 @@ func TestInitializationList(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	expr = "Class = {111:{name('alpha'), age(100)}, 222:{name('beta'), age(200), hobbies(['dance', 'sing']) }, 333:{name('gamma'), age(300)}}"
+	expr = "Class = {111:{name:'alpha', age:100}, 222:{name:'beta', age:200, hobbies:{'dance', 'sing'} }, 333:{name:'gamma', age:300}}"
 	p = compile(expr)
 	p.RunOnMemory(mem)
 
@@ -260,11 +257,11 @@ func TestInitializationList(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	expr = "stringMap = {'1001':{name('Jackson'), age(17)}, '1002':{name('David'), age(16)}}"
+	expr = "stringMap = {'1001':{name:'Jackson', age:17}, '1002':{name:'David', age:16}}"
 	compile(expr).RunOnMemory(mem)
 	assert.Equal(t, true, compile("stringMap['1001'].age == 17").RunOnMemory(mem))
 
-	expr = "float32Map = {1001:{name('Jackson'), age(17)}, 1002:{name('David'), age(16)}}"
+	expr = "float32Map = {1001:{name:'Jackson', age:17}, 1002:{name:'David', age:16}}"
 	compile(expr).RunOnMemory(mem)
 	assert.Equal(t, true, compile("float32Map[1001.0].age == 17").RunOnMemory(mem))
 }
@@ -274,7 +271,7 @@ func TestFilter(t *testing.T) {
 	var expr string
 	var p *program.SingleLineProgram
 
-	expr = "Friends = [{name('alpha'), age(100)}, {name('beta'), age(200)}, {name('gamma'), age(300)}]"
+	expr = "Friends = {{name:'alpha', age:100}, {name:'beta', age:200}, {name:'gamma', age:300}}"
 	p = compile(expr)
 	p.RunOnMemory(mem)
 
@@ -312,7 +309,7 @@ func TestFunction(t *testing.T) {
 
 	expr = "num3, num4 = test1(num1, num2)"
 	p = compile(expr)
-	assert.Equal(t, nil, p.RunOnMemory(mem))
+	p.RunOnMemory(mem)
 
 	expr = "num3"
 	p = compile(expr)
@@ -350,7 +347,7 @@ func TestFunction(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, []interface{}{"Tom", "and", "Jerry"}, p.RunOnMemory(mem))
 
-	expr = "Class = {1001: {name('Jackson'), age(6), hobbies(['eat','drink','play','happy'])}, 1002:{name('David'), age(7)}}"
+	expr = "Class = {1001: {name:'Jackson', age:6, hobbies:{'eat','drink','play','happy'}}, 1002:{name:'David', age:7}}"
 	compile(expr).RunOnMemory(mem)
 
 	// marshal
@@ -411,7 +408,7 @@ func TestSlice(t *testing.T) {
 	var expr string
 	var p *program.SingleLineProgram
 
-	expr = "newPerson = {name('GOOD'), age(100)}"
+	expr = "newPerson = {name:'GOOD', age:100}"
 	p = compile(expr)
 	p.RunOnMemory(mem)
 
@@ -423,7 +420,7 @@ func TestSlice(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, true, p.RunOnMemory(mem))
 
-	expr = "newPerson = {name('BAD'), age(200)}"
+	expr = "newPerson = {name:'BAD', age:200}"
 	p = compile(expr)
 	p.RunOnMemory(mem)
 
@@ -467,7 +464,7 @@ func TestSlice(t *testing.T) {
 	p = compile(expr)
 	assert.Equal(t, map[string]interface{}{}, p.RunOnMemory(mem))
 
-	expr = "Tom = {name('alpha'), age(100)}"
+	expr = "Tom = {name:'alpha', age:100}"
 	compile(expr).RunOnMemory(mem)
 	expr = "delete(Tom, 'name')"
 	compile(expr).RunOnMemory(mem)
@@ -509,6 +506,7 @@ func BenchmarkExpr(b *testing.B) {
 	expr := "Friends[1].age * Tom.age"
 	p := compile(expr)
 	stk := &common.Stack{
+		Pc:   0,
 		Bp:   0,
 		Sp:   -1,
 		Data: make([]interface{}, 0, 100),
@@ -516,7 +514,6 @@ func BenchmarkExpr(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		p.Run(mem, stk)
-		stk.Pop()
 	}
 }
 
@@ -562,9 +559,19 @@ func BenchmarkExpr2(b *testing.B) {
 	}
 }
 
+func BenchmarkInitializationListPreAllocated(b *testing.B) {
+	setup()
+	expr := "Class = {1:{name:'alpha', age:100}, 2:{name:'beta', age:200, hobbies:{'dance', 'sing'} }, 3:{name:'gamma', age:300}}"
+	p := compile(expr)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		p.RunOnMemory(mem)
+	}
+}
+
 func BenchmarkInitializationList(b *testing.B) {
 	setup()
-	expr := "Class = {1:{name('alpha'), age(100)}, 2:{name('beta'), age(200), hobbies(['dance', 'sing']) }, 3:{name('gamma'), age(300)}}"
+	expr := "Class = {1:{name:'alpha', age:100}, 2:{name:'beta', age:200, hobbies:{'dance', 'sing'} }, 3:{name:'gamma', age:300}}"
 	p := compile(expr)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -574,12 +581,12 @@ func BenchmarkInitializationList(b *testing.B) {
 
 func BenchmarkInitNaive(b *testing.B) {
 	setup()
-	p1 := compile("Class = new map<int64,Person>()")
+	p1 := compile("Class = new map[int64]Person()")
 	p2 := compile("Class[1].name = 'alpha'")
 	p3 := compile("Class[1].age = 100")
 	p4 := compile("Class[2].name = 'beta'")
 	p5 := compile("Class[2].age = 200")
-	p5_1 := compile("Class[2].hobbies = ['dance', 'sing']")
+	p5_1 := compile("Class[2].hobbies = {'dance', 'sing'}")
 	p6 := compile("Class[3].name = 'gamma'")
 	p7 := compile("Class[3].age = 300")
 	b.ResetTimer()
@@ -643,38 +650,38 @@ func setup() {
 	c.Include("base64")
 	c.Include("datetime")
 
-	scope.AddVariable(goscript.NewVariable("Tom", c.FindType("Person")))
-	scope.AddVariable(goscript.NewVariable("Jerry", c.FindType("Person")))
-	scope.AddVariable(goscript.NewVariable("Friends", c.FindSliceType("Person")))
-	scope.AddVariable(goscript.NewVariable("Class", c.FindMapType("int64", "Person")))
-	scope.AddVariable(goscript.NewVariable("newPerson", c.FindType("Person")))
-	scope.AddVariable(goscript.NewVariable("DavidId", c.FindType("int64")))
-	scope.AddVariable(goscript.NewVariable("Teacher", c.FindType("Person")))
-	scope.AddVariable(goscript.NewVariable("RandNumber", c.FindType("float64")))
-	scope.AddVariable(goscript.NewVariable("num1", c.FindType("int64")))
-	scope.AddVariable(goscript.NewVariable("num2", c.FindType("int64")))
-	scope.AddVariable(goscript.NewVariable("num3", c.FindType("int64")))
-	scope.AddVariable(goscript.NewVariable("num4", c.FindType("int64")))
-	scope.AddVariable(goscript.NewVariable("testString", c.FindType("string")))
-	scope.AddVariable(goscript.NewVariable("NewClass", c.FindMapType("int64", "Person")))
-	scope.AddVariable(goscript.NewVariable("jsonObj", c.FindType("JSONObject")))
-	scope.AddVariable(goscript.NewVariable("testString2", c.FindType("string")))
-	scope.AddVariable(goscript.NewVariable("header", c.FindMapType("string", "string")))
-	scope.AddVariable(goscript.NewVariable("fruitEnum", c.FindType("fruits")))
-	scope.AddVariable(goscript.NewVariable("stringMap", c.FindMapType("string", "Person")))
-	scope.AddVariable(goscript.NewVariable("float32Map", c.FindMapType("float32", "Person")))
-	scope.AddVariable(goscript.NewVariable("forMap", c.FindMapType("int32", "string")))
-	scope.AddVariable(goscript.NewVariable("TomObj", c.FindType("any")))
+	scope.AddGlobalVariable(goscript.NewVariable("Tom", c.FindType("Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("Jerry", c.FindType("Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("Friends", c.FindSliceType("Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("Class", c.FindMapType("int64", "Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("newPerson", c.FindType("Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("DavidId", c.FindType("int64")))
+	scope.AddGlobalVariable(goscript.NewVariable("Teacher", c.FindType("Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("RandNumber", c.FindType("float64")))
+	scope.AddGlobalVariable(goscript.NewVariable("num1", c.FindType("int64")))
+	scope.AddGlobalVariable(goscript.NewVariable("num2", c.FindType("int64")))
+	scope.AddGlobalVariable(goscript.NewVariable("num3", c.FindType("int64")))
+	scope.AddGlobalVariable(goscript.NewVariable("num4", c.FindType("int64")))
+	scope.AddGlobalVariable(goscript.NewVariable("testString", c.FindType("string")))
+	scope.AddGlobalVariable(goscript.NewVariable("NewClass", c.FindMapType("int64", "Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("jsonObj", c.FindType("JSONObject")))
+	scope.AddGlobalVariable(goscript.NewVariable("testString2", c.FindType("string")))
+	scope.AddGlobalVariable(goscript.NewVariable("header", c.FindMapType("string", "string")))
+	scope.AddGlobalVariable(goscript.NewVariable("fruitEnum", c.FindType("fruits")))
+	scope.AddGlobalVariable(goscript.NewVariable("stringMap", c.FindMapType("string", "Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("float32Map", c.FindMapType("float32", "Person")))
+	scope.AddGlobalVariable(goscript.NewVariable("forMap", c.FindMapType("int32", "string")))
+	scope.AddGlobalVariable(goscript.NewVariable("TomObj", c.FindType("any")))
 
 	// init some data
 	var expr string
-	expr = "Tom = {name('Tom'), age(12)}"
+	expr = "Tom = {name:'Tom', age:12}"
 	compile(expr).RunOnMemory(mem)
-	expr = "Jerry = {name('Jerry'), age(8)}"
+	expr = "Jerry = {name:'Jerry', age:8}"
 	compile(expr).RunOnMemory(mem)
-	expr = "Friends = [{name('friend1'), age(13)}, {name('friend2'), age(15)}, {name('friend3'), age(15)}]"
+	expr = "Friends = {{name:'friend1', age:13}, {name:'friend2', age:15}, {name:'friend3', age:15}}"
 	compile(expr).RunOnMemory(mem)
-	expr = "Class = {1001:{name('Jackson'), age(17)}, 1002:{name('David'), age(16)}}"
+	expr = "Class = {1001:{name:'Jackson', age:17}, 1002:{name:'David', age:16}}"
 	compile(expr).RunOnMemory(mem)
 	expr = "DavidId = 1002"
 	compile(expr).RunOnMemory(mem)

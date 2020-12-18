@@ -10,7 +10,7 @@ import (
 )
 
 func compileScript(expr string) *program.ScriptProgram {
-	ret, err := c.CompileScript(expr)
+	ret, err := goscript.CompileScript(c, expr)
 	if err != nil {
 		panic(err)
 	}
@@ -78,11 +78,11 @@ func who(p Person) {
 		print('I don\'t know');
 	}
 }
-Tom = {name('Tom')};
+Tom = {name:'Tom'};
 who(Tom);
-Tom = {name('Dave')};
+Tom = {name:'Dave'};
 who(Tom);
-Tom = {name('Lisa')};
+Tom = {name:'Lisa'};
 who(Tom);
 `
 	p := compileScript(expr)
@@ -128,15 +128,15 @@ func TestG(t *testing.T) {
 	expr = `
 const NAME string = 'Wonderful Goscript!';
 
-var str1 string = NAME + ' yes!';
-var str2 string = NAME + ' ok!';
+var str1 = NAME + ' yes!';
+var str2 = NAME + ' ok!';
 
 print(NAME);
 print(str1);
 print(str2);
 
-var str3 string = NAME;
-var str4 string = NAME;
+var str3 = NAME;
+var str4 = NAME;
 
 str3 += ' yes!';
 str4 += ' ok!';
@@ -155,7 +155,7 @@ func BenchmarkA(b *testing.B) {
 	expr = `
 var sum int64;
 sum = 0;
-for (local i int64 = 1; i <= 100; i++) {
+for (i := 1; i <= 100; i++) {
 	sum = sum + i;
 }
 `

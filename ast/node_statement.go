@@ -2,19 +2,19 @@ package ast
 
 import (
 	"github.com/lwpyr/goscript/common"
-	"github.com/lwpyr/goscript/hack"
-	"github.com/lwpyr/goscript/lambda_chains"
+	"github.com/lwpyr/goscript/instruction"
 )
 
-type IConstantNode interface {
-	ASTNode
-	GetConstantKind() int
-	GetConstantValue() interface{}
+type FetchSymbolNode struct {
+	Node
+	SymbolName string
+	Symbol     *common.Symbol
 }
 
-type VarNode struct {
+type AssertNode struct {
 	Node
-	Variable *common.Variable
+	Type  ASTNode
+	Value ASTNode
 }
 
 type SelectorNode struct {
@@ -37,15 +37,14 @@ type SliceMultiIndexNode struct {
 
 type MapMultiIndexNode struct {
 	Node
-	Data   ASTNode
+	Map    ASTNode
 	Fields []ASTNode
 }
 
 type IndexNode struct {
 	Node
-	ToIndex   ASTNode
-	Index     ASTNode
-	IndexType string
+	ToIndex ASTNode
+	Index   ASTNode
 }
 
 type IndicesNode struct {
@@ -74,48 +73,14 @@ type RightUnaryNode struct {
 	Op      string
 }
 
-type AssignNode struct {
-	Node
-	Lhs []ASTNode
-	Rhs []ASTNode
-}
-
 type ConstructorNode struct {
 	Node
 	Params []ASTNode
-}
-
-type FunctionAssignNode struct {
-	Node
-	Lhs      []ASTNode
-	Function IFunctionNode
-}
-
-type InitializationSliceNode struct {
-	Node
-	Items []ASTNode
-}
-
-type InitializationMapNode struct {
-	Node
-	Keys   []ASTNode
-	Values []ASTNode
-}
-
-type InitializationMessageNode struct {
-	Node
-	Keys   []string
-	Values []ASTNode
-}
-
-type InitializationConstantNode struct {
-	Node
-	Constant ASTNode
+	Type   ASTNode
 }
 
 type ValueNode struct {
 	Node
-	Val interface{}
 }
 
 type ChanSend struct {
@@ -131,128 +96,99 @@ type ChanRecv struct {
 	NonBlock bool
 }
 
-func (i *InitializationSliceNode) Compile(c *Compiler) {
-	num := len(i.Items)
-	itemInstructions := make([]common.Instruction, 0, num)
-	for _, item := range i.Items {
-		item.Compile(c)
-	}
-	for j := 0; j < num; j++ {
-		itemInstructions = append(itemInstructions, c.InstructionPop())
-	}
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		items := make([]interface{}, 0, num)
-		for j := 0; j < num; j++ {
-			itemInstructions[j](m, stk)
-			items = append(items, stk.Top())
-			stk.Pop()
-		}
-		stk.Push(items)
-	})
+type InitializationSliceNode struct {
+	Node
+	Items []ASTNode
+	Type  ASTNode
 }
 
-func (i *InitializationMapNode) Compile(c *Compiler) {
-	num := len(i.Keys)
-	keyInstructions := make([]common.Instruction, 0, num)
-	valInstructions := make([]common.Instruction, 0, num)
-
-	for _, key := range i.Keys {
-		key.Compile(c)
-	}
-	for _, val := range i.Values {
-		val.Compile(c)
-	}
-	for j := 0; j < num; j++ {
-		valInstructions = append(valInstructions, c.InstructionPop())
-	}
-	for j := 0; j < num; j++ {
-		keyInstructions = append(keyInstructions, c.InstructionPop())
-	}
-
-	constructor := common.MapConstructorMap[i.DataType.KeyType.Kind.Kind]
-	mapSet := lambda_chains.GetMapSetFunc(i.DataType.KeyType)
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		ret := constructor()
-		for j := 0; j < num; j++ {
-			keyInstructions[j](m, stk)
-			valInstructions[j](m, stk)
-			mapSet(ret, stk.TopIndex(1), stk.Top())
-			stk.PopN(2)
-		}
-		stk.Push(ret)
-	})
+type InitializationKVNode struct {
+	Node
+	Keys   []ASTNode
+	Values []ASTNode
+	Type   ASTNode
+}
+type FunctionAssignNode struct {
+	Node
+	Lhs      []ASTNode
+	Function ASTNode
 }
 
-func (i *InitializationMessageNode) Compile(c *Compiler) {
-	num := len(i.Keys)
-	valInstructions := make([]common.Instruction, 0, num)
-	for _, val := range i.Values {
-		val.Compile(c)
-	}
-	for j := 0; j < num; j++ {
-		valInstructions = append(valInstructions, c.InstructionPop())
-	}
-	keys := i.Keys
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		ret := common.NewMessageValue()
-		for j := 0; j < num; j++ {
-			valInstructions[j](m, stk)
-			lambda_chains.MessageSetField(ret, keys[j], stk.Top())
-			stk.Pop()
-		}
-		stk.Push(ret)
-	})
+type AssignNode struct {
+	Node
+	Lhs ASTNode
+	Rhs ASTNode
+	Op  string
 }
 
-func (i *InitializationConstantNode) Compile(c *Compiler) {
-	i.Constant.Compile(c)
-	constInstruction := c.InstructionPop()
-	convertFunc := lambda_chains.GetConvertFunc(i.Constant.GetDataType(), i.GetDataType())
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		constInstruction(m, stk)
-		stk.Set(0, convertFunc(stk.Top()))
-	})
+func (v *FetchSymbolNode) CheckIsConstant() {
+	v.Variadic = true
+	if v.Symbol.SymbolType == common.Const {
+		v.Variadic = false
+	}
 }
 
-func (v *VarNode) Compile(c *Compiler) {
-	if v.Variable != nil {
-		variable := v.Variable
-		if v.LhsFlag {
-			switch variable.VariableType {
-			case common.Global:
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(m.MustGet(variable))
-				})
-			case common.Local:
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(nil)
-					stk.Set(0, stk.MustGet(variable))
-				})
-			case common.Captured:
-				captures := variable.Scope.GetVariable("#")
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(hack.SliceIndex(*stk.MustGet(captures), int64(variable.Offset)))
-				})
-			}
-		} else {
-			switch variable.VariableType {
-			case common.Global:
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(m.Get(variable))
-				})
-			case common.Local:
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(stk.Get(variable))
-				})
-			case common.Captured:
-				captures := variable.Scope.GetVariable("#")
-				c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-					stk.Push(*hack.SliceIndex(*stk.MustGet(captures), int64(variable.Offset)))
-				})
-			}
-		}
+func (v *FetchSymbolNode) Compile(c *Compiler) {
+	symbol := c.Scope.GetSymbol(v.SymbolName)
+	if symbol == nil {
+		panic(common.NewSymbolErr(v.ErrorWithSource("unknown symbol")))
+	}
+	v.Symbol = symbol
+	var inst common.Instruction
+	if v.LhsFlag {
+		inst = instruction.GetFetchSymbolFuncLhs(symbol, c.Scope)
 	} else {
-		panic("Fatal error: variable information missing")
+		inst = instruction.GetFetchSymbolFunc(symbol, c.Scope)
+	}
+	if common.IsError(inst) {
+		panic(common.NewCompileErr(v.ErrorWithSource("unknown symbol type")))
+	}
+	v.AppendInstruction(inst)
+	v.DataType = symbol.DataType
+	if v.Symbol.SymbolType == common.Local && v.LhsFlag {
+		v.StackPtr = true
+	}
+
+	// do optimize
+	v.CheckIsConstant()
+	v.PostProcess()
+	v.StackIncrement = 1
+}
+
+func (a *AssertNode) CheckIsConstant() {
+	a.Variadic = true
+	if !a.Value.IsVariadic() {
+		a.Variadic = false
+	}
+}
+
+func (a *AssertNode) Compile(c *Compiler) {
+	a.Type.Compile(c)
+	a.DataType = a.Type.GetDataType()
+
+	a.Value.Compile(c)
+	if a.Value.GetDataType().Kind.Kind != common.Any {
+		panic(common.NewTypeErr(a.ErrorWithSource("assert should have 'any' type value")))
+	}
+
+	a.AppendInstruction(a.Value.GetInstructions()...)
+	convertInstruction := instruction.GetConvertInstruction(a.Value.GetDataType(), a.DataType)
+	if common.IsError(convertInstruction) {
+		panic(common.NewTypeErr(a.ErrorWithSource("cannot convert")))
+	}
+	if convertInstruction != nil {
+		a.AppendInstruction(convertInstruction)
+	}
+
+	a.CheckIsConstant()
+	a.PostProcess()
+	a.StackIncrement = 1
+}
+
+func (s *SelectorNode) CheckIsConstant() {
+	s.Variadic = true
+	if !s.Data.IsVariadic() {
+		s.Variadic = false
 	}
 }
 
@@ -261,149 +197,186 @@ func (s *SelectorNode) Compile(c *Compiler) {
 		s.Data.SetLhs()
 	}
 	s.Data.Compile(c)
-	dataInstruction := c.InstructionPop()
-	fieldName := s.FieldName
-	constructor := s.Data.GetDataType().Constructor
-	var oneOfs []string
-	if OneOfGroupName, ok := s.Data.GetDataType().OneOf[fieldName]; ok {
-		tempOneOfs := s.Data.GetDataType().OneOfGroup[OneOfGroupName]
-		for _, fn := range tempOneOfs {
-			if fn != fieldName {
-				oneOfs = append(oneOfs, fn)
+	s.AppendInstruction(s.Data.GetInstructions()...)
+	if s.Data.GetDataType().Kind.Kind == common.Message {
+		fieldName := s.FieldName
+		constructor := s.Data.GetDataType().Constructor
+		fieldType := s.Data.GetDataType().FieldType[fieldName]
+		if fieldType == nil {
+			panic(common.NewTypeErr(s.ErrorWithSource("type does not have the field ")))
+		}
+		var oneOfs []string
+		if OneOfGroupName, ok := s.Data.GetDataType().OneOf[fieldName]; ok {
+			tempOneOfs := s.Data.GetDataType().OneOfGroup[OneOfGroupName]
+			for _, fn := range tempOneOfs {
+				if fn != fieldName {
+					oneOfs = append(oneOfs, fn)
+				}
 			}
 		}
-	}
-	if s.LhsFlag {
-		if len(oneOfs) > 0 {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				dataInstruction(m, stk)
-				ptr := stk.Top().(*interface{})
-				if *ptr == nil {
-					*ptr = constructor()
-				}
-				for _, name := range oneOfs {
-					lambda_chains.MessageResetField(*ptr, name)
-				}
-				ptr = lambda_chains.MessageMustGetField(*ptr, fieldName)
-				stk.Set(0, ptr)
-			})
+		var selectInstruction common.Instruction
+		if s.LhsFlag {
+			selectInstruction = instruction.GetSelectFuncLhs(constructor, fieldName, oneOfs)
 		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				dataInstruction(m, stk)
-				ptr := stk.Top().(*interface{})
-				if *ptr == nil {
-					*ptr = constructor()
-				}
-				ptr = lambda_chains.MessageMustGetField(*ptr, fieldName)
-				stk.Set(0, ptr)
-			})
+			selectInstruction = instruction.GetSelectFunc(fieldName)
 		}
+		if s.Data.IsStackPtr() {
+			s.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+		}
+		s.AppendInstruction(selectInstruction)
 
+		s.DataType = fieldType
+	} else if s.Data.GetDataType().Kind.Kind == common.Enum {
+		s.AppendInstruction(instruction.GetSelectEnumFunc(s.FieldName))
+		s.DataType = c.FindType(s.Data.GetDataType().Type)
 	} else {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			dataInstruction(m, stk)
-			if stk.Top() != nil {
-				stk.Set(0, lambda_chains.MessageGetField(stk.Top(), fieldName))
-			}
-		})
+		panic(common.NewTypeErr(s.ErrorWithSource("selector follow a non message type")))
 	}
+
+	s.CheckIsConstant()
+	s.PostProcess()
+	s.StackIncrement = 1
+}
+
+func (s *SliceFilterNode) CheckIsConstant() {
+	s.Variadic = true
+	// todo: function constexpr check
 }
 
 func (s *SliceFilterNode) Compile(c *Compiler) {
 	if s.LhsFlag {
-		panic("cannot use slice-filter an array on the left hand side")
+		panic(common.NewCompileErr(s.ErrorWithSource("cannot use slice-filter an array on the left hand side")))
 	}
+
 	s.Slice.Compile(c)
-	s.Expr.Compile(c)
-	exprInstruction := c.InstructionPop()
-	filter := func(m *common.Memory, stk *common.Stack) {
-		exprInstruction(m, stk)
-		stk.Return()
+	if s.Slice.GetDataType().Kind.Kind != common.Slice {
+		panic(common.NewTypeErr(s.ErrorWithSource("try to filter a non slice data")))
 	}
-	sliceInstruction := c.InstructionPop()
-	lengthFunc := lambda_chains.GetLengthFunc(s.DataType)
-	boolConvertFunc := lambda_chains.GetConvertFunc(s.Expr.GetDataType(), common.BasicTypeMap["bool"])
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		sliceInstruction(m, stk)
-		lenSlice := lengthFunc(stk.Top())
-		val := make([]interface{}, 0, lenSlice)
-		for i := int64(0); i < lenSlice; i++ {
-			item := *lambda_chains.GetSliceField(stk.Top(), i)
-			stk.Push(nil)
-			stk.Push(item)
-			stk.Call(filter, m, stk, 1)
-			if boolConvertFunc(stk.Top()) == true {
-				val = append(val, item)
-			}
-			stk.Pop()
-		}
-		stk.Set(0, val)
+	s.AppendInstruction(s.Slice.GetInstructions()...)
+
+	c.MakeChildScope()
+	defer c.ReturnParentScope()
+
+	c.Scope.AddLocalVariable(&common.Symbol{
+		Symbol:   "@",
+		DataType: s.Slice.GetDataType().ItemType,
 	})
+
+	s.Expr.Compile(c)
+	exprInstruction := s.Expr.GetInstructions()
+	exprInstruction = append(exprInstruction, instruction.StackReturn())
+	filter := func(m *common.Memory, stk *common.Stack) {
+		for stk.Pc != -1 {
+			exprInstruction[stk.Pc](m, stk)
+		}
+	}
+
+	boolConvertFunc, err := instruction.GetConvertFuncBool(s.Expr.GetDataType())
+	if err != nil {
+		panic(common.NewTypeErr(s.ErrorWithSource("filter cannot return a bool-convertible value")))
+	}
+	s.AppendInstruction(instruction.GetSliceFilterFunc(filter, boolConvertFunc))
+
+	s.DataType = s.Slice.GetDataType()
+	s.CheckIsConstant()
+	s.PostProcess()
+	s.StackIncrement = 1
+}
+
+func (s *SliceMultiIndexNode) CheckIsConstant() {
+	s.Variadic = true
+	if !s.Slice.IsVariadic() {
+		flag := true
+		for _, index := range s.Indices {
+			if index.IsVariadic() {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			s.Variadic = false
+		}
+	}
 }
 
 func (s *SliceMultiIndexNode) Compile(c *Compiler) {
+	if s.LhsFlag {
+		panic(common.NewTypeErr(s.ErrorWithSource("cannot use slice-index an array on the left hand side")))
+	}
+
+	numIndex := len(s.Indices)
+	for _, index := range s.Indices {
+		index.Compile(c)
+		s.AppendInstruction(index.GetInstructions()...)
+	}
+
+	s.Slice.Compile(c)
+	s.AppendInstruction(s.Slice.GetInstructions()...)
+
 	if s.Slice.GetDataType().Kind.Kind == common.Slice {
-		if s.LhsFlag {
-			panic("cannot use slice-index an array on the left hand side")
+		s.AppendInstruction(instruction.GetSliceMultiIndexFunc(numIndex))
+	} else if s.Slice.GetDataType().Kind.Kind == common.String {
+		if numIndex > 1 {
+			panic(common.NewIndexErr(s.ErrorWithSource("illegal string index")))
 		}
-		s.Slice.Compile(c)
-		for _, index := range s.Indices {
-			index.Compile(c)
-		}
-		numIndex := len(s.Indices)
-		indexInstructions := make([]common.Instruction, numIndex)
-		for i := 0; i < numIndex; i++ {
-			indexInstructions[i] = c.InstructionPop()
-		}
-		sliceInstruction := c.InstructionPop()
-		lengthFunc := lambda_chains.GetLengthFunc(s.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			sliceInstruction(m, stk)
-			slice := stk.Top()
-			lenSlice := lengthFunc(slice)
-			lenVal := int64(0)
-			indices := make([][]int64, 0, len(indexInstructions))
-			for _, indexInstruction := range indexInstructions {
-				indexInstruction(m, stk)
-				index := (stk.Top()).([]int64)
-				if index[1] == -1 {
-					index[1] = lenSlice
-				}
-				lenIndex := (index[1]-index[0]-1)/index[2] + 1
-				if lenIndex < 0 {
-					lenIndex = 0
-				}
-				lenVal += lenIndex
-				indices = append(indices, index)
-				stk.Pop()
-			}
-			val := make([]interface{}, 0, lenVal)
-			for _, index := range indices {
-				for i := index[0]; i < index[1]; i += index[2] {
-					val = append(val, *lambda_chains.GetSliceField(slice, i))
-				}
-			}
-			stk.Set(0, val)
-		})
+		s.AppendInstruction(instruction.GetStringMultiIndexFunc())
 	} else {
-		if s.LhsFlag {
-			panic("cannot use slice-index an array on the left hand side")
-		}
-		s.Slice.Compile(c)
-		s.Indices[0].Compile(c)
-		indexInstruction := c.InstructionPop()
-		sliceInstruction := c.InstructionPop()
-		lengthFunc := lambda_chains.GetLengthFunc(s.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			sliceInstruction(m, stk)
-			slice := stk.Top()
-			indexInstruction(m, stk)
-			index := (stk.Top()).([]int64)
-			if index[1] == -1 {
-				index[1] = lengthFunc(slice)
+		panic(common.NewTypeErr(s.ErrorWithSource("try to index a value which cannot be indexed")))
+	}
+
+	s.DataType = s.Slice.GetDataType()
+	s.CheckIsConstant()
+	s.PostProcess()
+	s.StackIncrement = 1
+}
+
+func (m *MapMultiIndexNode) CheckIsConstant() {
+	m.Variadic = true
+	if !m.Map.IsVariadic() {
+		flag := true
+		for _, field := range m.Fields {
+			if field.IsVariadic() {
+				flag = false
+				break
 			}
-			stk.Set(0, (slice.(string))[index[0]:index[1]])
-		})
+		}
+		if flag {
+			m.Variadic = false
+		}
+	}
+}
+
+func (m *MapMultiIndexNode) Compile(c *Compiler) {
+	if m.LhsFlag {
+		panic(common.NewCompileErr(m.ErrorWithSource("cannot use slice-index a map on the left hand side")))
+	}
+
+	m.Map.Compile(c)
+	if m.Map.GetDataType().Kind.Kind != common.Map {
+		panic(common.NewTypeErr(m.ErrorWithSource("try to multi-index a none map value")))
+	}
+	numFields := len(m.Fields)
+	for _, field := range m.Fields {
+		field.SetRequiredType(m.Map.GetDataType().KeyType)
+		field.Compile(c)
+		m.AppendInstruction(field.GetInstructions()...)
+	}
+
+	m.AppendInstruction(m.Map.GetInstructions()...)
+
+	mapGet := instruction.GetMapGetFunc(m.Map.GetDataType().KeyType)
+	m.AppendInstruction(instruction.GetMapMultiIndexFunc(mapGet, numFields))
+
+	m.DataType = c.FindSliceType(m.Map.GetDataType().ValueType.Type)
+	m.CheckIsConstant()
+	m.PostProcess()
+	m.StackIncrement = 1
+}
+
+func (i *IndexNode) CheckIsConstant() {
+	i.Variadic = true
+	if !i.Index.IsVariadic() && !i.ToIndex.IsVariadic() {
+		i.Variadic = false
 	}
 }
 
@@ -412,463 +385,407 @@ func (i *IndexNode) Compile(c *Compiler) {
 		i.ToIndex.SetLhs()
 	}
 	i.ToIndex.Compile(c)
-	i.Index.Compile(c)
-	switch i.IndexType {
-	case "slice":
-		indexInstruction := c.InstructionPop()
-		sliceInstruction := c.InstructionPop()
-		i64ConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), common.BasicTypeMap["int64"])
+
+	var indexInstruction common.Instruction
+
+	switch i.ToIndex.GetDataType().Kind.Kind {
+	case common.Slice:
+		i.Index.SetRequiredType(common.BasicTypeMap[common.Int64Type])
+		i.Index.Compile(c)
+
 		if i.LhsFlag {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				sliceInstruction(m, stk)
-				indexInstruction(m, stk)
-				stk.Set(1, lambda_chains.GetSliceField(*stk.TopIndex(1).(*interface{}), i64ConvertFunc(stk.Top()).(int64)))
-				stk.Pop()
-			})
+			indexInstruction = instruction.GetSliceIndexFuncLhs()
 		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				sliceInstruction(m, stk)
-				if stk.Top() != nil {
-					indexInstruction(m, stk)
-					stk.Set(1, *lambda_chains.GetSliceField(stk.TopIndex(1), i64ConvertFunc(stk.Top()).(int64)))
-					stk.Pop()
-				}
-			})
+			indexInstruction = instruction.GetSliceIndexFunc()
 		}
-	case "string":
-		indexInstruction := c.InstructionPop()
-		sliceInstruction := c.InstructionPop()
-		i64ConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), common.BasicTypeMap["int64"])
+		i.DataType = i.ToIndex.GetDataType().ItemType
+	case common.String:
+		i.Index.SetRequiredType(common.BasicTypeMap[common.Int64Type])
+		i.Index.Compile(c)
 		if i.LhsFlag {
-			panic("string is immutable")
-		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				sliceInstruction(m, stk)
-				if stk.Top() != nil {
-					indexInstruction(m, stk)
-					stk.Set(1, string((stk.TopIndex(1).(string))[i64ConvertFunc(stk.Top()).(int64)]))
-					stk.Pop()
-				}
-			})
+			panic(common.NewCompileErr(i.ErrorWithSource("string is immutable")))
 		}
-	case "map":
-		keyInstruction := c.InstructionPop()
-		mapInstruction := c.InstructionPop()
+		indexInstruction = instruction.GetStringIndexFunc()
+		i.DataType = i.ToIndex.GetDataType()
+	case common.Map:
+		i.Index.SetRequiredType(i.ToIndex.GetDataType().KeyType)
+		i.Index.Compile(c)
 		constructor := i.ToIndex.GetDataType().Constructor
-		keyConvertFunc := lambda_chains.GetConvertFunc(i.Index.GetDataType(), i.ToIndex.GetDataType().KeyType)
-		mapMustGet := lambda_chains.GetMapMustGetFunc(i.ToIndex.GetDataType().KeyType)
-		mapGet := lambda_chains.GetMapGetFunc(i.ToIndex.GetDataType().KeyType)
+
 		if i.LhsFlag {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				mapInstruction(m, stk)
-				keyInstruction(m, stk)
-				ptr := stk.TopIndex(1).(*interface{})
-				if *ptr == nil {
-					*ptr = constructor()
-				}
-				stk.Set(1, mapMustGet(*ptr, keyConvertFunc(stk.Top())))
-				stk.Pop()
-			})
+			mapMustGet := instruction.GetMapMustGetFunc(i.ToIndex.GetDataType().KeyType)
+			indexInstruction = instruction.GetMapIndexFuncLhs(constructor, mapMustGet)
 		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				mapInstruction(m, stk)
-				if stk.Top() != nil {
-					keyInstruction(m, stk)
-					stk.Set(1, mapGet(stk.TopIndex(1), keyConvertFunc(stk.Top())))
-					stk.Pop()
-				}
-			})
+			mapGet := instruction.GetMapGetFunc(i.ToIndex.GetDataType().KeyType)
+			indexInstruction = instruction.GetMapIndexFunc(mapGet)
 		}
+		i.DataType = i.ToIndex.GetDataType().ValueType
 	default:
-		panic("wtf")
+		panic(common.NewCompileErr(i.ErrorWithSource("try to index a value which cannot be indexed")))
+	}
+
+	i.AppendInstruction(i.Index.GetInstructions()...)
+	i.AppendInstruction(i.ToIndex.GetInstructions()...)
+	if i.ToIndex.IsStackPtr() {
+		i.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+	}
+	i.AppendInstruction(indexInstruction)
+
+	i.CheckIsConstant()
+	i.PostProcess()
+	i.StackIncrement = 1
+}
+
+func (i *IndicesNode) CheckIsConstant() {
+	i.Variadic = true
+	if (i.From == nil || !i.From.IsVariadic()) && (i.To == nil || !i.To.IsVariadic()) && (i.Step == nil || !i.Step.IsVariadic()) {
+		i.Variadic = false
 	}
 }
 
 func (i *IndicesNode) Compile(c *Compiler) {
-	if i.LhsFlag {
-		panic("cannot use slice-index an array on left hand side")
+	var from, to, step []common.Instruction
+	if i.From != nil {
+		i.From.SetRequiredType(common.BasicTypeMap[common.Int64Type])
+		i.From.Compile(c)
+		from = i.From.GetInstructions()
+	} else {
+		from = []common.Instruction{instruction.GetPushConstantFunc(int64(-1))}
 	}
-	switch i.NodeType {
-	case "IndexNodeType1":
-		i.From.Compile(c)
+	if i.To != nil {
+		i.To.SetRequiredType(common.BasicTypeMap[common.Int64Type])
 		i.To.Compile(c)
-		i.Step.Compile(c)
-		stepInstruction := c.InstructionPop()
-		toInstruction := c.InstructionPop()
-		fromInstruction := c.InstructionPop()
-		fromConvertFunc := lambda_chains.GetConvertFunc(i.From.GetDataType(), common.BasicTypeMap["int64"])
-		toConvertFunc := lambda_chains.GetConvertFunc(i.To.GetDataType(), common.BasicTypeMap["int64"])
-		stepConvertFunc := lambda_chains.GetConvertFunc(i.Step.GetDataType(), common.BasicTypeMap["int64"])
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			val := make([]int64, 3)
-			fromInstruction(m, stk)
-			val[0] = fromConvertFunc(stk.Top()).(int64)
-			stk.Pop()
-			toInstruction(m, stk)
-			val[1] = toConvertFunc(stk.Top()).(int64)
-			stk.Pop()
-			stepInstruction(m, stk)
-			val[2] = stepConvertFunc(stk.Top()).(int64)
-			stk.Set(0, val)
-		})
-	case "IndexNodeType2":
-		i.From.Compile(c)
-		i.To.Compile(c)
-		toInstruction := c.InstructionPop()
-		fromInstruction := c.InstructionPop()
-		fromConvertFunc := lambda_chains.GetConvertFunc(i.From.GetDataType(), common.BasicTypeMap["int64"])
-		toConvertFunc := lambda_chains.GetConvertFunc(i.To.GetDataType(), common.BasicTypeMap["int64"])
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			val := make([]int64, 3)
-			fromInstruction(m, stk)
-			val[0] = fromConvertFunc(stk.Top()).(int64)
-			stk.Pop()
-			toInstruction(m, stk)
-			val[1] = toConvertFunc(stk.Top()).(int64)
-			val[2] = 1
-			stk.Set(0, val)
-		})
-	case "IndexNodeType3":
-		i.From.Compile(c)
-		fromInstruction := c.InstructionPop()
-		fromConvertFunc := lambda_chains.GetConvertFunc(i.From.GetDataType(), common.BasicTypeMap["int64"])
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			val := make([]int64, 3)
-			fromInstruction(m, stk)
-			val[0] = fromConvertFunc(stk.Top()).(int64)
-			val[1] = -1
-			val[2] = 1
-			stk.Set(0, val)
-		})
-	case "IndexNodeType4":
-		i.Step.Compile(c)
-		stepInstruction := c.InstructionPop()
-		stepConvertFunc := lambda_chains.GetConvertFunc(i.Step.GetDataType(), common.BasicTypeMap["int64"])
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			val := make([]int64, 3)
-			stepInstruction(m, stk)
-			val[0] = stepConvertFunc(stk.Top()).(int64)
-			val[1] = val[0] + 1
-			val[2] = 1
-			stk.Set(0, val)
-		})
-	case "IndexNodeType5":
-		i.To.Compile(c)
-		toInstruction := c.InstructionPop()
-		toConvertFunc := lambda_chains.GetConvertFunc(i.To.GetDataType(), common.BasicTypeMap["int64"])
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			val := make([]int64, 3)
-			val[0] = 0
-			toInstruction(m, stk)
-			val[1] = toConvertFunc(stk.Top()).(int64)
-			val[2] = 1
-			stk.Set(0, val)
-		})
-	default:
-		panic("wtf?")
+		to = i.To.GetInstructions()
+	} else {
+		to = []common.Instruction{instruction.GetPushConstantFunc(int64(-1))}
 	}
+	if i.Step != nil {
+		i.Step.SetRequiredType(common.BasicTypeMap[common.Int64Type])
+		i.Step.Compile(c)
+		step = i.Step.GetInstructions()
+	} else {
+		step = []common.Instruction{instruction.GetPushConstantFunc(int64(1))}
+	}
+	i.AppendInstruction(from...)
+	i.AppendInstruction(to...)
+	i.AppendInstruction(step...)
+	i.AppendInstruction(instruction.GetIndicesFunc())
+
+	// no need to set data type
+	i.CheckIsConstant()
+	i.PostProcess()
 }
 
-func (m *MapMultiIndexNode) Compile(c *Compiler) {
-	if m.LhsFlag {
-		panic("cannot use slice-index a map on the left hand side")
+func (n *BinaryNode) CheckIsConstant() {
+	n.Variadic = true
+	if !n.Lhs.IsVariadic() && !n.Rhs.IsVariadic() {
+		n.Variadic = false
 	}
-	m.Data.Compile(c)
-	for _, field := range m.Fields {
-		field.Compile(c)
-	}
-	numFields := len(m.Fields)
-	fieldInstructions := make([]common.Instruction, numFields)
-	for i := 0; i < numFields; i++ {
-		fieldInstructions[i] = c.InstructionPop()
-	}
-	mapInstruction := c.InstructionPop()
-	//constructor := m.DataType.ItemType.Kind.Constructor
-	keyConvertFuncs := make([]lambda_chains.TypeConvertFunc, numFields)
-	for i := 0; i < numFields; i++ {
-		keyConvertFuncs[i] = lambda_chains.GetConvertFunc(m.Fields[numFields-1-i].GetDataType(), m.Data.GetDataType().KeyType)
-	}
-	mapGet := lambda_chains.GetMapGetFunc(m.Data.GetDataType().KeyType)
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		mapInstruction(m, stk)
-		if stk.Top() != nil {
-			val := make([]interface{}, numFields)
-			for i := 0; i < numFields; i++ {
-				fieldInstructions[i](m, stk)
-				if stk.Top() != nil {
-					stk.Set(0, keyConvertFuncs[i](stk.Top()))
-					val[i] = mapGet(stk.TopIndex(1), keyConvertFuncs[i](stk.Top()))
-				} else {
-					val[i] = nil
-				}
-				stk.Pop()
-			}
-			stk.Set(0, val)
-		}
-	})
 }
 
 func (n *BinaryNode) Compile(c *Compiler) {
 	if n.LhsFlag {
-		panic("cannot use binary op on the left hand side")
+		panic(common.NewCompileErr(n.ErrorWithSource("cannot use binary op on the left hand side")))
 	}
 	switch n.Op {
-	case "=", "+=", "-=", "*=", "/=":
-		n.Lhs.SetLhs()
+	case "&&", "||":
+		n.Lhs.SetRequiredType(common.BasicTypeMap[common.BoolType])
+		n.Lhs.Compile(c)
+		n.Rhs.SetRequiredType(common.BasicTypeMap[common.BoolType])
+		n.Rhs.Compile(c)
+		n.DataType = n.Lhs.GetDataType()
+	default:
+		n.Lhs.Compile(c)
+		n.Rhs.Compile(c)
+		switch n.Op {
+		case "==", "!=", ">", "<", ">=", "<=":
+			n.DataType = common.BasicTypeMap[common.BoolType]
+		default:
+			n.DataType = n.Lhs.GetDataType()
+			if n.Rhs.GetDataType().Kind.Kind > n.DataType.Kind.Kind {
+				n.DataType = n.Rhs.GetDataType()
+			}
+		}
 	}
-	n.Lhs.Compile(c)
-	n.Rhs.Compile(c)
-	rhsInstruction := c.InstructionPop()
-	lhsInstruction := c.InstructionPop()
+
 	switch n.Op {
 	case "+", "-", "*", "**", "/", "%", "//", "==", "!=", ">", "<", ">=", "<=":
-		opFunc := lambda_chains.GetBinaryOpFunc(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			lhsInstruction(m, stk)
-			rhsInstruction(m, stk)
-			opFunc(m, stk)
-		})
+		n.AppendInstruction(n.Lhs.GetInstructions()...)
+		n.AppendInstruction(n.Rhs.GetInstructions()...)
+
+		opFunc := instruction.GetBinaryOpFunc(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
+		if common.IsError(opFunc) {
+			panic(common.NewCompileErr(n.ErrorWithSource("cannot do binary op")))
+		}
+		n.AppendInstruction(opFunc)
 	case "&&":
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			lhsInstruction(m, stk)
-			if !(stk.Top()).(bool) {
-				return
-			}
-			stk.Pop()
-			rhsInstruction(m, stk)
-		})
+		lhsInstructions := n.Lhs.GetInstructions()
+		rhsInstructions := n.Rhs.GetInstructions()
+		opFunc := instruction.GetAndFunc(len(rhsInstructions))
+		n.AppendInstruction(lhsInstructions...)
+		n.AppendInstruction(opFunc)
+		n.AppendInstruction(rhsInstructions...)
 	case "||":
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			lhsInstruction(m, stk)
-			if (stk.Top()).(bool) {
-				return
-			}
-			stk.Pop()
-			rhsInstruction(m, stk)
-		})
-	case "=":
-		rhsConvertFunc := lambda_chains.GetConvertFunc(n.Rhs.GetDataType(), n.Lhs.GetDataType())
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			rhsInstruction(m, stk)
-			if stk.Top() != nil {
-				lhsInstruction(m, stk)
-				*stk.Top().(*interface{}) = rhsConvertFunc(stk.TopIndex(1))
-				stk.Pop()
-			}
-		})
-	case "+=", "-=", "*=", "/=":
-		opFunc := lambda_chains.GetCalAssignOpFunc(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			rhsInstruction(m, stk)
-			if stk.Top() != nil {
-				lhsInstruction(m, stk)
-				opFunc(m, stk)
-				stk.Pop()
-			}
-		})
+		lhsInstructions := n.Lhs.GetInstructions()
+		rhsInstructions := n.Rhs.GetInstructions()
+		opFunc := instruction.GetOrFunc(len(rhsInstructions))
+		n.AppendInstruction(lhsInstructions...)
+		n.AppendInstruction(opFunc)
+		n.AppendInstruction(rhsInstructions...)
 	case "~=":
 		// todo: regexp
 	default:
-		panic("unknown binary op " + n.Op)
+		panic(common.NewCompileErr(n.ErrorWithSource("unknown binary op " + n.Op)))
+	}
+
+	n.CheckIsConstant()
+	n.PostProcess()
+	n.StackIncrement = 1
+}
+
+func (u *LeftUnaryNode) CheckIsConstant() {
+	u.Variadic = true
+	if !u.Operand.IsVariadic() {
+		u.Variadic = false
 	}
 }
 
 func (u *LeftUnaryNode) Compile(c *Compiler) {
-	opFunc := lambda_chains.GetLeftUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	if u.LhsFlag {
+		panic(common.NewCompileErr(u.ErrorWithSource("cannot use unary op on the left hand side")))
+	}
 	if u.Op == "++" || u.Op == "--" {
 		u.Operand.SetLhs()
 	}
 	u.Operand.Compile(c)
-	operandInstruction := c.InstructionPop()
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		operandInstruction(m, stk)
-		opFunc(m, stk)
-	})
+
+	opFunc := instruction.GetLeftUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	if common.IsError(opFunc) {
+		panic(common.NewCompileErr(u.ErrorWithSource("invalid op")))
+	}
+
+	u.AppendInstruction(u.Operand.GetInstructions()...)
+	if u.Operand.IsStackPtr() {
+		u.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+	}
+	u.AppendInstruction(opFunc)
+
+	u.DataType = u.Operand.GetDataType()
+	u.CheckIsConstant()
+	u.PostProcess()
+	u.StackIncrement = 1
 }
 
 func (u *RightUnaryNode) Compile(c *Compiler) {
-	opFunc := lambda_chains.GetRightUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	if u.LhsFlag {
+		panic(common.NewCompileErr(u.ErrorWithSource("cannot use unary op on the left hand side")))
+	}
 	if u.Op == "++" || u.Op == "--" {
 		u.Operand.SetLhs()
 	}
 	u.Operand.Compile(c)
-	operandInstruction := c.InstructionPop()
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		operandInstruction(m, stk)
-		opFunc(m, stk)
-	})
-}
 
-func (f *FunctionAssignNode) Compile(c *Compiler) {
-	num := len(f.Lhs)
-	for _, lhs := range f.Lhs {
-		lhs.SetLhs()
-		lhs.Compile(c)
+	opFunc := instruction.GetRightUnaryOpFunc(u.Op, u.Operand.GetDataType())
+	if common.IsError(opFunc) {
+		panic(common.NewCompileErr(u.ErrorWithSource("invalid op")))
 	}
-	f.Function.Compile(c)
-	functionInstruction := c.InstructionPop()
-	lhsInstructions := make([]common.Instruction, 0, num)
-	for i := 0; i < num; i++ {
-		lhsInstructions = append(lhsInstructions, c.InstructionPop())
+
+	u.AppendInstruction(u.Operand.GetInstructions()...)
+	if u.Operand.IsStackPtr() {
+		u.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
 	}
-	convertFuncs := make([]lambda_chains.TypeConvertFunc, 0, num)
-	for i := 0; i < num; i++ {
-		convertFuncs = append(convertFuncs, lambda_chains.GetConvertFunc(f.Lhs[num-1-i].GetDataType(), f.Function.GetReturnType()[i]))
-	}
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		functionInstruction(m, stk)
-		for i := num - 1; i >= 0; i-- {
-			if stk.Top() != nil {
-				lhsInstructions[i](m, stk)
-				*stk.Top().(*interface{}) = convertFuncs[i](stk.TopIndex(1))
-				stk.PopN(2)
-			}
-		}
-		stk.Push(nil)
-	})
+	u.AppendInstruction(opFunc)
+
+	u.DataType = u.Operand.GetDataType()
+	u.PostProcess()
+	u.StackIncrement = 1
 }
 
 func (n *ConstructorNode) Compile(c *Compiler) {
 	if n.LhsFlag {
-		panic("constructor cannot be on the left hand side")
+		panic(common.NewCompileErr(n.ErrorWithSource("constructor cannot be on the left hand side")))
 	}
+
+	n.Type.Compile(c)
+
 	num := len(n.Params)
-	constructor := n.DataType.Constructor
-	if num == 0 {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			stk.Push(constructor())
-		})
-	} else {
-		for _, p := range n.Params {
-			p.Compile(c)
-		}
-		paramInstructions := make([]common.Instruction, 0, num)
-		for i := 0; i < num; i++ {
-			paramInstructions = append(paramInstructions, c.InstructionPop())
-		}
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			params := make([]interface{}, 0, num)
-			for i := 0; i < num; i++ {
-				paramInstructions[i](m, stk)
-				params = append(params, stk.Top())
-				stk.Pop()
-			}
-			stk.Push(constructor(params...))
-		})
+	for _, p := range n.Params {
+		p.Compile(c)
+		n.AppendInstruction(p.GetInstructions()...)
 	}
+	n.AppendInstruction(instruction.GetConstructFunc(n.Type.GetDataType().Constructor, num))
+
+	n.DataType = n.Type.GetDataType()
+	n.PostProcess()
+	n.StackIncrement = 1
 }
 
-func (a *AssignNode) Compile(c *Compiler) {
-	if a.LhsFlag {
-		panic("assign op cannot be on the left hand side")
+func (v *ValueNode) Compile(_ *Compiler) {
+	if v.LhsFlag {
+		panic(common.NewCompileErr(v.ErrorWithSource("constant value cannot be on the left hand side")))
 	}
-	num := len(a.Lhs)
-
-	lhsInstructions := make([]common.Instruction, 0, num)
-	rhsInstructions := make([]common.Instruction, 0, num)
-
-	for _, lhs := range a.Lhs {
-		lhs.SetLhs()
-		lhs.Compile(c)
-	}
-	for _, rhs := range a.Rhs {
-		rhs.Compile(c)
-	}
-	for i := 0; i < num; i++ {
-		rhsInstructions = append(rhsInstructions, c.InstructionPop())
-	}
-	for i := 0; i < num; i++ {
-		lhsInstructions = append(lhsInstructions, c.InstructionPop())
-	}
-	var assignInsts []common.Instruction
-	for i := 0; i < num; i++ {
-		lhsInstruction := lhsInstructions[i]
-		rhsInstruction := rhsInstructions[i]
-		convertFunc := lambda_chains.GetConvertFunc(a.Rhs[num-1-i].GetDataType(), a.Lhs[num-1-i].GetDataType())
-		assignInsts = append(assignInsts, func(m *common.Memory, stk *common.Stack) {
-			rhsInstruction(m, stk)
-			if stk.Top() != nil {
-				lhsInstruction(m, stk)
-				*stk.Top().(*interface{}) = convertFunc(stk.TopIndex(1))
-				stk.PopN(2)
-			}
-		})
-	}
-	c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		for i := 0; i < num; i++ {
-			assignInsts[i](m, stk)
-		}
-		stk.Push(nil)
-	})
-}
-
-func (v *ValueNode) Compile(c *Compiler) {
-	c.InstructionPush(func(_ *common.Memory, stk *common.Stack) {
-		stk.Push(v.Val)
-	})
-}
-
-func (v *ValueNode) GetConstantKind() int {
-	return v.DataType.Kind.Kind
-}
-
-func (v *ValueNode) GetConstantValue() interface{} {
-	return v.Val
+	v.AppendInstruction(instruction.GetPushConstantFunc(v.ConstantValue))
+	v.PostProcess()
 }
 
 func (v *ChanSend) Compile(c *Compiler) {
 	if v.LhsFlag {
-		panic("chan send cannot be on the left hand side")
+		panic(common.NewCompileErr(v.ErrorWithSource("chan send cannot be on the left hand side")))
 	}
+	v.Variadic = true
+	v.DataType = common.BasicTypeMap[common.BoolType]
+
 	v.Chan.Compile(c)
-	chanInstruction := c.InstructionPop()
-	v.ToSend.Compile(c)
-	toSendInstruction := c.InstructionPop()
-	convertFunc := lambda_chains.GetConvertFunc(v.ToSend.GetDataType(), v.Chan.GetDataType().ItemType)
-	if v.NonBlock {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			chanInstruction(m, stk)
-			toSendInstruction(m, stk)
-			select {
-			case stk.TopIndex(1).(chan interface{}) <- convertFunc(stk.Top()):
-				stk.PopN(2)
-				stk.Push(true)
-			default:
-				stk.PopN(2)
-				stk.Push(false)
-			}
-		})
-	} else {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			chanInstruction(m, stk)
-			toSendInstruction(m, stk)
-			stk.TopIndex(1).(chan interface{}) <- convertFunc(stk.Top())
-			stk.PopN(2)
-			stk.Push(true)
-		})
+	if v.Chan.GetDataType().Kind.Kind != common.Channel {
+		panic(common.NewCompileErr(v.ErrorWithSource("chan op must be on a chan type value")))
 	}
+	v.AppendInstruction(v.Chan.GetInstructions()...)
+	v.ToSend.SetRequiredType(v.Chan.GetDataType().ItemType)
+	v.ToSend.Compile(c)
+	v.AppendInstruction(v.ToSend.GetInstructions()...)
+	v.AppendInstruction(instruction.GetChanSend(v.NonBlock))
+
+	v.PostProcess()
+	v.StackIncrement = 1
 }
 
 func (v *ChanRecv) Compile(c *Compiler) {
 	if v.LhsFlag {
-		panic("chan recv cannot be on the left hand side")
+		panic(common.NewCompileErr(v.ErrorWithSource("chan recv cannot be on the left hand side")))
 	}
 	v.Chan.Compile(c)
-	chanInstruction := c.InstructionPop()
-	if v.NonBlock {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			chanInstruction(m, stk)
-			select {
-			case temp := <-stk.Top().(chan interface{}):
-				stk.Set(0, temp)
-			default:
-				stk.Set(0, nil)
-			}
-		})
-	} else {
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			chanInstruction(m, stk)
-			stk.Set(0, <-stk.Top().(chan interface{}))
-		})
+	if v.Chan.GetDataType().Kind.Kind != common.Channel {
+		panic(common.NewCompileErr(v.ErrorWithSource("chan op must be on a chan type value")))
 	}
+	v.AppendInstruction(v.Chan.GetInstructions()...)
+	v.AppendInstruction(instruction.GetChanRecv(v.NonBlock))
+	v.DataType = v.Chan.GetDataType().ItemType
+
+	v.PostProcess()
+	v.StackIncrement = 1
+}
+
+func (i *InitializationSliceNode) Compile(c *Compiler) {
+	i.Variadic = true
+	if i.Type != nil {
+		i.Type.Compile(c)
+		i.DataType = i.Type.GetDataType()
+	} else {
+		i.DataType = i.RequiredType
+	}
+	if i.DataType == nil {
+		panic(common.NewTypeErr(i.ErrorWithSource("initialization type missing")))
+	}
+
+	num := len(i.Items)
+	for _, item := range i.Items {
+		item.SetRequiredType(i.DataType.ItemType)
+		item.Compile(c)
+		i.AppendInstruction(item.GetInstructions()...)
+	}
+	i.AppendInstruction(instruction.GetInitializeSliceFunc(num))
+	i.StackIncrement = 1
+}
+
+func (i *InitializationKVNode) Compile(c *Compiler) {
+	i.Variadic = true
+	if i.Type != nil {
+		i.Type.Compile(c)
+		i.DataType = i.Type.GetDataType()
+	} else {
+		i.DataType = i.RequiredType
+	}
+	if i.DataType == nil {
+		panic(common.NewTypeErr(i.ErrorWithSource("initialization type missing")))
+	}
+
+	switch i.DataType.Kind.Kind {
+	case common.Map:
+		num := len(i.Keys)
+		for _, key := range i.Keys {
+			key.SetRequiredType(i.DataType.KeyType)
+			key.Compile(c)
+			i.AppendInstruction(key.GetInstructions()...)
+		}
+		for _, val := range i.Values {
+			val.SetRequiredType(i.DataType.ValueType)
+			val.Compile(c)
+			i.AppendInstruction(val.GetInstructions()...)
+		}
+		constructor := common.MapConstructorMap[i.DataType.KeyType.Kind.Kind]
+		mapSet := instruction.GetMapSetFunc(i.DataType.KeyType)
+		i.AppendInstruction(instruction.GetInitializeMapFunc(constructor, mapSet, num))
+	case common.Message:
+		num := len(i.Keys)
+		keyStrings := make([]string, num)
+
+		for idx, key := range i.Keys {
+			keyStrings[num-1-idx] = key.GetText()
+		}
+		for idx, val := range i.Values {
+			val.SetRequiredType(i.DataType.FieldType[keyStrings[num-1-idx]])
+			val.Compile(c)
+			i.AppendInstruction(val.GetInstructions()...)
+		}
+		i.AppendInstruction(instruction.GetInitializeMessageFunc(keyStrings, num))
+	default:
+		panic(common.NewTypeErr(i.ErrorWithSource("initialization type should be message or map")))
+	}
+	i.StackIncrement = 1
+}
+
+func (f *FunctionAssignNode) Compile(c *Compiler) {
+	num := len(f.Lhs)
+	if funcCallNode, ok := f.Function.(*FunctionCallNode); ok {
+		funcCallNode.Compile(c)
+		if len(funcCallNode.Meta.Out) != num {
+			panic(common.NewMismatchErr(f.ErrorWithSource("number of function return value and lhs mismatch")))
+		}
+		f.StackIncrement = funcCallNode.StackIncrement
+		f.AppendInstruction(funcCallNode.Instructions...)
+
+		for _, lhs := range f.Lhs {
+			lhs.SetLhs()
+			lhs.Compile(c)
+			f.AppendInstruction(lhs.GetInstructions()...)
+		}
+
+		convertFunctions := make([]common.Instruction, 0, num)
+		for i := 0; i < num; i++ {
+			temp := instruction.GetConvertInstruction(f.Lhs[num-1-i].GetDataType(), funcCallNode.Meta.Out[i])
+			if common.IsError(temp) {
+				panic(common.NewCompileErr(f.ErrorWithSource("function return value cannot be implicit convert to lhs")))
+			}
+			convertFunctions = append(convertFunctions, temp)
+		}
+		for i, lhs := range f.Lhs {
+			if lhs.IsStackPtr() {
+				f.AppendInstruction(instruction.GetStackOffsetToStackPtr(num - 1 - i))
+			}
+		}
+		f.AppendInstruction(instruction.GetMultiAssignFunc(convertFunctions)...)
+	} else {
+		panic(common.NewCompileErr(f.ErrorWithSource("multi-assign RHS is not a function call")))
+	}
+}
+
+func (n *AssignNode) Compile(c *Compiler) {
+	n.Lhs.SetLhs()
+	n.Lhs.Compile(c)
+	n.Rhs.SetRequiredType(n.Lhs.GetDataType())
+	n.Rhs.Compile(c)
+	n.DataType = n.Lhs.GetDataType()
+
+	n.AppendInstruction(n.Rhs.GetInstructions()...)
+	n.AppendInstruction(n.Lhs.GetInstructions()...)
+	if n.Lhs.IsStackPtr() {
+		n.AppendInstruction(instruction.GetStackOffsetToStackPtr(0))
+	}
+	opFunc := instruction.GetAssignFunc(n.Op, n.Lhs.GetDataType())
+	if common.IsError(opFunc) {
+		panic(common.NewCompileErr(n.ErrorWithSource("invalid op")))
+	}
+	n.AppendInstruction(opFunc)
+
+	n.StackIncrement = 1
 }

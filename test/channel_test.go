@@ -13,7 +13,7 @@ type Person message {
 
 var personChan chan[Person] = new chan[Person](1);
 
-var Tom Person = {name('Tommy'), age(12)};
+var Tom Person = {name:'Tommy', age:12};
 
 personChan <<- Tom;
 var TomCopy Person = <<- personChan;

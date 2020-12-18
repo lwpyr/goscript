@@ -1,5 +1,10 @@
 package common
 
+import (
+	"fmt"
+	"github.com/antlr/antlr4/runtime/Go/antlr"
+)
+
 type ScriptErrorType int
 
 const (
@@ -12,6 +17,10 @@ const (
 	InitializationError
 	CompileError
 )
+
+func FormatError(ctx antlr.ParserRuleContext, message string) string {
+	return fmt.Sprintf("%s, at line %d, %s", message, ctx.GetStart().GetLine(), ctx.GetText())
+}
 
 type ScriptError interface {
 	Error() string

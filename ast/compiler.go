@@ -1,17 +1,38 @@
 package ast
 
 import (
-	"fmt"
-	"github.com/antlr/antlr4/runtime/Go/antlr"
 	"github.com/lwpyr/goscript/common"
-	"github.com/lwpyr/goscript/parser"
-	"runtime/debug"
 )
 
 type Compiler struct {
-	stack        []common.Instruction
 	TypeRegistry *common.TypeRegistry
 	Scope        *common.Scope
+	FunctionInfo []*common.FunctionMeta
+}
+
+func (c *Compiler) PushFunctionMeta(meta *common.FunctionMeta) {
+	c.FunctionInfo = append(c.FunctionInfo, meta)
+}
+
+func (c *Compiler) CurrentFunctionMeta() *common.FunctionMeta {
+	return c.FunctionInfo[len(c.FunctionInfo)-1]
+}
+
+func (c *Compiler) PopFunctionMeta() {
+	c.FunctionInfo = c.FunctionInfo[:len(c.FunctionInfo)-1]
+}
+
+func (c *Compiler) MakeFunctionScope() {
+	c.Scope = common.NewScope(c.Scope)
+	c.Scope.LocalIndex = 0
+}
+
+func (c *Compiler) MakeChildScope() {
+	c.Scope = common.NewScope(c.Scope)
+}
+
+func (c *Compiler) ReturnParentScope() {
+	c.Scope = c.Scope.Outer
 }
 
 func (c *Compiler) AddEnum(name string, e map[string]int32) {
@@ -50,127 +71,16 @@ func (c *Compiler) AddBuiltType(dtb *common.DataTypeBuilder) {
 	c.TypeRegistry.AddBuiltType(dtb)
 }
 
-func (c *Compiler) InstructionPush(i common.Instruction) {
-	c.stack = append(c.stack, i)
-}
-
-func (c *Compiler) InstructionTop() common.Instruction {
-	return c.stack[len(c.stack)-1]
-}
-
-func (c *Compiler) InstructionPop() common.Instruction {
-	if len(c.stack) == 0 {
-		return nil
-	}
-	ret := c.InstructionTop()
-	c.stack = c.stack[:len(c.stack)-1]
-	return ret
-}
-
 func (c *Compiler) Include(libName string) {
 	lib := common.RegisteredLibs[libName]
 	if lib == nil {
 		panic("Lib name not recognized, skipped")
 	}
 	for name, f := range lib.Init(c.TypeRegistry) {
-		c.Scope.AddConstant(name, &common.Constant{
-			Symbol: name,
-			Type:   f.Type,
-			Data:   f.F,
+		c.Scope.AddConstant(name, &common.Symbol{
+			Symbol:   name,
+			DataType: f.Type,
+			Data:     f.F,
 		})
 	}
-}
-
-func (c *Compiler) BuildSingleLineAST(expr string) (root ASTNode, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
-		}
-	}()
-	l := NewASTBuilder()
-	l.Compiler = c
-	is := antlr.NewInputStream(expr)
-	lexer := parser.NewgoscriptLexer(is)
-	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-
-	d := parser.NewgoscriptParser(stream)
-	antlr.ParseTreeWalkerDefault.Walk(l, d.KeepStack())
-	return l.NodeTop(), nil
-}
-
-func (c *Compiler) CompileNode(node ASTNode) common.Instruction {
-	node.Compile(c)
-	return c.InstructionPop()
-}
-
-func (c *Compiler) CompileExpression(expr string) (common.Instruction, error) {
-	node, err := c.BuildSingleLineAST(expr)
-	if err != nil {
-		return nil, err
-	}
-	return c.CompileNode(node), nil
-}
-
-func (c *Compiler) CompileSetter(expr string) (common.Instruction, error) {
-	node, err := c.BuildSingleLineAST(expr)
-	if err != nil {
-		return nil, err
-	}
-	node.SetLhs()
-	return c.CompileNode(node), nil
-}
-
-func (c *Compiler) BuildFunctionDefAST(expr string) (root ASTNode, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = r.(common.ScriptError)
-		}
-	}()
-	l := NewASTBuilder()
-	l.Compiler = c
-	is := antlr.NewInputStream(expr)
-	lexer := parser.NewgoscriptLexer(is)
-	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-
-	d := parser.NewgoscriptParser(stream)
-	antlr.ParseTreeWalkerDefault.Walk(l, d.Functiondef())
-	return l.NodeTop(), nil
-}
-
-func (c *Compiler) CompileFunctionDef(expr string) error {
-	node, err := c.BuildFunctionDefAST(expr)
-	if err != nil {
-		return err
-	}
-	node.Compile(c)
-	return nil
-}
-
-func (c *Compiler) BuildAST(expr string) (root ASTNode, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			if e, ok := r.(common.ScriptError); ok {
-				err = fmt.Errorf("%v\n%s", e, string(debug.Stack()))
-			} else {
-				err = fmt.Errorf("%v\n%s", r, string(debug.Stack()))
-			}
-		}
-	}()
-	l := NewASTBuilder()
-	l.Compiler = c
-	is := antlr.NewInputStream(expr)
-	lexer := parser.NewgoscriptLexer(is)
-	stream := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
-
-	d := parser.NewgoscriptParser(stream)
-	antlr.ParseTreeWalkerDefault.Walk(l, d.Program())
-	return l.NodeTop(), nil
-}
-
-func (c *Compiler) CompileScript(script string) (common.Instruction, error) {
-	node, err := c.BuildAST(script)
-	if err != nil {
-		return nil, err
-	}
-	return c.CompileNode(node), nil
 }

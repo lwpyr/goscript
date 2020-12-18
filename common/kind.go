@@ -25,6 +25,7 @@ const ( // Kind
 	Func
 	ReflectType
 	Any
+	Illegal
 )
 
 var KindMap = map[int]*DataKind{
@@ -84,5 +85,8 @@ var KindMap = map[int]*DataKind{
 	},
 	Any: {
 		Kind: Any,
+	},
+	Illegal: {
+		Kind: Illegal,
 	},
 }

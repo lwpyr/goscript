@@ -51,12 +51,6 @@ func (s *BasegoscriptListener) EnterLambdaDef(ctx *LambdaDefContext) {}
 // ExitLambdaDef is called when production LambdaDef is exited.
 func (s *BasegoscriptListener) ExitLambdaDef(ctx *LambdaDefContext) {}
 
-// EnterClosure is called when production closure is entered.
-func (s *BasegoscriptListener) EnterClosure(ctx *ClosureContext) {}
-
-// ExitClosure is called when production closure is exited.
-func (s *BasegoscriptListener) ExitClosure(ctx *ClosureContext) {}
-
 // EnterInparam is called when production inparam is entered.
 func (s *BasegoscriptListener) EnterInparam(ctx *InparamContext) {}
 
@@ -219,6 +213,12 @@ func (s *BasegoscriptListener) EnterLineProgram(ctx *LineProgramContext) {}
 // ExitLineProgram is called when production LineProgram is exited.
 func (s *BasegoscriptListener) ExitLineProgram(ctx *LineProgramContext) {}
 
+// EnterFunctionDefine is called when production FunctionDefine is entered.
+func (s *BasegoscriptListener) EnterFunctionDefine(ctx *FunctionDefineContext) {}
+
+// ExitFunctionDefine is called when production FunctionDefine is exited.
+func (s *BasegoscriptListener) ExitFunctionDefine(ctx *FunctionDefineContext) {}
+
 // EnterIf is called when production If is entered.
 func (s *BasegoscriptListener) EnterIf(ctx *IfContext) {}
 
@@ -273,12 +273,6 @@ func (s *BasegoscriptListener) EnterReturnVal(ctx *ReturnValContext) {}
 // ExitReturnVal is called when production ReturnVal is exited.
 func (s *BasegoscriptListener) ExitReturnVal(ctx *ReturnValContext) {}
 
-// EnterCollection is called when production collection is entered.
-func (s *BasegoscriptListener) EnterCollection(ctx *CollectionContext) {}
-
-// ExitCollection is called when production collection is exited.
-func (s *BasegoscriptListener) ExitCollection(ctx *CollectionContext) {}
-
 // EnterBlock is called when production block is entered.
 func (s *BasegoscriptListener) EnterBlock(ctx *BlockContext) {}
 
@@ -291,17 +285,11 @@ func (s *BasegoscriptListener) EnterRestoreStackSp(ctx *RestoreStackSpContext) {
 // ExitRestoreStackSp is called when production RestoreStackSp is exited.
 func (s *BasegoscriptListener) ExitRestoreStackSp(ctx *RestoreStackSpContext) {}
 
-// EnterVarDef is called when production VarDef is entered.
-func (s *BasegoscriptListener) EnterVarDef(ctx *VarDefContext) {}
+// EnterSymbolDefine is called when production SymbolDefine is entered.
+func (s *BasegoscriptListener) EnterSymbolDefine(ctx *SymbolDefineContext) {}
 
-// ExitVarDef is called when production VarDef is exited.
-func (s *BasegoscriptListener) ExitVarDef(ctx *VarDefContext) {}
-
-// EnterConstDef is called when production ConstDef is entered.
-func (s *BasegoscriptListener) EnterConstDef(ctx *ConstDefContext) {}
-
-// ExitConstDef is called when production ConstDef is exited.
-func (s *BasegoscriptListener) ExitConstDef(ctx *ConstDefContext) {}
+// ExitSymbolDefine is called when production SymbolDefine is exited.
+func (s *BasegoscriptListener) ExitSymbolDefine(ctx *SymbolDefineContext) {}
 
 // EnterRestoreStack is called when production restoreStack is entered.
 func (s *BasegoscriptListener) EnterRestoreStack(ctx *RestoreStackContext) {}
@@ -321,23 +309,17 @@ func (s *BasegoscriptListener) EnterFunctionAssign(ctx *FunctionAssignContext) {
 // ExitFunctionAssign is called when production FunctionAssign is exited.
 func (s *BasegoscriptListener) ExitFunctionAssign(ctx *FunctionAssignContext) {}
 
-// EnterVariableName is called when production VariableName is entered.
-func (s *BasegoscriptListener) EnterVariableName(ctx *VariableNameContext) {}
+// EnterAssign is called when production Assign is entered.
+func (s *BasegoscriptListener) EnterAssign(ctx *AssignContext) {}
 
-// ExitVariableName is called when production VariableName is exited.
-func (s *BasegoscriptListener) ExitVariableName(ctx *VariableNameContext) {}
+// ExitAssign is called when production Assign is exited.
+func (s *BasegoscriptListener) ExitAssign(ctx *AssignContext) {}
 
-// EnterAsserted is called when production asserted is entered.
-func (s *BasegoscriptListener) EnterAsserted(ctx *AssertedContext) {}
+// EnterSymbol is called when production symbol is entered.
+func (s *BasegoscriptListener) EnterSymbol(ctx *SymbolContext) {}
 
-// ExitAsserted is called when production asserted is exited.
-func (s *BasegoscriptListener) ExitAsserted(ctx *AssertedContext) {}
-
-// EnterFilter is called when production filter is entered.
-func (s *BasegoscriptListener) EnterFilter(ctx *FilterContext) {}
-
-// ExitFilter is called when production filter is exited.
-func (s *BasegoscriptListener) ExitFilter(ctx *FilterContext) {}
+// ExitSymbol is called when production symbol is exited.
+func (s *BasegoscriptListener) ExitSymbol(ctx *SymbolContext) {}
 
 // EnterIndexType1 is called when production IndexType1 is entered.
 func (s *BasegoscriptListener) EnterIndexType1(ctx *IndexType1Context) {}
@@ -369,6 +351,12 @@ func (s *BasegoscriptListener) EnterIndexType5(ctx *IndexType5Context) {}
 // ExitIndexType5 is called when production IndexType5 is exited.
 func (s *BasegoscriptListener) ExitIndexType5(ctx *IndexType5Context) {}
 
+// EnterTypeConvert is called when production TypeConvert is entered.
+func (s *BasegoscriptListener) EnterTypeConvert(ctx *TypeConvertContext) {}
+
+// ExitTypeConvert is called when production TypeConvert is exited.
+func (s *BasegoscriptListener) ExitTypeConvert(ctx *TypeConvertContext) {}
+
 // EnterRecv is called when production Recv is entered.
 func (s *BasegoscriptListener) EnterRecv(ctx *RecvContext) {}
 
@@ -381,17 +369,29 @@ func (s *BasegoscriptListener) EnterSliceFilter(ctx *SliceFilterContext) {}
 // ExitSliceFilter is called when production SliceFilter is exited.
 func (s *BasegoscriptListener) ExitSliceFilter(ctx *SliceFilterContext) {}
 
-// EnterDirectCall is called when production DirectCall is entered.
-func (s *BasegoscriptListener) EnterDirectCall(ctx *DirectCallContext) {}
+// EnterCall is called when production Call is entered.
+func (s *BasegoscriptListener) EnterCall(ctx *CallContext) {}
 
-// ExitDirectCall is called when production DirectCall is exited.
-func (s *BasegoscriptListener) ExitDirectCall(ctx *DirectCallContext) {}
+// ExitCall is called when production Call is exited.
+func (s *BasegoscriptListener) ExitCall(ctx *CallContext) {}
+
+// EnterInitKV is called when production InitKV is entered.
+func (s *BasegoscriptListener) EnterInitKV(ctx *InitKVContext) {}
+
+// ExitInitKV is called when production InitKV is exited.
+func (s *BasegoscriptListener) ExitInitKV(ctx *InitKVContext) {}
 
 // EnterIndex is called when production Index is entered.
 func (s *BasegoscriptListener) EnterIndex(ctx *IndexContext) {}
 
 // ExitIndex is called when production Index is exited.
 func (s *BasegoscriptListener) ExitIndex(ctx *IndexContext) {}
+
+// EnterInitSlice is called when production InitSlice is entered.
+func (s *BasegoscriptListener) EnterInitSlice(ctx *InitSliceContext) {}
+
+// ExitInitSlice is called when production InitSlice is exited.
+func (s *BasegoscriptListener) ExitInitSlice(ctx *InitSliceContext) {}
 
 // EnterMapMultiIndex is called when production MapMultiIndex is entered.
 func (s *BasegoscriptListener) EnterMapMultiIndex(ctx *MapMultiIndexContext) {}
@@ -416,12 +416,6 @@ func (s *BasegoscriptListener) EnterSelect(ctx *SelectContext) {}
 
 // ExitSelect is called when production Select is exited.
 func (s *BasegoscriptListener) ExitSelect(ctx *SelectContext) {}
-
-// EnterConstruct is called when production Construct is entered.
-func (s *BasegoscriptListener) EnterConstruct(ctx *ConstructContext) {}
-
-// ExitConstruct is called when production Construct is exited.
-func (s *BasegoscriptListener) ExitConstruct(ctx *ConstructContext) {}
 
 // EnterBinary is called when production Binary is entered.
 func (s *BasegoscriptListener) EnterBinary(ctx *BinaryContext) {}
@@ -453,53 +447,11 @@ func (s *BasegoscriptListener) EnterRightUnary(ctx *RightUnaryContext) {}
 // ExitRightUnary is called when production RightUnary is exited.
 func (s *BasegoscriptListener) ExitRightUnary(ctx *RightUnaryContext) {}
 
-// EnterAssignInitializationlist is called when production AssignInitializationlist is entered.
-func (s *BasegoscriptListener) EnterAssignInitializationlist(ctx *AssignInitializationlistContext) {}
-
-// ExitAssignInitializationlist is called when production AssignInitializationlist is exited.
-func (s *BasegoscriptListener) ExitAssignInitializationlist(ctx *AssignInitializationlistContext) {}
-
 // EnterBasicTypeName is called when production basicTypeName is entered.
 func (s *BasegoscriptListener) EnterBasicTypeName(ctx *BasicTypeNameContext) {}
 
 // ExitBasicTypeName is called when production basicTypeName is exited.
 func (s *BasegoscriptListener) ExitBasicTypeName(ctx *BasicTypeNameContext) {}
-
-// EnterBuiltin is called when production builtin is entered.
-func (s *BasegoscriptListener) EnterBuiltin(ctx *BuiltinContext) {}
-
-// ExitBuiltin is called when production builtin is exited.
-func (s *BasegoscriptListener) ExitBuiltin(ctx *BuiltinContext) {}
-
-// EnterInitializationListBegin is called when production initializationListBegin is entered.
-func (s *BasegoscriptListener) EnterInitializationListBegin(ctx *InitializationListBeginContext) {}
-
-// ExitInitializationListBegin is called when production initializationListBegin is exited.
-func (s *BasegoscriptListener) ExitInitializationListBegin(ctx *InitializationListBeginContext) {}
-
-// EnterInitSlice is called when production InitSlice is entered.
-func (s *BasegoscriptListener) EnterInitSlice(ctx *InitSliceContext) {}
-
-// ExitInitSlice is called when production InitSlice is exited.
-func (s *BasegoscriptListener) ExitInitSlice(ctx *InitSliceContext) {}
-
-// EnterInitMessage is called when production InitMessage is entered.
-func (s *BasegoscriptListener) EnterInitMessage(ctx *InitMessageContext) {}
-
-// ExitInitMessage is called when production InitMessage is exited.
-func (s *BasegoscriptListener) ExitInitMessage(ctx *InitMessageContext) {}
-
-// EnterInitMap is called when production InitMap is entered.
-func (s *BasegoscriptListener) EnterInitMap(ctx *InitMapContext) {}
-
-// ExitInitMap is called when production InitMap is exited.
-func (s *BasegoscriptListener) ExitInitMap(ctx *InitMapContext) {}
-
-// EnterInitConstant is called when production InitConstant is entered.
-func (s *BasegoscriptListener) EnterInitConstant(ctx *InitConstantContext) {}
-
-// ExitInitConstant is called when production InitConstant is exited.
-func (s *BasegoscriptListener) ExitInitConstant(ctx *InitConstantContext) {}
 
 // EnterConstantInt is called when production ConstantInt is entered.
 func (s *BasegoscriptListener) EnterConstantInt(ctx *ConstantIntContext) {}
@@ -537,14 +489,8 @@ func (s *BasegoscriptListener) EnterConstructor(ctx *ConstructorContext) {}
 // ExitConstructor is called when production constructor is exited.
 func (s *BasegoscriptListener) ExitConstructor(ctx *ConstructorContext) {}
 
-// EnterVardef is called when production vardef is entered.
-func (s *BasegoscriptListener) EnterVardef(ctx *VardefContext) {}
+// EnterSymbolDef is called when production symbolDef is entered.
+func (s *BasegoscriptListener) EnterSymbolDef(ctx *SymbolDefContext) {}
 
-// ExitVardef is called when production vardef is exited.
-func (s *BasegoscriptListener) ExitVardef(ctx *VardefContext) {}
-
-// EnterConstdef is called when production constdef is entered.
-func (s *BasegoscriptListener) EnterConstdef(ctx *ConstdefContext) {}
-
-// ExitConstdef is called when production constdef is exited.
-func (s *BasegoscriptListener) ExitConstdef(ctx *ConstdefContext) {}
+// ExitSymbolDef is called when production symbolDef is exited.
+func (s *BasegoscriptListener) ExitSymbolDef(ctx *SymbolDefContext) {}

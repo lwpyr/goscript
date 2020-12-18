@@ -2,66 +2,210 @@ package ast
 
 import (
 	"github.com/lwpyr/goscript/common"
-	"github.com/lwpyr/goscript/hack"
-	"github.com/lwpyr/goscript/lambda_chains"
+	"github.com/lwpyr/goscript/instruction"
 )
-
-type LambdaDefNode struct {
-	Node
-	Block ASTNode
-	Scope *common.Scope
-}
 
 type FunctionDefNode struct {
 	Node
-	FuncName string
-	Block    ASTNode
+	FuncName  string
+	Block     ASTNode
+	InParam   []ASTNode
+	OutParam  []ASTNode
+	TailArray bool
+
 	Function *common.Instruction
 }
 
 type ParamNode struct {
 	Node
-	Symbol string
+	Symbol   string
+	TypeNode ASTNode
 }
 
-func (p *ParamNode) Compile(_ *Compiler) {
-	panic("should never reach here, this must be internal error")
-}
+type TypeNodeType int
+
+const (
+	SimpleType = iota
+	SliceType
+	MapType
+	ChanType
+	FuncType
+)
 
 type TypeNode struct {
 	Node
-	dType *common.DataType
+	SimpleTypeName string
+	TypeNodeType   TypeNodeType
+	Key            *common.DataType // map
+	Value          ASTNode          // map slice chan
+	InParam        []ASTNode        // func
+	OutParam       []ASTNode        // func
+	TailArray      bool
 }
 
-func (t *TypeNode) Compile(c *Compiler) {
-	panic("should never reach here, this must be internal error")
-}
-
-type TypeNameNode struct {
+type ConvertNode struct {
 	Node
-	TypeName string
+	Type  ASTNode
+	Value ASTNode
 }
 
-func (t *TypeNameNode) Compile(c *Compiler) {
-	panic("should never reach here, this must be internal error")
-}
-
-func (f *FunctionDefNode) Compile(c *Compiler) {
-	f.Block.Compile(c)
-	blockInst := f.Block.GetInstructions()
-	blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
-		stk.Pc = -1
-	})
-	*f.Function = func(m *common.Memory, stk *common.Stack) {
-		for stk.Pc != -1 {
-			blockInst[stk.Pc](m, stk)
-		}
+func (b *ConvertNode) CheckIsConstant() {
+	b.Variadic = true
+	if !b.Value.IsVariadic() {
+		b.Variadic = false
 	}
 }
 
-type IFunctionNode interface {
-	ASTNode
-	GetReturnType() []*common.DataType
+func (b *ConvertNode) Compile(c *Compiler) {
+	b.Type.Compile(c)
+	b.DataType = b.Type.GetDataType()
+	b.Value.Compile(c)
+	convertInstruction := instruction.GetConvertInstruction(b.Value.GetDataType(), b.DataType)
+	if common.IsError(convertInstruction) {
+		panic(common.NewCompileErr(b.ErrorWithSource("type convert error")))
+	}
+	b.AppendInstruction(b.Value.GetInstructions()...)
+	if convertInstruction != nil {
+		b.AppendInstruction(convertInstruction)
+	}
+
+	b.CheckIsConstant()
+	b.PostProcess()
+	b.StackIncrement = 1
+}
+
+func (p *ParamNode) Compile(c *Compiler) {
+	p.TypeNode.Compile(c)
+	p.DataType = p.TypeNode.GetDataType()
+}
+
+func (t *TypeNode) Compile(c *Compiler) {
+	var dType *common.DataType
+	switch t.TypeNodeType {
+	case SimpleType:
+		dType = c.FindType(t.SimpleTypeName)
+	case SliceType:
+		t.Value.Compile(c)
+		ItemType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindSliceType(ItemType.Type)
+	case ChanType:
+		t.Value.Compile(c)
+		ItemType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindChanType(ItemType.Type)
+	case MapType:
+		t.Value.Compile(c)
+		ValType := t.Value.GetDataType()
+		dType = c.TypeRegistry.FindMapType(t.Key.Type, ValType.Type)
+	case FuncType:
+		meta := &common.FunctionMeta{
+			TailArray: t.TailArray,
+			ConstExpr: false,
+		}
+		for _, in := range t.InParam {
+			in.Compile(c)
+			meta.In = append(meta.In, in.GetDataType())
+		}
+		for _, out := range t.OutParam {
+			out.Compile(c)
+			meta.Out = append(meta.Out, out.GetDataType())
+		}
+		dType = c.TypeRegistry.FindFuncType(meta)
+	default:
+		panic(common.NewCompileErr(t.ErrorWithSource("bad node type, this should never happened because of the enum limitation")))
+	}
+	t.DataType = dType
+}
+
+func (f *FunctionDefNode) Compile(c *Compiler) {
+	c.MakeFunctionScope()
+	defer c.ReturnParentScope()
+
+	f.DataType = &common.DataType{
+		LambdaMeta: &common.FunctionMeta{
+			TailArray: f.TailArray,
+		},
+	}
+	funcPlaceHolder := common.Instruction(nil)
+	f.Function = &funcPlaceHolder
+
+	meta := f.DataType.LambdaMeta
+
+	for idx, in := range f.InParam {
+		in.Compile(c)
+		inNode := in.(*ParamNode)
+		meta.In = append(meta.In, in.GetDataType())
+
+		if idx == len(f.InParam)-1 && meta.TailArray {
+			// symbol's type should be array if there is a tail array sign
+			inNode.DataType = c.TypeRegistry.FindSliceType(inNode.DataType.Type)
+		}
+		c.Scope.AddLocalVariable(&common.Symbol{
+			Symbol:   inNode.Symbol,
+			DataType: inNode.DataType,
+		})
+	}
+	for _, out := range f.OutParam {
+		out.Compile(c)
+		if outNode, ok := out.(*ParamNode); ok {
+			c.Scope.AddReturnVariable(&common.Symbol{
+				Symbol:   outNode.Symbol,
+				DataType: outNode.DataType,
+			})
+		}
+		meta.Out = append(meta.Out, out.GetDataType())
+	}
+
+	f.DataType = c.FindFuncType(f.DataType.LambdaMeta)
+
+	c.PushFunctionMeta(f.DataType.LambdaMeta)
+	defer c.PopFunctionMeta()
+
+	if f.FuncName != "" {
+		f.Variadic = false
+		// named function
+		c.Scope.Outer.AddConstant(f.FuncName, &common.Symbol{
+			Symbol:   f.FuncName,
+			DataType: f.DataType,
+			Data:     f.Function,
+		})
+
+		f.Block.Compile(c)
+		blockInst := f.Block.GetInstructions()
+		blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
+			stk.Pc = -1
+		})
+		*f.Function = func(m *common.Memory, stk *common.Stack) {
+			for stk.Pc != -1 {
+				blockInst[stk.Pc](m, stk)
+			}
+		}
+	} else {
+		// lambda function
+		c.Scope.AddLocalVariable(&common.Symbol{
+			Symbol:     "#",
+			SymbolType: common.Local,
+			Scope:      c.Scope,
+		})
+
+		// let the hunt begin!
+		c.Scope.SetCaptureMode()
+
+		f.Block.Compile(c)
+		capturedVariables := c.Scope.Capture
+		closureVariable := c.Scope.GetSymbol("#")
+		if len(capturedVariables) > 0 {
+			// oh, we capture some outer local variables
+			f.Variadic = true
+			rawFunc := instruction.ConnectInstructions(f.Block.GetInstructions())
+			f.AppendInstruction(instruction.PushLambdaWithCapture(rawFunc, capturedVariables, closureVariable))
+		} else {
+			// sad, nothing captured
+			f.Variadic = false
+			lambda := instruction.ConnectInstructions(f.Block.GetInstructions())
+			f.AppendInstruction(instruction.PushLambda(lambda))
+		}
+		f.StackIncrement = 1
+	}
 }
 
 type FunctionCallNode struct {
@@ -69,162 +213,61 @@ type FunctionCallNode struct {
 	Function ASTNode
 	Params   []ASTNode
 	Meta     *common.FunctionMeta
-	Lambda   *common.Variable
-}
-
-func (f *FunctionCallNode) GetReturnType() []*common.DataType {
-	return f.Meta.Out
-}
-
-func (f *LambdaDefNode) Compile(c *Compiler) {
-	f.Block.Compile(c)
-	capturedVariables := f.Scope.Capture
-	closureVariable := f.Scope.GetVariable("#")
-	if len(capturedVariables) > 0 {
-		captureInstruction := func(m *common.Memory, stk *common.Stack) {
-			captured := make([]interface{}, 0, len(capturedVariables))
-			for _, v := range capturedVariables {
-				switch v.VariableType {
-				case common.Local:
-					captured = append(captured, stk.Get(v))
-				case common.Captured:
-					captured = append(captured, *hack.SliceIndex(*stk.MustGet(closureVariable), int64(v.Offset)))
-				}
-			}
-			stk.Push(captured)
-		}
-		blockInst := f.Block.GetInstructions()
-		blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
-			stk.Pc = -1
-		})
-		rawFunc := func(m *common.Memory, stk *common.Stack) {
-			for stk.Pc != -1 {
-				blockInst[stk.Pc](m, stk)
-			}
-		}
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			captureInstruction(m, stk)
-			captured := stk.Top().([]interface{})
-			stk.Pop()
-			var lambda common.Instruction = func(m *common.Memory, stk *common.Stack) {
-				stk.Push(captured)
-				rawFunc(m, stk)
-			}
-			stk.Push(&lambda)
-		})
-	} else {
-		blockInst := f.Block.GetInstructions()
-		blockInst = append(blockInst, func(m *common.Memory, stk *common.Stack) {
-			stk.Pc = -1
-		})
-		var lambda common.Instruction = func(m *common.Memory, stk *common.Stack) {
-			for stk.Pc != -1 {
-				blockInst[stk.Pc](m, stk)
-			}
-		}
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			stk.Push(&lambda)
-		})
-	}
 }
 
 func (f *FunctionCallNode) Compile(c *Compiler) {
-	num := len(f.Params)
-	paramInstructions := make([]common.Instruction, 0, num)
-	for _, param := range f.Params {
-		param.Compile(c)
+	f.Function.Compile(c)
+	if f.Function.GetDataType().Kind.Kind != common.Func {
+		panic(common.NewCompileErr(f.ErrorWithSource("not a function")))
 	}
-	for i := 0; i < num; i++ {
-		paramInstructions = append(paramInstructions, c.InstructionPop())
-	}
-	paramConvertFunc := make([]lambda_chains.TypeConvertFunc, 0, num)
-	for i := num - 1; i >= 0; i-- {
-		idx := num - i - 1
-		if idx >= len(f.Meta.In) {
-			idx = len(f.Meta.In) - 1
-		}
-		paramConvertFunc = append(paramConvertFunc, lambda_chains.GetConvertFunc(f.Params[i].GetDataType(), f.Meta.In[idx]))
-	}
-	lenOut := len(f.Meta.Out)
-	if lenOut == 0 {
-		lenOut = 1
-	}
-	if f.Function.IsVariadic() {
-		f.Function.Compile(c)
-		functionInstruction := c.InstructionPop()
-		if f.Meta.TailArray {
-			lenIn := len(f.Meta.In)
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				for i := 0; i < lenOut; i++ {
-					stk.Push(nil)
-				}
-				for i := 0; i < lenIn-1; i++ {
-					paramInstructions[i](m, stk)
-					stk.Set(0, paramConvertFunc[i](stk.Top()))
-				}
-				tailArray := make([]interface{}, num-lenIn+1)
-				for i := lenIn - 1; i < num; i++ {
-					paramInstructions[i](m, stk)
-					tailArray[i-lenIn+1] = paramConvertFunc[i](stk.Top())
-					stk.Pop()
-				}
-				stk.Push(tailArray)
-				functionInstruction(m, stk)
-				funcPtr := stk.Top().(*common.Instruction)
-				stk.Pop()
-				stk.Call(*funcPtr, m, stk, lenIn)
-			})
-		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				for i := 0; i < lenOut; i++ {
-					stk.Push(nil)
-				}
-				for i := 0; i < num; i++ {
-					paramInstructions[i](m, stk)
-					stk.Set(0, paramConvertFunc[i](stk.Top()))
-				}
-				functionInstruction(m, stk)
-				funcPtr := stk.Top().(*common.Instruction)
-				stk.Pop()
-				stk.Call(*funcPtr, m, stk, num)
-			})
-		}
-	} else {
-		meta := f.Function.GetDataType().LambdaMeta
-		funcPtr := f.Function.(IConstantNode).GetConstantValue().(*common.Instruction)
-		if meta.TailArray {
-			lenIn := len(f.Meta.In)
 
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				for i := 0; i < lenOut; i++ {
-					stk.Push(nil)
-				}
-				for i := 0; i < lenIn-1; i++ {
-					paramInstructions[i](m, stk)
-					stk.Set(0, paramConvertFunc[i](stk.Top()))
-				}
-				tailArray := make([]interface{}, num-lenIn+1)
-				for i := lenIn - 1; i < num; i++ {
-					paramInstructions[i](m, stk)
-					tailArray[i-lenIn+1] = paramConvertFunc[i](stk.Top())
-					stk.Pop()
-				}
-				stk.Push(tailArray)
-				stk.Call(*funcPtr, m, stk, lenIn)
-			})
-		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				for i := 0; i < lenOut; i++ {
-					stk.Push(nil)
-				}
-				for i := 0; i < num; i++ {
-					paramInstructions[i](m, stk)
-					stk.Set(0, paramConvertFunc[i](stk.Top()))
-				}
-				stk.Call(*funcPtr, m, stk, num)
-			})
+	meta := f.Function.GetDataType().LambdaMeta
+	f.Meta = meta
+
+	if len(meta.Out) == 1 {
+		f.DataType = meta.Out[0]
+	} else {
+		f.DataType = common.BasicTypeMap["nil"]
+	}
+
+	num := len(f.Params)
+	if num > len(meta.In) && meta.TailArray == false || num < len(meta.In) {
+		panic(common.NewCompileErr(f.ErrorWithSource("parameter given mismatch with needed")))
+	}
+
+	if len(meta.Out) > 0 {
+		f.AppendInstruction(instruction.GetAppendReturnPlace(len(meta.Out)))
+	}
+	f.StackIncrement = len(meta.Out)
+
+	if f.Meta.TailArray {
+		for i, param := range f.Params {
+			idx := i
+			if idx >= len(meta.In)-1 {
+				idx = len(meta.In) - 1
+			}
+			param.SetRequiredType(meta.In[idx])
+			param.Compile(c)
+			f.AppendInstruction(param.GetInstructions()...)
+		}
+		f.AppendInstruction(instruction.GetTailArray(num - len(meta.In) + 1))
+	} else {
+		for i, param := range f.Params {
+			param.SetRequiredType(meta.In[i])
+			param.Compile(c)
+			f.AppendInstruction(param.GetInstructions()...)
 		}
 	}
+
+	if f.Function.IsVariadic() {
+		f.AppendInstruction(f.Function.GetInstructions()...)
+		f.AppendInstruction(instruction.GetDynamicCallFunc(len(meta.In)))
+	} else {
+		funcPtr := f.Function.GetConstantValue().(*common.Instruction)
+		f.AppendInstruction(instruction.GetStaticCallFunc(funcPtr, len(meta.In)))
+	}
+
+	f.PostProcess()
 }
 
 type BuiltinFunctionNode struct {
@@ -234,178 +277,101 @@ type BuiltinFunctionNode struct {
 	Aux         interface{}
 }
 
-// todo: process non-variadic
 func (b *BuiltinFunctionNode) Compile(c *Compiler) {
 	switch b.BuiltinName {
-	case "any":
-		b.Params[0].Compile(c)
-	case "uint8":
-		panic(common.NewCompileErr("uint8 is not opened"))
-		//b.Params[0].Compile(c)
-		//valInst := c.InstructionPop()
-		//convertFunc := lambda_chains.GetConvertFunc32u(b.Params[0].GetDataType(), b.DataType)
-		//c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-		//	valInst(m, stk)
-		//	stk.Set(0, convertFunc(stk.Top()))
-		//})
-	case "uint32":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc32u(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "uint64":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc64u(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "int32":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc32i(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "int64":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc64i(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "float32":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc32f(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "float64":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFunc64f(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "string":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFuncStr(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "bytes":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFuncBytes(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
-	case "bool":
-		b.Params[0].Compile(c)
-		valInst := c.InstructionPop()
-		convertFunc := lambda_chains.GetConvertFuncBool(b.Params[0].GetDataType(), b.DataType)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, convertFunc(stk.Top()))
-		})
 	case "pushBack", "pushFront":
+		b.Variadic = true
+		b.DataType = common.BasicTypeMap["illegal"]
+		if len(b.Params) != 2 {
+			panic(common.NewCompileErr(b.ErrorWithSource("pushBack/pushFront has two parameter")))
+		}
+		b.Params[0].SetLhs()
 		b.Params[0].Compile(c)
-		b.Params[1].SetLhs()
+		sliceType := b.Params[0].GetDataType()
+		b.AppendInstruction(b.Params[0].GetInstructions()...)
+		if sliceType.Kind.Kind != common.Slice {
+			panic(common.NewCompileErr(b.ErrorWithSource("slice operation should have slice value as its first parameter")))
+		}
+		b.AppendInstruction()
+		b.Params[1].SetRequiredType(sliceType.ItemType)
 		b.Params[1].Compile(c)
-		itemConvertFunc := lambda_chains.GetConvertFunc(b.Params[0].GetDataType(), b.Params[1].GetDataType().ItemType)
-		sliceInst := c.InstructionPop()
-		itemInst := c.InstructionPop()
+		if b.Params[0].IsStackPtr() {
+			b.AppendInstruction(instruction.GetStackOffsetToStackPtr(1))
+		}
+		b.AppendInstruction(b.Params[1].GetInstructions()...)
 		if b.BuiltinName == "pushBack" {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				sliceInst(m, stk)
-				itemInst(m, stk)
-				ptr := stk.TopIndex(1).(*interface{})
-				if *ptr == nil {
-					*ptr = []interface{}{}
-				}
-				*ptr = append((*ptr).([]interface{}), itemConvertFunc(stk.Top()))
-				stk.Pop()
-			})
+			b.AppendInstruction(instruction.PushBack())
 		} else {
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				sliceInst(m, stk)
-				itemInst(m, stk)
-				ptr := stk.TopIndex(1).(*interface{})
-				if *ptr == nil {
-					*ptr = []interface{}{}
-				}
-				*ptr = append([]interface{}{itemConvertFunc(stk.Top())}, (*ptr).([]interface{})...)
-				stk.Pop()
-			})
+			b.AppendInstruction(instruction.PushFront())
 		}
 	case "delete":
-		m := b.Params[1]
-		key := b.Params[0]
-		key.Compile(c)
+		b.Variadic = true
+		b.DataType = common.BasicTypeMap["illegal"]
+		if len(b.Params) != 2 {
+			panic(common.NewCompileErr(b.ErrorWithSource("delete has two parameter")))
+		}
+		m := b.Params[0]
+		key := b.Params[1]
 		m.Compile(c)
-		mapInst := c.InstructionPop()
-		keyInst := c.InstructionPop()
+		mType := m.GetDataType()
+		b.AppendInstruction(m.GetInstructions()...)
 
 		switch m.GetDataType().Kind.Kind {
 		case common.Message:
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				mapInst(m, stk)
-				if stk.Top() != nil {
-					keyInst(m, stk)
-					lambda_chains.DelMapStrField(stk.TopIndex(1), stk.Top())
-					stk.Pop()
-				}
-			})
+			key.SetDataType(common.BasicTypeMap[common.StringType])
+			key.Compile(c)
+			b.AppendInstruction(key.GetInstructions()...)
+			b.AppendInstruction(instruction.DeleteMessageField())
 		case common.Map:
-			keyConvertFunc := lambda_chains.GetConvertFunc(key.GetDataType(), m.GetDataType().KeyType)
-			mapDelFunc := lambda_chains.GetMapDelFunc(key.GetDataType())
-			// todo: optimization use type specific convert function
-			c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-				mapInst(m, stk)
-				if stk.Top() != nil {
-					keyInst(m, stk)
-					mapDelFunc(stk.TopIndex(1), keyConvertFunc(stk.Top()))
-					stk.Pop()
-				}
-			})
+			key.SetDataType(mType.KeyType)
+			key.Compile(c)
+			b.AppendInstruction(key.GetInstructions()...)
+			mapDelFunc := instruction.GetMapDelFunc(key.GetDataType())
+			b.AppendInstruction(instruction.DeleteMapKey(mapDelFunc))
 		default:
-			panic("delete not allowed on " + m.GetDataType().Type)
+			panic(common.NewCompileErr(b.ErrorWithSource("delete not allowed on " + m.GetDataType().Type)))
 		}
 	case "len":
-		val := b.Params[0]
-		val.Compile(c)
-		valInst := c.InstructionPop()
-		if val.GetDataType().Kind.Kind != common.Map && val.GetDataType().Kind.Kind != common.Slice && val.GetDataType().Kind.Kind != common.String && val.GetDataType().Kind.Kind != common.Bytes {
-			panic("map delete error, first parameter should be a map, second parameter should be the key type of the first parameter")
+		b.Variadic = true
+		b.DataType = common.BasicTypeMap[common.Int64Type]
+		if len(b.Params) != 1 {
+			panic(common.NewCompileErr(b.ErrorWithSource("len has one parameter")))
 		}
-		lengthFunc := lambda_chains.GetLengthFunc(val.GetDataType())
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, lengthFunc(stk.Top()))
-		})
-	case "enumString":
 		val := b.Params[0]
 		val.Compile(c)
-		valInst := c.InstructionPop()
+		b.AppendInstruction(val.GetInstructions()...)
+		if val.GetDataType().Kind.Kind != common.Map && val.GetDataType().Kind.Kind != common.Slice && val.GetDataType().Kind.Kind != common.String && val.GetDataType().Kind.Kind != common.Bytes {
+			panic(common.NewTypeErr(b.ErrorWithSource("len parameter could be map, slice, string or map")))
+		}
+		lengthFunc := instruction.GetLengthFunc(val.GetDataType())
+		b.AppendInstruction(instruction.Len(lengthFunc))
+	case "enumString":
+		b.Variadic = true
+		b.DataType = common.BasicTypeMap[common.StringType]
+		if len(b.Params) != 1 {
+			panic(common.NewCompileErr(b.ErrorWithSource("enumString has one parameter")))
+		}
+		val := b.Params[0]
+		val.Compile(c)
+		b.AppendInstruction(val.GetInstructions()...)
 		if val.GetDataType().Kind.Kind != common.Int32 && val.GetDataType().Type != "int32" {
-			panic("enumName can only be applied on an enum value")
+			panic(common.NewTypeErr(b.ErrorWithSource("enumName can only be applied on an enum value")))
 		}
 		rEnum := c.TypeRegistry.GetREnums(val.GetDataType().Type)
-		c.InstructionPush(func(m *common.Memory, stk *common.Stack) {
-			valInst(m, stk)
-			stk.Set(0, rEnum[stk.Top().(int32)])
-		})
+		b.AppendInstruction(instruction.EnumString(rEnum))
+	case "typeof":
+		b.Variadic = false
+		b.DataType = common.BasicTypeMap["reflect"]
+		if len(b.Params) != 1 {
+			panic(common.NewCompileErr(b.ErrorWithSource("typeof has one parameter")))
+		}
+		val := b.Params[0]
+		val.Compile(c)
+		b.AppendInstruction(instruction.GetPushConstantFunc(val.GetDataType()))
+	default:
+		panic(common.NewCompileErr(b.ErrorWithSource("unknown builtin function")))
 	}
+
+	b.PostProcess()
+	b.StackIncrement = 1
 }

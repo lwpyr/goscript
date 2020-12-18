@@ -8,11 +8,12 @@ import (
 )
 
 func compileConstExpr(expr string) interface{} {
-	node, err := constC.BuildSingleLineAST(expr)
+	node, err := goscript.BuildSingleLineAST(constC, expr)
 	if err != nil {
 		panic(err)
 	}
-	return node.(ast.IConstantNode).GetConstantValue()
+	node.Compile(constC)
+	return node.GetConstantValue()
 }
 
 func TestConstantExpression(t *testing.T) {

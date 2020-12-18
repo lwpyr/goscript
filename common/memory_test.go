@@ -18,7 +18,7 @@ func TestA(t *testing.T) {
 }
 
 func TestSliceMemory(t *testing.T) {
-	varDef := &Variable{
+	varDef := &Symbol{
 		Offset:   0,
 		Symbol:   "test",
 		DataType: BasicTypeMap["int64"],

@@ -1,4 +1,4 @@
-package lambda_chains
+package instruction
 
 import (
 	"github.com/lwpyr/goscript/common"

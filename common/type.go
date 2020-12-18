@@ -6,15 +6,16 @@ import (
 )
 
 type DataType struct {
-	Type        string
-	Kind        *DataKind
-	FieldType   map[string]*DataType // for complex
-	OneOf       map[string]string
-	OneOfGroup  map[string][]string
-	ItemType    *DataType // for sequence item type
-	KeyType     *DataType // map key
-	ValueType   *DataType // map val
-	Method      map[string]*FunctionMeta
+	Type       string
+	Kind       *DataKind
+	FieldType  map[string]*DataType // for complex
+	OneOf      map[string]string
+	OneOfGroup map[string][]string
+	ItemType   *DataType // for sequence item type
+	KeyType    *DataType // map key
+	ValueType  *DataType // map val
+	Method     map[string]*FunctionMeta
+
 	LambdaMeta  *FunctionMeta // for closure
 	Unmarshal   func(iterator *jsoniter.Iterator) interface{}
 	Constructor Constructor
@@ -378,6 +379,10 @@ var BasicTypeMap = map[string]*DataType{
 		Kind:        KindMap[Any],
 		Method:      map[string]*FunctionMeta{},
 		Constructor: ConstructorMap[Any],
+	},
+	"illegal": {
+		Type: "illegal",
+		Kind: KindMap[Illegal],
 	},
 }
 
