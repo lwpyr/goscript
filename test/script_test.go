@@ -163,6 +163,17 @@ Outer(10);
 	p.RunOnMemory(mem)
 }
 
+func TestI(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+const p1 Person = {name: 'Tom', age: 11};
+print(p1);
+`
+	p := compileScript(expr)
+	p.RunOnMemory(mem)
+}
+
 func BenchmarkA(b *testing.B) {
 	setupParse()
 	var expr string
