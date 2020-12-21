@@ -68,7 +68,6 @@ func TestD(t *testing.T) {
 	setupParse()
 	var expr string
 	expr = `
-var Tom Person = new Person();
 func who(p Person) {
 	if(p.name == 'Tom') {
 		print('Tommy');
@@ -78,12 +77,9 @@ func who(p Person) {
 		print('I don\'t know');
 	}
 }
-Tom = {name:'Tom'};
-who(Tom);
-Tom = {name:'Dave'};
-who(Tom);
-Tom = {name:'Lisa'};
-who(Tom);
+who({name:'Tom'});
+who({name:'Dave'});
+who({name:'Lisa'});
 `
 	p := compileScript(expr)
 	p.RunOnMemory(mem)
@@ -153,8 +149,7 @@ func BenchmarkA(b *testing.B) {
 	setupParse()
 	var expr string
 	expr = `
-var sum int64;
-sum = 0;
+sum := 0;
 for (i := 1; i <= 100; i++) {
 	sum = sum + i;
 }
@@ -163,6 +158,29 @@ for (i := 1; i <= 100; i++) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		p.RunOnMemory(mem)
+	}
+}
+
+func BenchmarkB(b *testing.B) {
+	setupParse()
+	var expr string
+	expr = `
+sum := 0;
+for (i := 1; i <= 100; i++) {
+	sum = sum + i;
+}
+print(sum);
+`
+	p := compileScript(expr)
+	stk := &common.Stack{
+		Pc:   0,
+		Bp:   0,
+		Sp:   -1,
+		Data: make([]interface{}, 0, 100),
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		p.Run(mem, stk)
 	}
 }
 

@@ -513,7 +513,7 @@ func (n *BinaryNode) Compile(c *Compiler) {
 		n.AppendInstruction(n.Lhs.GetInstructions()...)
 		n.AppendInstruction(n.Rhs.GetInstructions()...)
 
-		opFunc := instruction.GetBinaryOpFunc(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
+		opFunc := instruction.BinaryOp(n.Op, n.Lhs.GetDataType(), n.Rhs.GetDataType())
 		if common.IsError(opFunc) {
 			panic(common.NewCompileErr(n.ErrorWithSource("cannot do binary op")))
 		}
@@ -521,14 +521,14 @@ func (n *BinaryNode) Compile(c *Compiler) {
 	case "&&":
 		lhsInstructions := n.Lhs.GetInstructions()
 		rhsInstructions := n.Rhs.GetInstructions()
-		opFunc := instruction.GetAndFunc(len(rhsInstructions))
+		opFunc := instruction.And(len(rhsInstructions))
 		n.AppendInstruction(lhsInstructions...)
 		n.AppendInstruction(opFunc)
 		n.AppendInstruction(rhsInstructions...)
 	case "||":
 		lhsInstructions := n.Lhs.GetInstructions()
 		rhsInstructions := n.Rhs.GetInstructions()
-		opFunc := instruction.GetOrFunc(len(rhsInstructions))
+		opFunc := instruction.Or(len(rhsInstructions))
 		n.AppendInstruction(lhsInstructions...)
 		n.AppendInstruction(opFunc)
 		n.AppendInstruction(rhsInstructions...)

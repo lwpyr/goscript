@@ -196,7 +196,7 @@ func Assign(op string, lhs *common.DataType) common.Instruction {
 	return common.ErrorInstruction
 }
 
-func GetAndFunc(rhsLen int) common.Instruction {
+func And(rhsLen int) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		if !(stk.Top()).(bool) {
 			stk.Pc += rhsLen + 1
@@ -207,7 +207,7 @@ func GetAndFunc(rhsLen int) common.Instruction {
 	}
 }
 
-func GetOrFunc(rhsLen int) common.Instruction {
+func Or(rhsLen int) common.Instruction {
 	return func(m *common.Memory, stk *common.Stack) {
 		if (stk.Top()).(bool) {
 			stk.Pc += rhsLen + 1
@@ -218,7 +218,7 @@ func GetOrFunc(rhsLen int) common.Instruction {
 	}
 }
 
-func GetBinaryOpFunc(op string, lhs *common.DataType, rhs *common.DataType) common.Instruction {
+func BinaryOp(op string, lhs *common.DataType, rhs *common.DataType) common.Instruction {
 	switch op {
 	case "+":
 		t := lhs

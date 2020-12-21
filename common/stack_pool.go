@@ -1,4 +1,4 @@
-// borrowed from bufferpool
+// borrowed from bytebufferpool
 package common
 
 import (

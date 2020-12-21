@@ -563,9 +563,15 @@ func BenchmarkInitializationListPreAllocated(b *testing.B) {
 	setup()
 	expr := "Class = {1:{name:'alpha', age:100}, 2:{name:'beta', age:200, hobbies:{'dance', 'sing'} }, 3:{name:'gamma', age:300}}"
 	p := compile(expr)
+	stk := &common.Stack{
+		Pc:   0,
+		Bp:   0,
+		Sp:   -1,
+		Data: make([]interface{}, 0, 100),
+	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		p.RunOnMemory(mem)
+		p.Run(mem, stk)
 	}
 }
 
@@ -604,10 +610,10 @@ func BenchmarkInitNaive(b *testing.B) {
 
 func BenchmarkFilter(b *testing.B) {
 	setup()
-	expr := "Friends = [{name('alpha'), age(100)}, {name('beta'), age(200), hobbies(['dance', 'sing']) }, {name('gamma'), age(300)}]"
+	expr := "Friends = {{name:'alpha', age:100}, {name:'beta', age:200, hobbies:{'dance', 'sing'} }, {name:'gamma', age:300}}"
 	p := compile(expr)
 	p.RunOnMemory(mem)
-	expr = "Friends[?(@.name == 'beta')][0].age"
+	expr = "Friends[?('beta' == @.name)][0].age"
 	p = compile(expr)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
