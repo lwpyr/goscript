@@ -80,7 +80,7 @@ type RestoreStackNode struct {
 	Line ASTNode
 }
 
-func (b *RestoreStackNode) Compile(c *Compiler) {
+func (b *RestoreStackNode) Compile(c *CompileContext) {
 	b.Line.Compile(c)
 	b.AppendInstruction(b.Line.GetInstructions()...)
 	n := b.Line.GetStackIncrement()
@@ -89,7 +89,7 @@ func (b *RestoreStackNode) Compile(c *Compiler) {
 	}
 }
 
-func (b *BlockNode) Compile(c *Compiler) {
+func (b *BlockNode) Compile(c *CompileContext) {
 	c.MakeChildScope()
 	defer c.ReturnParentScope()
 
@@ -105,7 +105,7 @@ func (b *BlockNode) Compile(c *Compiler) {
 	}
 }
 
-func (r *ReturnNode) Compile(c *Compiler) {
+func (r *ReturnNode) Compile(c *CompileContext) {
 	// todo check validity
 	lenRet := len(r.Expr)
 	for _, expr := range r.Expr {
@@ -120,15 +120,15 @@ func (r *ReturnNode) Compile(c *Compiler) {
 	r.AppendInstruction(instruction.StackReturnVoid())
 }
 
-func (b *BreakNode) Compile(_ *Compiler) {
+func (b *BreakNode) Compile(_ *CompileContext) {
 	b.Instructions = []common.Instruction{BreakPlaceHolder}
 }
 
-func (c *ContinueNode) Compile(_ *Compiler) {
+func (c *ContinueNode) Compile(_ *CompileContext) {
 	c.Instructions = []common.Instruction{ContinuePlaceHolder}
 }
 
-func (n *IfNode) Compile(c *Compiler) {
+func (n *IfNode) Compile(c *CompileContext) {
 	n.Condition.Compile(c)
 	n.AppendInstruction(n.Condition.GetInstructions()...)
 	n.Block.Compile(c)
@@ -186,7 +186,7 @@ func relocateBreakAndContinue(instructions []common.Instruction) {
 	}
 }
 
-func (f *ForMapNode) Compile(c *Compiler) {
+func (f *ForMapNode) Compile(c *CompileContext) {
 	f.Map.Compile(c)
 	if f.Map.GetDataType().Kind.Kind != common.Map {
 		panic(common.NewTypeErr(f.ErrorWithSource("for loop with slice doesn't get a slice")))
@@ -260,7 +260,7 @@ func (i *SliceIterator) Item() interface{} {
 	return i.slice[i.idx]
 }
 
-func (f *ForSliceNode) Compile(c *Compiler) {
+func (f *ForSliceNode) Compile(c *CompileContext) {
 	f.Slice.Compile(c)
 	if f.Slice.GetDataType().Kind.Kind != common.Slice {
 		panic(common.NewTypeErr(f.ErrorWithSource("for loop with slice doesn't get a slice")))
@@ -312,7 +312,7 @@ func (f *ForSliceNode) Compile(c *Compiler) {
 	c.Scope = c.Scope.Outer
 }
 
-func (f *ForNode) Compile(c *Compiler) {
+func (f *ForNode) Compile(c *CompileContext) {
 	c.MakeChildScope()
 	defer c.ReturnParentScope()
 
@@ -349,7 +349,7 @@ func (f *ForNode) Compile(c *Compiler) {
 	})
 }
 
-func (s *SwitchNode) Compile(c *Compiler) {
+func (s *SwitchNode) Compile(c *CompileContext) {
 	s.Expr.Compile(c)
 	s.AppendInstruction(s.Expr.GetInstructions()...)
 	num := len(s.Conditions)

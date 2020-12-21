@@ -5,7 +5,7 @@ import (
 	"github.com/lwpyr/goscript/instruction"
 )
 
-func (p *ProgramRoot) Compile(c *Compiler) {
+func (p *ProgramRoot) Compile(c *CompileContext) {
 	// first compile all the type definition
 	for _, node := range p.TypeDefNode {
 		node.Compile(c)

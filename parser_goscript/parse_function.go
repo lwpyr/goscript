@@ -33,6 +33,7 @@ func (s *ASTBuilder) ExitFunctionDef(ctx *parser.FunctionDefContext) {
 	for i := 0; i < lenIn; i++ {
 		fNode.InParam[lenIn-1-i] = s.NodePop()
 	}
+	fNode.SetSource(ctx)
 	s.NodePush(fNode)
 }
 
@@ -66,26 +67,32 @@ func (s *ASTBuilder) ExitLambdaDef(ctx *parser.LambdaDefContext) {
 
 // EnterParam is called when production param is entered.
 func (s *ASTBuilder) ExitParam(ctx *parser.ParamContext) {
-	s.NodePush(&ast.ParamNode{
+	node := &ast.ParamNode{
 		Symbol:   ctx.Name().GetText(),
 		TypeNode: s.NodePop(),
-	})
+	}
+	node.SetSource(ctx)
+	s.NodePush(node)
 }
 
 // ExitSimpleTypeName is called when production SimpleTypeName is exited.
 func (s *ASTBuilder) ExitSimpleTypeName(ctx *parser.SimpleTypeNameContext) {
-	s.NodePush(&ast.TypeNode{
+	node := &ast.TypeNode{
 		TypeNodeType:   ast.SimpleType,
 		SimpleTypeName: strings.Replace(ctx.GetText(), " ", "", -1),
-	})
+	}
+	node.SetSource(ctx)
+	s.NodePush(node)
 }
 
 // ExitChanTypeName is called when production ChanTypeName is exited.
 func (s *ASTBuilder) ExitChanTypeName(ctx *parser.ChanTypeNameContext) {
-	s.NodePush(&ast.TypeNode{
+	node := &ast.TypeNode{
 		TypeNodeType: ast.ChanType,
 		Value:        s.NodePop(),
-	})
+	}
+	node.SetSource(ctx)
+	s.NodePush(node)
 }
 
 // ExitMapTypeName is called when production MapTypeName is exited.
@@ -122,6 +129,7 @@ func (s *ASTBuilder) ExitFunctionTypeName(ctx *parser.FunctionTypeNameContext) {
 	for i := 0; i < lenIn; i++ {
 		node.InParam[lenIn-1-i] = s.NodePop()
 	}
+	node.SetSource(ctx)
 	s.NodePush(node)
 }
 

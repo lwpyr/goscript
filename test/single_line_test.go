@@ -621,7 +621,7 @@ func BenchmarkFilter(b *testing.B) {
 	}
 }
 
-var c *ast.Compiler
+var c *ast.CompileContext
 var mem *common.Memory
 
 func setup() {

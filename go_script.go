@@ -17,7 +17,7 @@ import (
 	"runtime/debug"
 )
 
-func BuildFunctionDefAST(c *ast.Compiler, expr string) (root ast.ASTNode, err error) {
+func BuildFunctionDefAST(c *ast.CompileContext, expr string) (root ast.ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = r.(common.ScriptError)
@@ -34,7 +34,7 @@ func BuildFunctionDefAST(c *ast.Compiler, expr string) (root ast.ASTNode, err er
 	return l.NodeTop(), nil
 }
 
-func CompileFunctionDef(c *ast.Compiler, expr string) error {
+func CompileFunctionDef(c *ast.CompileContext, expr string) error {
 	node, err := BuildFunctionDefAST(c, expr)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func CompileFunctionDef(c *ast.Compiler, expr string) error {
 	return nil
 }
 
-func BuildSingleLineAST(c *ast.Compiler, expr string) (root ast.ASTNode, err error) {
+func BuildSingleLineAST(c *ast.CompileContext, expr string) (root ast.ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
@@ -60,7 +60,7 @@ func BuildSingleLineAST(c *ast.Compiler, expr string) (root ast.ASTNode, err err
 	return l.NodeTop(), nil
 }
 
-func CompileExpression(c *ast.Compiler, expr string) (common.Instruction, error) {
+func CompileExpression(c *ast.CompileContext, expr string) (common.Instruction, error) {
 	node, err := BuildSingleLineAST(c, expr)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func CompileExpression(c *ast.Compiler, expr string) (common.Instruction, error)
 	return ret, nil
 }
 
-func CompileSingleLineProgram(expr string, c *ast.Compiler, s *common.Scope) (p *program.SingleLineProgram, err error) {
+func CompileSingleLineProgram(expr string, c *ast.CompileContext, s *common.Scope) (p *program.SingleLineProgram, err error) {
 	if s != nil {
 		c.Scope = s
 	}
@@ -94,7 +94,7 @@ func CompileSingleLineProgram(expr string, c *ast.Compiler, s *common.Scope) (p 
 	return &program.SingleLineProgram{Root: inst}, nil
 }
 
-func BuildAST(c *ast.Compiler, expr string) (root ast.ASTNode, err error) {
+func BuildAST(c *ast.CompileContext, expr string) (root ast.ASTNode, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			if e, ok := r.(common.ScriptError); ok {
@@ -115,7 +115,7 @@ func BuildAST(c *ast.Compiler, expr string) (root ast.ASTNode, err error) {
 	return l.NodeTop(), nil
 }
 
-func CompileScript(c *ast.Compiler, script string) (common.Instruction, error) {
+func CompileScript(c *ast.CompileContext, script string) (common.Instruction, error) {
 	node, err := BuildAST(c, script)
 	if err != nil {
 		return nil, err
@@ -124,7 +124,7 @@ func CompileScript(c *ast.Compiler, script string) (common.Instruction, error) {
 	return node.GetInstructions()[0], nil
 }
 
-func CompileScriptProgram(expr string, c *ast.Compiler, s *common.Scope) (p *program.ScriptProgram, err error) {
+func CompileScriptProgram(expr string, c *ast.CompileContext, s *common.Scope) (p *program.ScriptProgram, err error) {
 	if s != nil {
 		c.Scope = s
 	}
@@ -171,8 +171,8 @@ func NewMemory(size int) *common.Memory {
 	}
 }
 
-func NewCompiler() *ast.Compiler {
-	return &ast.Compiler{
+func NewCompiler() *ast.CompileContext {
+	return &ast.CompileContext{
 		TypeRegistry: NewTypeRegistry(),
 		Scope:        nil,
 		//FunctionLib:  nil,

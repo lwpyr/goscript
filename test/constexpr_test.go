@@ -48,7 +48,7 @@ func TestConstantExpressionWithEnum(t *testing.T) {
 	assert.Equal(t, int32(36), compileConstExpr(expr))
 }
 
-var constC *ast.Compiler
+var constC *ast.CompileContext
 
 func init() {
 	tr := goscript.NewTypeRegistry()
@@ -64,7 +64,7 @@ func init() {
 		"volleyball": int32(2),
 		"soccer":     int32(3),
 	})
-	constC = &ast.Compiler{
+	constC = &ast.CompileContext{
 		TypeRegistry: tr,
 		Scope:        nil,
 	}

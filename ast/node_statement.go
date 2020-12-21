@@ -128,7 +128,7 @@ func (v *FetchSymbolNode) CheckIsConstant() {
 	}
 }
 
-func (v *FetchSymbolNode) Compile(c *Compiler) {
+func (v *FetchSymbolNode) Compile(c *CompileContext) {
 	symbol := c.Scope.GetSymbol(v.SymbolName)
 	if symbol == nil {
 		panic(common.NewSymbolErr(v.ErrorWithSource("unknown symbol")))
@@ -162,7 +162,7 @@ func (a *AssertNode) CheckIsConstant() {
 	}
 }
 
-func (a *AssertNode) Compile(c *Compiler) {
+func (a *AssertNode) Compile(c *CompileContext) {
 	a.Type.Compile(c)
 	a.DataType = a.Type.GetDataType()
 
@@ -192,7 +192,7 @@ func (s *SelectorNode) CheckIsConstant() {
 	}
 }
 
-func (s *SelectorNode) Compile(c *Compiler) {
+func (s *SelectorNode) Compile(c *CompileContext) {
 	if s.LhsFlag {
 		s.Data.SetLhs()
 	}
@@ -243,7 +243,7 @@ func (s *SliceFilterNode) CheckIsConstant() {
 	// todo: function constexpr check
 }
 
-func (s *SliceFilterNode) Compile(c *Compiler) {
+func (s *SliceFilterNode) Compile(c *CompileContext) {
 	if s.LhsFlag {
 		panic(common.NewCompileErr(s.ErrorWithSource("cannot use slice-filter an array on the left hand side")))
 	}
@@ -299,7 +299,7 @@ func (s *SliceMultiIndexNode) CheckIsConstant() {
 	}
 }
 
-func (s *SliceMultiIndexNode) Compile(c *Compiler) {
+func (s *SliceMultiIndexNode) Compile(c *CompileContext) {
 	if s.LhsFlag {
 		panic(common.NewTypeErr(s.ErrorWithSource("cannot use slice-index an array on the left hand side")))
 	}
@@ -346,7 +346,7 @@ func (m *MapMultiIndexNode) CheckIsConstant() {
 	}
 }
 
-func (m *MapMultiIndexNode) Compile(c *Compiler) {
+func (m *MapMultiIndexNode) Compile(c *CompileContext) {
 	if m.LhsFlag {
 		panic(common.NewCompileErr(m.ErrorWithSource("cannot use slice-index a map on the left hand side")))
 	}
@@ -380,7 +380,7 @@ func (i *IndexNode) CheckIsConstant() {
 	}
 }
 
-func (i *IndexNode) Compile(c *Compiler) {
+func (i *IndexNode) Compile(c *CompileContext) {
 	if i.LhsFlag {
 		i.ToIndex.SetLhs()
 	}
@@ -443,7 +443,7 @@ func (i *IndicesNode) CheckIsConstant() {
 	}
 }
 
-func (i *IndicesNode) Compile(c *Compiler) {
+func (i *IndicesNode) Compile(c *CompileContext) {
 	var from, to, step []common.Instruction
 	if i.From != nil {
 		i.From.SetRequiredType(common.BasicTypeMap[common.Int64Type])
@@ -483,7 +483,7 @@ func (n *BinaryNode) CheckIsConstant() {
 	}
 }
 
-func (n *BinaryNode) Compile(c *Compiler) {
+func (n *BinaryNode) Compile(c *CompileContext) {
 	if n.LhsFlag {
 		panic(common.NewCompileErr(n.ErrorWithSource("cannot use binary op on the left hand side")))
 	}
@@ -550,7 +550,7 @@ func (u *LeftUnaryNode) CheckIsConstant() {
 	}
 }
 
-func (u *LeftUnaryNode) Compile(c *Compiler) {
+func (u *LeftUnaryNode) Compile(c *CompileContext) {
 	if u.LhsFlag {
 		panic(common.NewCompileErr(u.ErrorWithSource("cannot use unary op on the left hand side")))
 	}
@@ -576,7 +576,7 @@ func (u *LeftUnaryNode) Compile(c *Compiler) {
 	u.StackIncrement = 1
 }
 
-func (u *RightUnaryNode) Compile(c *Compiler) {
+func (u *RightUnaryNode) Compile(c *CompileContext) {
 	if u.LhsFlag {
 		panic(common.NewCompileErr(u.ErrorWithSource("cannot use unary op on the left hand side")))
 	}
@@ -601,7 +601,7 @@ func (u *RightUnaryNode) Compile(c *Compiler) {
 	u.StackIncrement = 1
 }
 
-func (n *ConstructorNode) Compile(c *Compiler) {
+func (n *ConstructorNode) Compile(c *CompileContext) {
 	if n.LhsFlag {
 		panic(common.NewCompileErr(n.ErrorWithSource("constructor cannot be on the left hand side")))
 	}
@@ -620,7 +620,7 @@ func (n *ConstructorNode) Compile(c *Compiler) {
 	n.StackIncrement = 1
 }
 
-func (v *ValueNode) Compile(_ *Compiler) {
+func (v *ValueNode) Compile(_ *CompileContext) {
 	if v.LhsFlag {
 		panic(common.NewCompileErr(v.ErrorWithSource("constant value cannot be on the left hand side")))
 	}
@@ -628,7 +628,7 @@ func (v *ValueNode) Compile(_ *Compiler) {
 	v.PostProcess()
 }
 
-func (v *ChanSend) Compile(c *Compiler) {
+func (v *ChanSend) Compile(c *CompileContext) {
 	if v.LhsFlag {
 		panic(common.NewCompileErr(v.ErrorWithSource("chan send cannot be on the left hand side")))
 	}
@@ -649,7 +649,7 @@ func (v *ChanSend) Compile(c *Compiler) {
 	v.StackIncrement = 1
 }
 
-func (v *ChanRecv) Compile(c *Compiler) {
+func (v *ChanRecv) Compile(c *CompileContext) {
 	if v.LhsFlag {
 		panic(common.NewCompileErr(v.ErrorWithSource("chan recv cannot be on the left hand side")))
 	}
@@ -665,7 +665,7 @@ func (v *ChanRecv) Compile(c *Compiler) {
 	v.StackIncrement = 1
 }
 
-func (i *InitializationSliceNode) Compile(c *Compiler) {
+func (i *InitializationSliceNode) Compile(c *CompileContext) {
 	i.Variadic = true
 	if i.Type != nil {
 		i.Type.Compile(c)
@@ -687,7 +687,7 @@ func (i *InitializationSliceNode) Compile(c *Compiler) {
 	i.StackIncrement = 1
 }
 
-func (i *InitializationKVNode) Compile(c *Compiler) {
+func (i *InitializationKVNode) Compile(c *CompileContext) {
 	i.Variadic = true
 	if i.Type != nil {
 		i.Type.Compile(c)
@@ -734,7 +734,7 @@ func (i *InitializationKVNode) Compile(c *Compiler) {
 	i.StackIncrement = 1
 }
 
-func (f *FunctionAssignNode) Compile(c *Compiler) {
+func (f *FunctionAssignNode) Compile(c *CompileContext) {
 	num := len(f.Lhs)
 	if funcCallNode, ok := f.Function.(*FunctionCallNode); ok {
 		funcCallNode.Compile(c)
@@ -769,7 +769,7 @@ func (f *FunctionAssignNode) Compile(c *Compiler) {
 	}
 }
 
-func (n *AssignNode) Compile(c *Compiler) {
+func (n *AssignNode) Compile(c *CompileContext) {
 	n.Lhs.SetLhs()
 	n.Lhs.Compile(c)
 	n.Rhs.SetRequiredType(n.Lhs.GetDataType())

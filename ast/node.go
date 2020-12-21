@@ -8,7 +8,7 @@ import (
 )
 
 type ASTNode interface {
-	Compile(c *Compiler)
+	Compile(c *CompileContext)
 	SetLhs()
 	SetRequiredType(dt *common.DataType)
 
@@ -94,7 +94,7 @@ func (n *Node) AppendInstruction(instruction ...common.Instruction) {
 	n.Instructions = append(n.Instructions, instruction...)
 }
 
-func (n *Node) Compile(_ *Compiler) {
+func (n *Node) Compile(_ *CompileContext) {
 	panic("this won't compile")
 }
 

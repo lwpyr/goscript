@@ -13,7 +13,7 @@ type SymbolNode struct {
 	ValueToAssign ASTNode
 }
 
-func (t *SymbolNode) Compile(c *Compiler) {
+func (t *SymbolNode) Compile(c *CompileContext) {
 	if t.DataTypeNode != nil {
 		t.DataTypeNode.Compile(c)
 		t.DataType = t.DataTypeNode.GetDataType()

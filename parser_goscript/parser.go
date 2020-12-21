@@ -15,7 +15,7 @@ type ASTBuilder struct {
 	FunctionDepth int
 	LoopDepth     int
 
-	Compiler *ast.Compiler
+	Compiler *ast.CompileContext
 }
 
 // EnterEveryRule is called when any rule is entered.

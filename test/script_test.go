@@ -145,6 +145,24 @@ print(str4);
 	p.RunOnMemory(mem)
 }
 
+func TestH(t *testing.T) {
+	setupParse()
+	var expr string
+	expr = `
+func Outer(n int32) {
+	func Inner(d int32) {
+		print(d*d);
+	}
+	for (i:=0; i<n; i++) {
+		Inner(i);
+	}
+}
+Outer(10);
+`
+	p := compileScript(expr)
+	p.RunOnMemory(mem)
+}
+
 func BenchmarkA(b *testing.B) {
 	setupParse()
 	var expr string

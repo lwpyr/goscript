@@ -29,7 +29,7 @@ type EnumNode struct {
 	Enum map[string]int32
 }
 
-func (t *TypeDefNode) Compile(c *Compiler) {
+func (t *TypeDefNode) Compile(c *CompileContext) {
 	var dType *common.DataType
 	switch t.TypeNodeType {
 	case SimpleType:
@@ -70,7 +70,7 @@ func (t *TypeDefNode) Compile(c *Compiler) {
 	}
 }
 
-func (e *EnumNode) Compile(c *Compiler) {
+func (e *EnumNode) Compile(c *CompileContext) {
 	dt := e.DataType
 	dt.Kind = common.KindMap[common.Int32]
 	dt.Unmarshal = func(iter *jsoniter.Iterator) interface{} {
@@ -79,7 +79,7 @@ func (e *EnumNode) Compile(c *Compiler) {
 	dt.Constructor = common.ConstructorMap[common.Int32]
 }
 
-func (t *MessageTypeDef) Compile(c *Compiler) {
+func (t *MessageTypeDef) Compile(c *CompileContext) {
 	dt := t.DataType
 	dt.FieldType = map[string]*common.DataType{}
 	for fieldName, field := range t.Field {

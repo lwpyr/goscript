@@ -56,7 +56,7 @@ func (b *ConvertNode) CheckIsConstant() {
 	}
 }
 
-func (b *ConvertNode) Compile(c *Compiler) {
+func (b *ConvertNode) Compile(c *CompileContext) {
 	b.Type.Compile(c)
 	b.DataType = b.Type.GetDataType()
 	b.Value.Compile(c)
@@ -74,12 +74,12 @@ func (b *ConvertNode) Compile(c *Compiler) {
 	b.StackIncrement = 1
 }
 
-func (p *ParamNode) Compile(c *Compiler) {
+func (p *ParamNode) Compile(c *CompileContext) {
 	p.TypeNode.Compile(c)
 	p.DataType = p.TypeNode.GetDataType()
 }
 
-func (t *TypeNode) Compile(c *Compiler) {
+func (t *TypeNode) Compile(c *CompileContext) {
 	var dType *common.DataType
 	switch t.TypeNodeType {
 	case SimpleType:
@@ -113,10 +113,13 @@ func (t *TypeNode) Compile(c *Compiler) {
 	default:
 		panic(common.NewCompileErr(t.ErrorWithSource("bad node type, this should never happened because of the enum limitation")))
 	}
+	if dType == nil {
+		panic(common.NewTypeErr(t.ErrorWithSource("type not found")))
+	}
 	t.DataType = dType
 }
 
-func (f *FunctionDefNode) Compile(c *Compiler) {
+func (f *FunctionDefNode) Compile(c *CompileContext) {
 	c.MakeFunctionScope()
 	defer c.ReturnParentScope()
 
@@ -215,7 +218,7 @@ type FunctionCallNode struct {
 	Meta     *common.FunctionMeta
 }
 
-func (f *FunctionCallNode) Compile(c *Compiler) {
+func (f *FunctionCallNode) Compile(c *CompileContext) {
 	f.Function.Compile(c)
 	if f.Function.GetDataType().Kind.Kind != common.Func {
 		panic(common.NewCompileErr(f.ErrorWithSource("not a function")))
@@ -277,7 +280,7 @@ type BuiltinFunctionNode struct {
 	Aux         interface{}
 }
 
-func (b *BuiltinFunctionNode) Compile(c *Compiler) {
+func (b *BuiltinFunctionNode) Compile(c *CompileContext) {
 	switch b.BuiltinName {
 	case "pushBack", "pushFront":
 		b.Variadic = true
