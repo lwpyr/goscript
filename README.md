@@ -17,13 +17,15 @@ check lhs flag cannot be set to intermediate result (throw panic).
 - [x] Lambda function and function type
 - [x] type define in script
 - [x] Golang channel type
-- [ ] Unit test
+- [ ] Support create Go routine inside Goscript
+- [ ] Support Golang struct type (use reflection or byte array)
+- [ ] Support Debug Mode
+- [ ] Unit test and code coverage
 
 #### consider to support
 - [ ] Protocol Buffer marshal and unmarshal of typed data
-- [ ] Golang Struct type (actually reflect struct)
 - [ ] Package support (could use 'import')
-- [ ] Support using context.Context to control timeout
+- [ ] Timeout Control (support `select` statement or using context.Context at checkpoints)
 - [ ] More function libs
 
 ### Design principle
