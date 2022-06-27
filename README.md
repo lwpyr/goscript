@@ -48,9 +48,9 @@ check lhs flag cannot be set to intermediate result (throw panic).
     
     
 
-2. **As a extension for your running server.**
+2. **As an extension for your running server.**
 
-   Some times we want to update some server-side logic without stop the server. Goscript's script mode can meet this cand of need.
+   Sometimes we want to update some server-side logic without stopping the server. Goscript's script mode can meet this cand of need.
 
    ```shell
    if (Player.VIP == true) {
